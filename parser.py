@@ -29,11 +29,6 @@ def parser(expr, params, indep):
                  'tan',
                  'exp',
                  'log']
-    signs     = ['+',
-                 '-',
-                 '*',
-                 '/',
-                 ' ']
     
     # Fazer limpeza dos params
     # Assumindo que estão separados por virgulas ou espaços
