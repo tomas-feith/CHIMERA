@@ -17,11 +17,8 @@ def reader (data, src):
     Returns
     -------
     matrix : array of array
-        Dados no formato de uma matriz Nx3
+        Dados no formato de uma matriz Nxm (N pontos, m dimensões)
     """
-    
-    # Nota: Temos de pensar numa generalização para mais colunas, por exemplo,
-    # permitir x ex y ey
     
     # Dividr em linhas
     data = data.split("\n")
@@ -51,6 +48,6 @@ def reader (data, src):
     matrix = [[data[i][j] for j in range(len(data[i]))] for i in range(len(data)) ]
     return matrix    
 
-points = "1 2 0.1\n1 2 0.1\n1 2 0.1\n\n1 2 0.1"
+points = "1 2 0.1 0.1\n1 2 0.1 0.1\n1 2 0.1 0.1\n\n1 2 0.1 0.1"
 if __name__ == '__main__':
     print(reader(points,1))
