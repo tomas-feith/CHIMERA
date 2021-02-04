@@ -2,10 +2,11 @@
 """
 Created on Thu Feb  4 18:45:02 2021
 
-@author: tsfei
+@author: tsfeith
 """
 
 from data_reader import reader
+from clean_digits import clean
 
 def latex (data, adjust_size):
     """
@@ -29,6 +30,8 @@ def latex (data, adjust_size):
     # IMPORTANTE: AINDA NÃO TOMA EM CONTA ALGARISMOS SIGNIFICATIVOS
     
     dim = len(data[0])
+    
+    data = clean(data)
     
     table = r"""
 \begin{table}[h]
