@@ -5,7 +5,7 @@ Created on Wed Feb  3 16:36:00 2021
 @author: tsfeith
 """
 
-def reader (data, src):
+def reader (data, src, form):
     """
     Parameters
     ----------
@@ -13,6 +13,8 @@ def reader (data, src):
         Esta string pode ser <nome_ficheiro> ou os dados brutos dados pelo utilizador
     src : int
         0 ou 1. Se 0: nome de ficheiro; Se 1: dados brutos.
+    form : int
+        0 ou 1. Se 0: devolve em string; Se 1: devolve em float
 
     Returns
     -------
@@ -50,9 +52,12 @@ def reader (data, src):
         # Se houver elementos não numéricos
         for pair in enumerate(datum):
             try:
-                datum[pair[0]] = float(datum[pair[0]])
+                if form:
+                    datum[pair[0]] = float(datum[pair[0]])
+                else:
+                    float(datum[pair[0]])
             except Exception:
-                return []    
+                return []
             
     matrix = [[data[i][j] for j in range(len(data[i]))] for i in range(len(data)) ]
     return matrix    
@@ -190,7 +195,7 @@ points = """400	201	14
 530	1	1
 531	1	1"""
 if __name__ == '__main__':
-    print(reader(points,1))
-    print(reader("../test_data.txt",0))
+    print(reader(points,1,1))
+    print(reader("../test_data.txt",0,1))
 
     

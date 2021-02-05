@@ -17,18 +17,13 @@ def find_digit (number):
 
     Returns
     digit : int
-        Ordem de grandeza de number
-
+        Número de algarismos significativos
     """
-    number = (number - int(number))
-    if number == 0:
+    number = number.split('.')
+    if len(number) == 1:
         return 0
+    return len(number[1])
     
-    digit = 0
-    while abs(number) < 1:
-        digit+=1
-        number*=10
-    return digit
 
 def adjust_digit (number, order):
     """
@@ -48,11 +43,10 @@ def adjust_digit (number, order):
     
     # Primeiro testar se a ordem de grandeza é 0
     if order == 0:
-        clean_number = str(round(number))
+        clean_number = str(round(float(number)))
         return clean_number
     
-    clean_number = str(number)
-    clean_number = clean_number.split('.')
+    clean_number = number.split('.')
     if len(clean_number) == 1:
         clean_number.append('0'*order)
     
@@ -67,7 +61,7 @@ def clean (data):
 
     Parameters
     ----------
-    data : array de array de floats
+    data : array de array de string
         Pode ter dimensão Nx3 ou Nx4.
 
     Returns
@@ -88,7 +82,6 @@ def clean (data):
         for i in range(dim):
             if small_digit[i]<find_digit(datum[i]):
                 small_digit[i]=find_digit(datum[i])
-    print(small_digit)
                 
     # E agora limpar de acordo com o passo anterior
     # Mas agora é relevante se dim = 3 ou dim = 4

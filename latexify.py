@@ -30,7 +30,6 @@ def latex (data, adjust_size):
     # IMPORTANTE: AINDA NÃO TOMA EM CONTA ALGARISMOS SIGNIFICATIVOS
     
     dim = len(data[0])
-    
     data = clean(data)
     
     table = r"""
@@ -66,7 +65,7 @@ Coluna 1 & Coluna 2 \\\hline
     return table
 
 if __name__ == '__main__':
-    data =reader("../test_data.txt",0)
+    data = reader("../test_data.txt",0,0)
     print(latex (data, 1))
     
     
