@@ -43,14 +43,35 @@ def parser(expr, params, indep):
     for val in clean_split:
         if val in functions:
             return 'O nome \''+str(val)+'\' já está associado a uma função. Dê um nome diferente.'
-    
     # Aproveitar e verificar se a variável independente não é uma função
     if indep in functions:
         return 'O nome \''+str(indep)+'\' já está associado a uma função. Dê um nome diferente.'
     
+    # Ver se nenhum dos parâmetros é repetido
+    for val in clean_split:
+        if clean_split.count(val) > 1:
+            return 'O parâmetro \''+str(val)+'\' foi dado mais que uma vez. Dê nomes distintos a cada parâmetro.'
+        
     # E já agora verificar se não está nos parâmetros
     if indep in clean_split:
         return 'O nome \''+str(indep)+'\' foi dado à variável independente e a um parâmetro. Altere um deles.'
+    
+    # Verificar se nenhum dos parâmetros são números
+    for val in clean_split:
+        try:
+            float(val)
+        except ValueError:
+            pass
+        else:
+            return 'O parâmetro dado \''+str(val)+'\' é um número. Utilize um parâmetro diferente.'
+    # E verificar se a variável independente também não é
+    try:
+        float(indep)
+    except ValueError:
+        pass
+    else:
+        return 'A variável independente dada \''+str(indep)+'\' é um número. Utilize uma diferente.'
+    
     
     # Substituir as funções pelo equivalente numpy
     # Primeira substituição temporária para não haver erros de conversão
@@ -73,12 +94,10 @@ def parser(expr, params, indep):
         expr = ('np.'+str(function[1])).join(expr)
 
     # Vamos finalmente testar se a função funciona
-    B = []
-    for val in clean_split:
-        B.append(np.pi/2)
+    B = [np.pi/2]*len(clean_split)
     x=-1
     try:
-        eval(expr)
+        safe_eval(expr)
     except NameError as error:
         return 'A função \''+str(error).split('\'')[1]+'\' não foi reconhecida.'
     except FloatingPointError:
