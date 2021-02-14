@@ -24,11 +24,20 @@ def parser(expr, params, indep):
         Clean expression, ready to be interpreted
     """
     np.seterr(all='raise')    
-    functions = ['sin',
-                 'cos',
-                 'tan',
-                 'exp',
-                 'log']
+    functions = ['sin', # seno
+                 'cos', # cosseno
+                 'tan', # tangente 
+                 'arcsin', # arco seno
+                 'arccos', # arco cosseno
+                 'arctan', # arco tangente
+                 'exp', # exponencial
+                 'log', # logaritmo natural
+                 'sqrt', # raiz quadrada
+                 'absolute', # módulo
+                 'heaviside', # função heaviside
+                 'cbrt', # raíz cúbica
+                 'sign' # operador sinal
+                 ]
     
     # Fazer limpeza dos params
     # Assumindo que estão separados por virgulas ou espaços
