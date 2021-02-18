@@ -6,7 +6,6 @@ Created on Tue Feb 16 11:58:13 2021
 """
 
 import tkinter as tk
-import tkinter.font
 from PIL import Image, ImageTk
 # Estes imports só servem para editar o icon (pelo menos por enquanto)
 import tempfile, base64, zlib
@@ -91,19 +90,37 @@ class MainWindow(tk.Frame):
         self.place_item("./img/Image_white.PNG", 0.25, self.logo_canvas)
 
     def create_widgets(self):
-        self.new = tk.Button(self.bottom, width = 8, height = 1)
+        self.new = tk.Button(self.bottom,
+                             width = 13,
+                             height=1,
+                             fg='white',
+                             bg='red',
+                             activebackground='white',
+                             activeforeground='red')
         self.new["text"] = "NEW FIT"
-        self.new["font"] = ("Roboto",35,"bold")
+        self.new["font"] = ("Roboto",int(35*1000/self.master.winfo_width()),"bold")
         self.new["command"] = self.say_new
-        self.new.grid(column = 2, row = 0)
+        self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
+        # Alterar as cores quando entra e sai
+        self.new.bind("<Enter>", func=lambda e: self.new.config(bg='white',fg='red'))
+        self.new.bind("<Leave>", func=lambda e: self.new.config(bg='red',fg='white'))
         
-        self.hi_there = tk.Button(self.bottom)
-        self.hi_there["text"] = "Hello World\n(click me)"
-        self.hi_there["command"] = self.say_hi
-        self.hi_there.grid(column = 0, row = 0)
+        self.old = tk.Button(self.bottom,
+                             width = 13,
+                             height=1,
+                             fg='white',
+                             bg='red',
+                             activebackground='white',
+                             activeforeground='red')
+        self.old["text"] = "IMPORT FIT"
+        self.old["font"] = ("Roboto",int(35*1000/self.master.winfo_width()),"bold")
+        self.old["command"] = self.say_import
+        self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10))) 
+        self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='red'))
+        self.old.bind("<Leave>", func=lambda e: self.old.config(bg='red',fg='white'))
 
-    def say_hi(self):
-        print("hi there, everyone!")
+    def say_import(self):
+        print("Import fit")
     
     def say_new(self):
         print("Create new fit")
