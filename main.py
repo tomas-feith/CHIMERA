@@ -9,6 +9,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 # Estes imports só servem para editar o icon (pelo menos por enquanto)
 import tempfile, base64, zlib
+import time
 
 class MainWindow(tk.Frame):
     def __init__(self, master=None):
@@ -84,6 +85,8 @@ class MainWindow(tk.Frame):
         canvas.image = img
         
     def _resize_window(self, event):
+        # Idea. Try to place all of these in one single function that is activated at once
+        # The canvases are interfering with each other
         self.title_canvas.delete("all")
         self.logo_canvas.delete("all")
         self.place_item("./img/Name_white.PNG", 0.6, self.title_canvas)
