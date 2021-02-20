@@ -5,7 +5,7 @@ Created on Thu Feb  4 18:45:02 2021
 @author: tsfeith
 """
 
-from data_reader import reader
+from data_reader import read_file
 from clean_digits import clean
 
 def latex (data, adjust_size):

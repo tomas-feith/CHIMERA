@@ -9,7 +9,6 @@ import tkinter as tk
 from PIL import Image, ImageTk
 # Estes imports só servem para editar o icon (pelo menos por enquanto)
 import tempfile, base64, zlib
-import time
 
 class MainWindow(tk.Frame):
     def __init__(self, master=None):

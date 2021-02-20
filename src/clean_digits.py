@@ -73,7 +73,7 @@ def clean (data):
     
     dim = len(data[0])
     
-    clean_data = [[0]* dim for datum in data]
+    clean_data = [[0]*dim for datum in data]
     
     small_digit = [0]*dim
     
