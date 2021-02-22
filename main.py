@@ -205,10 +205,6 @@ class MainWindow(tk.Frame):
             self.paramlabel[x].grid(column = 0, row = x, pady=10)
             self.paramboxes[x].grid(column = 1, row = x, pady=10)
         
-        self.anotherframe.grid_columnconfigure(0,weight=1)
-        self.anotherframe.grid_columnconfigure(1,weight=1)
-            
-
         
         
 root = tk.Tk()
