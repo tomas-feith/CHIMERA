@@ -41,14 +41,18 @@ def parser(expr, params, indep):
     
     # Fazer limpeza dos params
     # Assumindo que estão separados por virgulas ou espaços
-    first_split = params.split(' ')
+    # Os parâmetros limpos serão guardados neste array
     clean_split = []
+    # Divide-se ao longo dos espaços todos
+    first_split = params.split(' ')
     for val in first_split:
+        # Divide-se cada um dos resultados da divisão anterior, agora ao longo das vírgulas
         for param in val.split(','):
+            # Se param != ''
             if param:
                 clean_split.append(param)
     
-    # Verificar se nenhum dos nomes das variáveis não são funções
+    # Verificar se nenhum dos nomes das variáveis são funções
     for val in clean_split:
         if val in functions:
             return 'O nome \''+str(val)+'\' já está associado a uma função. Dê um nome diferente.'
@@ -103,11 +107,13 @@ def parser(expr, params, indep):
         expr = ('np.'+str(function[1])).join(expr)
 
     # Vamos finalmente testar se a função funciona
+    # Valores de teste só porque sim
     B = [np.pi/2]*len(clean_split)
     x=-1
     try:
-        safe_eval(expr)
+        eval(expr)
     except NameError as error:
+        print(error)
         return 'A função \''+str(error).split('\'')[1]+'\' não foi reconhecida.'
     except FloatingPointError:
         return expr
