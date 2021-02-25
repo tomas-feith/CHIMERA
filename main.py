@@ -260,6 +260,15 @@ class MainWindow(tk.Frame):
         self.new.destroy()
         global count
         count = 1
+        
+        
+        menubar = tk.Menu(self.master)
+        self.master.config(menu=menubar)
+
+        self.fileMenu = tk.Menu(menubar)
+        menubar.add_cascade(label="File", menu=self.fileMenu)
+        
+        
         self.master.configure(background='#FCF6F5')
 
         self.frameleft = tk.Frame(self.master,  bg='#FCF6F5')
