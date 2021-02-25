@@ -24,20 +24,27 @@ count = 0
 
 def parser(expr, params, indep):    
     np.seterr(all='raise')
-    functions = ['sin', # seno
-             'cos', # cosseno
-             'tan', # tangente
-             'arcsin', # arco seno
-             'arccos', # arco cosseno
-             'arctan', # arco tangente
-             'exp', # exponencial
-             'log', # logaritmo natural
-             'sqrt', # raiz quadrada
-             'absolute', # módulo
-             'heaviside', # função heaviside
-             'cbrt', # raíz cúbica
-             'sign' # operador sinal
-             ]
+    # Funções do numpy a utilizar
+    # Ainda falta acrescentar as funções de estatística
+    functions = ['sin',
+                 'cos',
+                 'tan',
+                 'arcsin',
+                 'arccos',
+                 'arctan',
+                 'exp',
+                 'log',
+                 'sqrt',
+                 'absolute',
+                 'heaviside',
+                 'cbrt',
+                 'sign'
+                 ]
+    
+    # Lista de caraters permitidos nos parametros/variáveis
+    # Apenas letras e números
+    allowed = ['abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890']
+    
     # Fazer limpeza dos params
     # Assumindo que estão separados por virgulas ou espaços
     # Os parâmetros limpos serão guardados neste array
@@ -50,12 +57,19 @@ def parser(expr, params, indep):
             # Se param != ''
             if param:
                 clean_split.append(param)
+    
+    # Ver se algum dos parâmetros tem carateres proibidos
+    for val in clean_split:
+        for char in val:
+            if char not in allowed:
+                return 'O parâmetro \''+str(val)+'\' contém o carater \''+str(char)+'\'. Apenas são permitidos letras ou números.'
+    
                 
     # Verificar se nenhum dos nomes das variáveis são funções
     for val in clean_split:
         if val in functions:
             return 'O nome \''+str(val)+'\' já está associado a uma função. Dê um nome diferente.'
-    # Aproveitar e verificar se a variável independente não é uma função
+    # Verificar se a variável independente não é uma função
     if indep in functions:
         return 'O nome \''+str(indep)+'\' já está associado a uma função. Dê um nome diferente.'
                     
@@ -64,7 +78,7 @@ def parser(expr, params, indep):
         if clean_split.count(val) > 1:
             return 'O parâmetro \''+str(val)+'\' foi dado mais que uma vez. Dê nomes distintos a cada parâmetro.'
                         
-    # E já agora verificar se não está nos parâmetros
+    # Verificar se a variável independente não está nos parâmetros
     if indep in clean_split:
         return 'O nome \''+str(indep)+'\' foi dado à variável independente e a um parâmetro. Altere um deles.'
 
@@ -127,6 +141,8 @@ class MainWindow(tk.Frame):
         super().__init__(master)
         # Esta é a janela principal
         self.master = master
+        
+        master.state('zoomed')
 
         # Tirar o icon do tkinter
         ICON = zlib.decompress(base64.b64decode('eJxjYGAEQgEBBiDJwZDBy'
@@ -292,18 +308,34 @@ class MainWindow(tk.Frame):
         self.parameterentry = tk.Entry(self.subframeright1, font=40)
         self.parameterentry.place(relwidth=0.6, rely=0.1, relheight=0.1,relx = 0.2)
         self.parameterentry.focus_set()
-        self.upbutton = tk.Button(self.subframeright1, text= "update")
+        self.upbutton = tk.Button(self.subframeright1,
+                                  text="update",
+                                  fg='white',
+                                  bg='red',
+                                  activebackground='white',
+                                  activeforeground='red')
         self.upbutton.place(relwidth=0.2,relx=0.8, rely=0.1,relheight=0.1 )
         self.upbutton["command"] = self.update_parameter
+        self.upbutton.bind("<Enter>", func=lambda e: self.upbutton.config(bg='white',fg='red'))
+        self.upbutton.bind("<Leave>", func=lambda e: self.upbutton.config(bg='red',fg='white'))
+        self.upbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
 
         self.functionlabel = tk.Label(self.subframeright1,text= "Function")
         self.functionlabel.place(relwidth=0.2, rely=0.2, relheight=0.1)
         self.functionentry = tk.Entry(self.subframeright1, font=40)
         self.functionentry.place(relwidth=0.8,relx=0.2, rely=0.2, relheight=0.1)
         self.functionentry.focus_set()
-        self.compilebutton = tk.Button(self.subframeright1, text= "compile")
+        self.compilebutton = tk.Button(self.subframeright1,
+                                       text="compile",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red')
         self.compilebutton.place(relwidth=0.2,relx=0.8, rely=0.2,relheight=0.1 )
         self.compilebutton["command"] = self.compile_function
+        self.compilebutton.bind("<Enter>", func=lambda e: self.compilebutton.config(bg='white',fg='red'))
+        self.compilebutton.bind("<Leave>", func=lambda e: self.compilebutton.config(bg='red',fg='white'))
+        self.compilebutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
 
 
         self.subframeright2=tk.Frame(self.frameright, bg = '#FCF6F5')
@@ -458,10 +490,6 @@ class MainWindow(tk.Frame):
                 if param:
                     clean_split.append(param)
 
-
-
-
-
         global count
         if (count==2) :
             for x in range(self.boxnumber):
@@ -511,7 +539,7 @@ class MainWindow(tk.Frame):
                 self.anotherframe.grid_rowconfigure(x, weight=1)
                 self.paramboxes.append(tk.Entry(self.anotherframe))
                 self.paramboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
-                self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]))
+                self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}'))
                 self.paramlabel[x].grid(column = 0, row = x, pady=10, sticky= 'nsew')
 
 
@@ -523,7 +551,7 @@ class MainWindow(tk.Frame):
 
             self.boxnumber = len(clean_split)
 
-            self.inicialguesslabel = tk.Label(self.subframeright1, text= "Inicial Guess")
+            self.inicialguesslabel = tk.Label(self.subframeright1, text= "Initial Guess")
             self.inicialguesslabel.place(rely=0.4, relwidth=0.3, relheight = 0.1, relx=0)
 
             self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0)
@@ -550,7 +578,7 @@ class MainWindow(tk.Frame):
             for x in range(self.boxnumber):
                 self.paramboxes.append(tk.Entry(self.anotherframe))
                 self.paramboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
-                self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]))
+                self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}'))
                 self.paramlabel[x].grid(column = 0, row = x, pady=10, sticky= 'nsew')
 
         count = 2
