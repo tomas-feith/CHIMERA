@@ -75,7 +75,7 @@ def read_file(src, out):
             points = []
             for j in range(len(data[2*i].to_numpy())):
                 x = data[0].to_numpy(out)[j]
-                ex = data[1].to_numpt(out)[j]
+                ex = data[1].to_numpy(out)[j]
                 y = data[2*i].to_numpy(out)[j]
                 ey = data[2*i+1].to_numpy(out)[j]
                 # Procurar incoerências nas linhas

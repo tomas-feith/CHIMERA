@@ -18,6 +18,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from tkinter.scrolledtext import ScrolledText
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from io import StringIO
+
 
 # Isto serve para quê?
 count = 0
@@ -134,6 +138,99 @@ def parser(expr, params, indep):
                                                     
     return expr
 
+def read_file(src, out):
+    """
+    Função para ler os dados de ficheiros de texto ou excel
+
+    Parameters
+    ----------
+    src : string
+        Caminho para o ficheiro.
+    out : type
+        str/float - devolver os elementos todos neste formato.
+
+    Returns
+    -------
+    data : array of array of array
+        Dados lidos do ficheiro.
+    """
+    formats = [['xls', 'xlsx', 'xlsm', 'xlsb', 'odf', 'ods', 'odt'],
+               ['csv', 'txt', 'dat']
+              ]
+    form = -1
+    # Determinar que tipo de ficheiro estamos a utilizar
+    if isinstance(src, StringIO):
+        form = 1
+    else:
+        for i in enumerate(formats):
+            for ext in i[1]:
+                if src.split('.')[-1] == ext:
+                    form = i[0]
+    # Se não for nenhum dos considerados, devolver -1 para marcar o erro
+    if form == -1:
+        return -1
+    # Se for da classe ficheiro de texto
+    if form:
+        data = pd.read_csv(src, sep=r"\s+|;|:|None|,", engine='python', dtype="object", header=None)
+    # Se for da classe Excel
+    else:
+        data = pd.read_excel(src, dtype="object",header=None)
+
+    # Fazer a divisão nos datasets fornecidos
+    # Se não houver incerteza no x, então o número de colunas é ímpar
+    full_sets = []
+    if (data.shape[1]%2)!=0:
+        for i in range(1,int((data.shape[1]+1)/2)):
+            points = []
+            for j in range(len(data[i].to_numpy())):
+                x = data[0].to_numpy(out)[j]
+                y = data[2*i-1].to_numpy(out)[j]
+                ey = data[2*i].to_numpy(out)[j]
+                # Procurar incoerências nas linhas
+                if (
+                        (out==float and np.isnan(y)!=np.isnan(ey)) or
+                        (out==str and y=='nan' and ey!='nan') or
+                        (out==str and y!='nan'and ey=='nan')
+                    ):
+                    return -2
+                # Se a linha estiver vazia não se acrescenta
+                if (
+                        not (out==float and np.isnan(x)) and
+                        not (out==str and x=='nan') and
+                        not (out==float and np.isnan(y) and np.isnan(ey)) and
+                        not (out==str and y=='nan' and ey=='nan')
+                    ):
+                    points.append([x, y, ey])
+            full_sets.append(points)
+    # Se houver incerteza no x o tratamento é ligeiramente diferente
+    else:
+        for i in range(1,int((data.shape[1])/2)):
+            points = []
+            for j in range(len(data[2*i].to_numpy())):
+                x = data[0].to_numpy(out)[j]
+                ex = data[1].to_numpy(out)[j]
+                y = data[2*i].to_numpy(out)[j]
+                ey = data[2*i+1].to_numpy(out)[j]
+                # Procurar incoerências nas linhas
+                if (
+                        (out==float and np.isnan(x)!=np.isnan(ex)) or
+                        (out==str and x!='nan' and ex!='nan') or
+                        (out==float and np.isnan(y)!=np.isnan(ey)) or
+                        (out==str and y=='nan' and ey!='nan') or
+                        (out==str and y!='nan'and ey=='nan')
+                    ):
+                    return -3
+                # Se a linha estiver vazia não se acrescenta
+                if (
+                        not (out==float and np.isnan(x) and np.isnan(ex)) and 
+                        not (out==str and x=='nan' and ex=='nan') and
+                        not (out==float and np.isnan(y) and np.isnan(ey)) and
+                        not (out==str and y=='nan' and ey=='nan')
+                    ):
+                    points.append([x, ex, y, ey])
+            full_sets.append(points)
+    
+    return full_sets
 
 
 class MainWindow(tk.Frame):
@@ -190,23 +287,6 @@ class MainWindow(tk.Frame):
         self.master.bind('<Configure>', self._resize_window)
 
     def place_item(self, src, ratio, canvas):
-        """
-        Função para colocar um item genérico na janela
-
-        Parameters
-        ----------
-        src : string
-            Caminho para a imagem a colocar na canvas.
-        ratio : float
-            Razão entre o tamanho da imagem e o tamanho da janela pretendida.
-        canvas : tk.Canvas
-            Canvas onde se vai desenhar a imagem.
-
-        Returns
-        -------
-        None.
-
-        """
         img_src = Image.open(src)
         img_ratio = self.master.winfo_width()*ratio/float(img_src.size[0])
         img_src = img_src.resize((int(img_src.size[0]*img_ratio), int(img_src.size[1]*img_ratio)))
@@ -228,6 +308,7 @@ class MainWindow(tk.Frame):
 
 
     def create_widgets(self):
+        # Criar botão para um novo fit
         self.new = tk.Button(self.bottom,
                              width = 13,
                              height=1,
@@ -243,6 +324,7 @@ class MainWindow(tk.Frame):
         self.new.bind("<Enter>", func=lambda e: self.new.config(bg='white',fg='red'))
         self.new.bind("<Leave>", func=lambda e: self.new.config(bg='red',fg='white'))
 
+        # Criar botão para importar um fit
         self.old = tk.Button(self.bottom,
                              width = 13,
                              height=1,
@@ -258,18 +340,18 @@ class MainWindow(tk.Frame):
         self.old.bind("<Leave>", func=lambda e: self.old.config(bg='red',fg='white'))
 
     def create_import(self):
+        # Destruir tudo o que estava na janela
         self.title_canvas.delete("all")
         self.logo_canvas.delete("all")
         self.old.destroy()
         self.new.destroy()
         global count
         count = 1
-        print("Import fit")
         self.master.configure(background='#FCF6F5')
 
 
     def create_new(self):
-        print("Create new fit")
+        # Destruir tudo o que estava na janela
         self.title_canvas.delete("all")
         self.logo_canvas.delete("all")
         self.old.destroy()
@@ -277,39 +359,43 @@ class MainWindow(tk.Frame):
         global count
         count = 1
         
-        
+        # Criar uma menu bar
         menubar = tk.Menu(self.master)
         self.master.config(menu=menubar)
-
+        
         self.fileMenu = tk.Menu(menubar)
         menubar.add_cascade(label="File", menu=self.fileMenu)
         
         
         self.master.configure(background='#FCF6F5')
-
+        
+        # Criação da estrutura de frames da janela
         self.frameleft = tk.Frame(self.master,  bg='#FCF6F5')
-        self.frameleft.place( in_ = self.master, relwidth =0.5, relheight = 1,relx=0, rely=0)
+        self.frameleft.place(in_=self.master, relwidth=0.5, relheight=1, relx=0, rely=0)
 
         self.frameright = tk.Frame(self.master,  bg='#FCF6F5')
         self.frameright.place( in_ = self.master, relwidth=0.5, relheight=1,relx=0.5, rely=0)
 
-        self.subframeright1=tk.Frame(self.frameright, bg = '#FCF6F5')
-        self.subframeright1.place(in_ = self.frameright, relwidth=1, relheight=0.5, relx=0, rely=0)
+        self.subframeright1=tk.Frame(self.frameright, bg='#FCF6F5')
+        self.subframeright1.place(in_=self.frameright, relwidth=1, relheight=0.5, relx=0, rely=0)
 
-        self.independentlabel = tk.Label(self.subframeright1,text= "Independent Variable")
+        # Criação da zona para inserir a variável independente
+        self.independentlabel = tk.Label(self.subframeright1,text="Independent Variable")
+        self.independentlabel["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
         self.independentlabel.place(relwidth=0.2, rely=0, relheight=0.1)
         self.independententry = tk.Entry(self.subframeright1, font=40)
         self.independententry.place(relwidth=0.8, rely=0, relheight=0.1, relx = 0.2)
         self.independententry.focus_set()
 
-
-        self.parameterlabel = tk.Label(self.subframeright1,text= "Parameter")
+        # Criação da zona para inserir os parâmetros
+        self.parameterlabel = tk.Label(self.subframeright1,text="Parameter")
+        self.parameterlabel["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
         self.parameterlabel.place(relwidth=0.2, rely=0.1, relheight=0.1)
         self.parameterentry = tk.Entry(self.subframeright1, font=40)
         self.parameterentry.place(relwidth=0.6, rely=0.1, relheight=0.1,relx = 0.2)
         self.parameterentry.focus_set()
         self.upbutton = tk.Button(self.subframeright1,
-                                  text="update",
+                                  text="UPDATE",
                                   fg='white',
                                   bg='red',
                                   activebackground='white',
@@ -321,12 +407,13 @@ class MainWindow(tk.Frame):
         self.upbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
 
         self.functionlabel = tk.Label(self.subframeright1,text= "Function")
+        self.functionlabel["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
         self.functionlabel.place(relwidth=0.2, rely=0.2, relheight=0.1)
         self.functionentry = tk.Entry(self.subframeright1, font=40)
         self.functionentry.place(relwidth=0.8,relx=0.2, rely=0.2, relheight=0.1)
         self.functionentry.focus_set()
         self.compilebutton = tk.Button(self.subframeright1,
-                                       text="compile",
+                                       text="COMPILE",
                                        fg='white',
                                        bg='red',
                                        activebackground='white',
@@ -337,7 +424,8 @@ class MainWindow(tk.Frame):
         self.compilebutton.bind("<Leave>", func=lambda e: self.compilebutton.config(bg='red',fg='white'))
         self.compilebutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
 
-
+        
+        # Criação das frames para a edição visual do gráfico
         self.subframeright2=tk.Frame(self.frameright, bg = '#FCF6F5')
         self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.3, relx=0, rely=0.25)
 
@@ -424,6 +512,16 @@ class MainWindow(tk.Frame):
 
         # Daqui para baixo é fazer o plot em si
 
+        # Estas duas linhas extraem todos o dataset
+        # E armazenam-nas num array de array de array
+        # Nível 0: O data set
+        # Nível 1: O ponto
+        # Nível 2: A coordenada/incerteza
+        # Eu sei que aqui bastava 2 níveis mas não me apetece reescrever a função toda :/
+        data = StringIO(self.dataentry.get("1.0", "end-1c"))
+        self.data_sets = read_file(data,float)
+        
+        
         self.datastring = self.dataentry.get("1.0", "end-1c")
         print(self.datastring)
 
