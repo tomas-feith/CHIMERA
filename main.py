@@ -26,7 +26,7 @@ from io import StringIO
 # Isto serve para quê?
 count = 0
 
-def parser(expr, params, indep):    
+def parser(expr, params, indep):
     np.seterr(all='raise')
     # Funções do numpy a utilizar
     # Ainda falta acrescentar as funções de estatística
@@ -44,11 +44,11 @@ def parser(expr, params, indep):
                  'cbrt',
                  'sign'
                  ]
-    
+
     # Lista de caraters permitidos nos parametros/variáveis
     # Apenas letras e números
-    allowed = ['abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890']
-    
+    allowed = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
+
     # Fazer limpeza dos params
     # Assumindo que estão separados por virgulas ou espaços
     # Os parâmetros limpos serão guardados neste array
@@ -62,29 +62,41 @@ def parser(expr, params, indep):
             if param:
                 clean_split.append(param)
     
+    # Ver se foi dado algum parâmetro
+    if clean_split == []:
+        return (False, 'Não foi encontrado nenhum parâmetro.')
+    # Ver se foi dada a variável independente
+    # Mas primeiro apagar eventuais espaços na variável
+    indep=indep.replace(' ','')
+    if indep == '':
+        return (False, 'Não foi encontrada nenhuma variável independente.')
+    # Ver também se a função não está vazia
+    expr=expr.replace(' ','')
+    if expr == '':
+        return (False, 'Não foi encontrada nenhuma função de ajustamento.')
+
     # Ver se algum dos parâmetros tem carateres proibidos
     for val in clean_split:
         for char in val:
             if char not in allowed:
-                return 'O parâmetro \''+str(val)+'\' contém o carater \''+str(char)+'\'. Apenas são permitidos letras ou números.'
-    
-                
+                return (False, 'O parâmetro \''+str(val)+'\' contém o carater \''+str(char)+'\'. Apenas são permitidos letras ou números.')
+
     # Verificar se nenhum dos nomes das variáveis são funções
     for val in clean_split:
         if val in functions:
-            return 'O nome \''+str(val)+'\' já está associado a uma função. Dê um nome diferente.'
+            return (False, 'O nome \''+str(val)+'\' já está associado a uma função. Dê um nome diferente.')
     # Verificar se a variável independente não é uma função
     if indep in functions:
-        return 'O nome \''+str(indep)+'\' já está associado a uma função. Dê um nome diferente.'
-                    
+        return (False, 'O nome \''+str(indep)+'\' já está associado a uma função. Dê um nome diferente.')
+
     # Ver se nenhum dos parâmetros é repetido
     for val in clean_split:
         if clean_split.count(val) > 1:
-            return 'O parâmetro \''+str(val)+'\' foi dado mais que uma vez. Dê nomes distintos a cada parâmetro.'
-                        
+            return (False, 'O parâmetro \''+str(val)+'\' foi dado mais que uma vez. Dê nomes distintos a cada parâmetro.')
+
     # Verificar se a variável independente não está nos parâmetros
     if indep in clean_split:
-        return 'O nome \''+str(indep)+'\' foi dado à variável independente e a um parâmetro. Altere um deles.'
+        return (False, 'O nome \''+str(indep)+'\' foi dado à variável independente e a um parâmetro. Altere um deles.')
 
     # Verificar se nenhum dos parâmetros são números
     for val in clean_split:
@@ -94,7 +106,7 @@ def parser(expr, params, indep):
             pass
         # Se não der nenhum erro é por é um número e não queremos isso
         else:
-            return 'O parâmetro dado \''+str(val)+'\' é um número. Utilize um parâmetro diferente.'
+            return (False, 'O parâmetro dado \''+str(val)+'\' é um número. Utilize um parâmetro diferente.')
     # E verificar se a variável independente também não é
     try:
         float(indep)
@@ -102,8 +114,8 @@ def parser(expr, params, indep):
         pass
     # Igual a acima
     else:
-        return 'A variável independente dada \''+str(indep)+'\' é um número. Utilize uma diferente.'
-    
+        return (False, 'A variável independente dada \''+str(indep)+'\' é um número. Utilize uma diferente.')
+
     # Substituir as funções pelo equivalente numpy
     # Primeira substituição temporária para não haver erros de conversão
     for function in enumerate(functions):
@@ -113,7 +125,7 @@ def parser(expr, params, indep):
     for pair in enumerate(clean_split):
         expr = expr.split(pair[1])
         expr = ('B['+str(pair[0])+']').join(expr)
-    
+
     # Substituir a variável independente
     expr = expr.split(indep)
     expr = 'x'.join(expr)
@@ -122,7 +134,7 @@ def parser(expr, params, indep):
     for function in enumerate(functions):
         expr = expr.split('['+str(function[0]+len(clean_split))+']')
         expr = ('np.'+str(function[1])).join(expr)
-    
+
     # Vamos finalmente testar se a função funciona
     # Valores de teste só porque sim
     B = [np.pi/2]*len(clean_split)
@@ -130,13 +142,13 @@ def parser(expr, params, indep):
     try:
         eval(expr)
     except NameError as error:
-        return 'A função \''+str(error).split('\'')[1]+'\' não foi reconhecida.'
+        return (False, 'A função \''+str(error).split('\'')[1]+'\' não foi reconhecida.')
     except FloatingPointError:
-        return expr
+        return (True, expr)
     except SyntaxError:
-        return 'Não foi possível compilar a sua expressão. Verifique se todos os parâmetros estão definidos e a expressão está escrita corretamente.'
-                                                    
-    return expr
+        return (False, 'Não foi possível compilar a sua expressão. Verifique se todos os parâmetros estão definidos e a expressão está escrita corretamente.')
+
+    return (True, expr)
 
 def read_file(src, out):
     """
@@ -222,14 +234,14 @@ def read_file(src, out):
                     return -3
                 # Se a linha estiver vazia não se acrescenta
                 if (
-                        not (out==float and np.isnan(x) and np.isnan(ex)) and 
+                        not (out==float and np.isnan(x) and np.isnan(ex)) and
                         not (out==str and x=='nan' and ex=='nan') and
                         not (out==float and np.isnan(y) and np.isnan(ey)) and
                         not (out==str and y=='nan' and ey=='nan')
                     ):
                     points.append([x, ex, y, ey])
             full_sets.append(points)
-    
+
     return full_sets
 
 
@@ -238,7 +250,7 @@ class MainWindow(tk.Frame):
         super().__init__(master)
         # Esta é a janela principal
         self.master = master
-        
+
         master.state('zoomed')
 
         # Tirar o icon do tkinter
@@ -248,7 +260,7 @@ class MainWindow(tk.Frame):
         with open(ICON_PATH, 'wb') as icon_file:
             icon_file.write(ICON)
         self.master.iconbitmap(default=ICON_PATH)
-        
+
         # Tirar o título
         self.winfo_toplevel().title("")
 
@@ -306,7 +318,6 @@ class MainWindow(tk.Frame):
             self.place_item("./img/Image_white.PNG", 0.25, self.logo_canvas)
 
 
-
     def create_widgets(self):
         # Criar botão para um novo fit
         self.new = tk.Button(self.bottom,
@@ -358,17 +369,17 @@ class MainWindow(tk.Frame):
         self.new.destroy()
         global count
         count = 1
-        
+
         # Criar uma menu bar
         menubar = tk.Menu(self.master)
         self.master.config(menu=menubar)
-        
+
         self.fileMenu = tk.Menu(menubar)
         menubar.add_cascade(label="File", menu=self.fileMenu)
-        
-        
+
+
         self.master.configure(background='#FCF6F5')
-        
+
         # Criação da estrutura de frames da janela
         self.frameleft = tk.Frame(self.master,  bg='#FCF6F5')
         self.frameleft.place(in_=self.master, relwidth=0.5, relheight=1, relx=0, rely=0)
@@ -424,7 +435,7 @@ class MainWindow(tk.Frame):
         self.compilebutton.bind("<Leave>", func=lambda e: self.compilebutton.config(bg='red',fg='white'))
         self.compilebutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
 
-        
+
         # Criação das frames para a edição visual do gráfico
         self.subframeright2=tk.Frame(self.frameright, bg = '#FCF6F5')
         self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.3, relx=0, rely=0.25)
@@ -498,17 +509,33 @@ class MainWindow(tk.Frame):
         self.dataentry = ScrolledText(self.subframeleft2)
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
 
+    def secondary_window(self, title, message):
 
-                                                    
+        new_window = tk.Toplevel(self.master)
+
+        new_window.title(title)
+        new_window.geometry('300x300')
+        new_window.configure(background='#FCF6F5')
+        new_window.resizable(False, False)
+        warning = tk.Label(new_window, text=message, wraplength=200)
+        warning["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        warning.configure(background='#FCF6F5')
+        warning.pack(fill="both", expand=True)
+
+
     def compile_function(self):
         # A partir daqui a função já está definida e podemos usá-la
         # ATENÇÃO: Para usar é a função fit_func, não a self.function
         # A primeira devolve números, a segunda é só uma string
-        self.function = parser(
-                                self.functionentry.get(),
-                                self.parameterentry.get(),
-                                self.independententry.get()
-                                )
+        parsed_input = parser(self.functionentry.get(),
+                              self.parameterentry.get(),
+                              self.independententry.get())
+        if parsed_input[0]:
+            self.function = parsed_input[1]
+        else:
+            self.secondary_window('ERROR', parsed_input[1])
+            self.function = ''
+
 
         # Daqui para baixo é fazer o plot em si
 
@@ -520,8 +547,8 @@ class MainWindow(tk.Frame):
         # Eu sei que aqui bastava 2 níveis mas não me apetece reescrever a função toda :/
         data = StringIO(self.dataentry.get("1.0", "end-1c"))
         self.data_sets = read_file(data,float)
-        
-        
+
+
         self.datastring = self.dataentry.get("1.0", "end-1c")
         print(self.datastring)
 
@@ -680,7 +707,7 @@ class MainWindow(tk.Frame):
                 self.paramlabel[x].grid(column = 0, row = x, pady=10, sticky= 'nsew')
 
         count = 2
-        
+
     def fit_function(self, x, B):
         return eval(self.function)
 
