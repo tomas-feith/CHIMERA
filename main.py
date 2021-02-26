@@ -23,8 +23,10 @@ import numpy as np
 from io import StringIO
 
 
-# Isto serve para quê?
+# Isto serve para quê? 
 count = 0
+
+a = 0
 
 def process_params(params, indep):
     allowed = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
@@ -335,7 +337,7 @@ class MainWindow(tk.Frame):
         canvas.image = img
 
     def _resize_window(self, event):
-        # Isto serve para quê?
+        # Isto serve para quê? Pra so chamar estas cenas quando ainda tas no ecra inicial
         if(count == 0):
             self.title_canvas.delete("all")
             self.logo_canvas.delete("all")
@@ -401,7 +403,14 @@ class MainWindow(tk.Frame):
 
         self.fileMenu = tk.Menu(menubar)
         menubar.add_cascade(label="File", menu=self.fileMenu)
-
+        
+        self.plotoptions = tk.Menu(menubar)
+        menubar.add_cascade(label="Plot options", menu=self.plotoptions)
+        
+        self.plotoptions.add_checkbutton( label = "plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
+        self.plotoptions.add_checkbutton( label = "plot line", onvalue = 1, offvalue = 0, variable = self.wantline)
+        
+        
 
         self.master.configure(background='#FCF6F5')
 
@@ -504,7 +513,6 @@ class MainWindow(tk.Frame):
         self.xaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.15, rely=0.4)
 
-
         self.yaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#FCF6F5')
         self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.15, relheight=0.1, relx = 5, rely = 0.1)
 
@@ -528,8 +536,6 @@ class MainWindow(tk.Frame):
 
         self.yaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.65, rely=0.4)
-
-
 
         self.dataentry = ScrolledText(self.subframeleft2)
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
