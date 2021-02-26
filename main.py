@@ -107,7 +107,6 @@ def process_params(params, indep):
     
     return (True, clean_split)
     
-
 def parser(expr, params, indep):
     np.seterr(all='raise')
     # Funções do numpy a utilizar
@@ -271,7 +270,6 @@ def read_file(src, out):
 
     return full_sets
 
-
 class MainWindow(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -414,7 +412,7 @@ class MainWindow(tk.Frame):
         self.frameright = tk.Frame(self.master,  bg='#FCF6F5')
         self.frameright.place( in_ = self.master, relwidth=0.5, relheight=1,relx=0.5, rely=0)
 
-        self.subframeright1=tk.Frame(self.frameright, bg='#FCF6F5')
+        self.subframeright1=tk.Frame(self.frameright, bg='#FCF6F5', highlightbackground="black", highlightthickness=1, padx=20, pady=20)
         self.subframeright1.place(in_=self.frameright, relwidth=1, relheight=0.5, relx=0, rely=0)
 
         # Criação da zona para inserir a variável independente
@@ -539,15 +537,39 @@ class MainWindow(tk.Frame):
     def secondary_window(self, title, message):
 
         new_window = tk.Toplevel(self.master)
-
         new_window.title(title)
-        new_window.geometry('300x300')
+        new_window.geometry('400x200')
         new_window.configure(background='#FCF6F5')
         new_window.resizable(False, False)
-        warning = tk.Label(new_window, text=message, wraplength=200)
+
+        # Criar as imagens do warning, 2 canvas porque uma de cada lado
+        canvas1 = tk.Canvas(new_window, bg='#FCF6F5')
+        canvas2 = tk.Canvas(new_window, bg='#FCF6F5')
+        
+        size = 50
+        # Criação da imagem per se
+        img_src = Image.open('./img/Warning.png')
+        img_src = img_src.resize((size, size))
+        # Definir a canvas para pôr tudo na tela
+        canvas1.config(width = size, height = size, highlightthickness = 0)
+        canvas2.config(width = size, height = size, highlightthickness = 0)
+        img = ImageTk.PhotoImage(img_src)
+        canvas1.create_image(size/2, size/2, image = img)
+        canvas2.create_image(size/2, size/2, image = img)
+        # Guardar a imagem só porque às vezes o tkinter é chato
+        canvas1.image = img
+        canvas2.image = img
+
+        # Colocação da mensagem de erro
+        warning = tk.Label(new_window, text=message, wraplength=250)
         warning["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         warning.configure(background='#FCF6F5')
-        warning.pack(fill="both", expand=True)
+        
+        
+        
+        canvas1.place(relx=.1, rely=.5, anchor="c")
+        warning.place(relx=.5, rely=.5, anchor="c")
+        canvas2.place(relx=.9, rely=.5, anchor="c")
 
 
     def compile_function(self):
@@ -571,7 +593,6 @@ class MainWindow(tk.Frame):
         # Nível 0: O data set
         # Nível 1: O ponto
         # Nível 2: A coordenada/incerteza
-        # Eu sei que aqui bastava 2 níveis mas não me apetece reescrever a função toda :/
         data = StringIO(self.dataentry.get("1.0", "end-1c"))
         self.data_sets = read_file(data,float)
 
@@ -661,7 +682,7 @@ class MainWindow(tk.Frame):
 
                 self.subframeright2.destroy()
     
-                self.subframeright2=tk.Frame(self.frameright, bg = '#FCF6F5')
+                self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
                 self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.3, relx=0, rely=0.25)
     
                 self.boxnumber = len(clean_split)
@@ -710,10 +731,10 @@ class MainWindow(tk.Frame):
     
                 self.boxnumber = len(clean_split)
     
-                self.inicialguesslabel = tk.Label(self.subframeright1, text= "Initial Guess")
+                self.inicialguesslabel = tk.Label(self.subframeright1, text="Initial Guess", bg='#FCF6F5')
                 self.inicialguesslabel.place(rely=0.4, relwidth=0.3, relheight = 0.1, relx=0)
     
-                self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0)
+                self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#FCF6F5')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
     
     
@@ -728,7 +749,7 @@ class MainWindow(tk.Frame):
     
                 self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
     
-                self.anotherframe=tk.Frame(self.paramcanvas)
+                self.anotherframe=tk.Frame(self.paramcanvas, bg='#FCF6F5')
     
                 self.paramcanvas.create_window((0,0), window = self.anotherframe, anchor = "nw")
     
@@ -737,7 +758,7 @@ class MainWindow(tk.Frame):
                 for x in range(self.boxnumber):
                     self.paramboxes.append(tk.Entry(self.anotherframe))
                     self.paramboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
-                    self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}'))
+                    self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
                     self.paramlabel[x].grid(column = 0, row = x, pady=10, sticky= 'nsew')
     
             count = 2
