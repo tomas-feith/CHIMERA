@@ -413,7 +413,27 @@ class MainWindow(tk.Frame):
         self.plotoptions.add_checkbutton( label = "plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
         self.plotoptions.add_checkbutton( label = "plot line", onvalue = 1, offvalue = 0, variable = self.wantline)
        
+        self.markercolor = tk.Menu(menubar)
+        menubar.add_cascade(label="Marker Color", menu = self.markercolor)
         
+        self.wantred = tk.BooleanVar()
+        self.wantblue = tk.BooleanVar()
+        self.wantgreen = tk.BooleanVar()
+        self.wantblack = tk.BooleanVar()
+        
+        self.wantred.set(0)
+        self.wantblue.set(0)
+        self.wantgreen.set(0)
+        self.wantblack.set(1)
+        
+        self.markercolorvar="black"
+        
+        self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantred, command = self.colormarkerred)
+        self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantblue, command = self.colormarkerblue)
+        self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantgreen, command = self.colormarkergreen)
+        self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantblack, command = self.colormarkerblack)
+        
+       
 
         self.master.configure(background='#FCF6F5')
 
@@ -566,6 +586,36 @@ class MainWindow(tk.Frame):
         self.dataentry = ScrolledText(self.subframeleft2)
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
         self.dataentry.insert(tk.INSERT,"1 0.5 1 0.5\n2 0.5 2 0.5\n")
+        
+    def colormarkerblue(self):
+            self.wantblue.set(1)
+            self.wantblack.set(0)
+            self.wantred.set(0)
+            self.wantgreen.set(0)
+            self.markercolorvar = "blue"
+        
+    def colormarkerblack(self):
+            self.wantblue.set(0)
+            self.wantred.set(0)
+            self.wantgreen.set(0)
+            self.wantblack.set(1)
+            self.markercolorvar = "black"
+        
+    def colormarkerred(self):
+            self.wantblue.set(0)
+            self.wantblack.set(0)
+            self.wantgreen.set(0)
+            self.wantred.set(1)
+            self.markercolorvar = "red"
+        
+    def colormarkergreen(self):
+            self.wantblue.set(0)
+            self.wantred.set(0)
+            self.wantblack.set(0)
+            self.wantgreen.set(1)
+            self.markercolorvar = "green"
+    
+        
 
     def secondary_window(self, title, message):
 
@@ -685,7 +735,7 @@ class MainWindow(tk.Frame):
 
         a.errorbar(self.abc, self.ord, xerr = self.erabc, yerr = self.erord, fmt = 'none',zorder = -1)
         
-        a.scatter(self.abc, self.ord, marker = 'o', color = 'red', zorder = 1)
+        a.scatter(self.abc, self.ord, marker = 'o', color = self.markercolorvar, zorder = 1)
         
         print(self.wantline)
         if(self.wantline.get() == 1):
