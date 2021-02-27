@@ -407,9 +407,15 @@ class MainWindow(tk.Frame):
         self.plotoptions = tk.Menu(menubar)
         menubar.add_cascade(label="Plot options", menu=self.plotoptions)
         
+        self.wantpoints = tk.BooleanVar()
+        self.wantline = tk.BooleanVar()
+        
+        self.wantpoints.set(1)
+        self.wantline.set(0)
+
         self.plotoptions.add_checkbutton( label = "plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
         self.plotoptions.add_checkbutton( label = "plot line", onvalue = 1, offvalue = 0, variable = self.wantline)
-        
+       
         
 
         self.master.configure(background='#FCF6F5')
@@ -477,8 +483,22 @@ class MainWindow(tk.Frame):
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
 
+        self.plotbuttonframe = tk.Frame(self.frameleft, bg= '#FCF6F5')
+        self.plotbuttonframe.place(in_ = self.frameleft, relwidth=1, relheight=0.05, relx=0, rely=0.5)
+        
+        self.plotbutton = tk.Button(self.plotbuttonframe,
+                                       text="PLOT",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red')
+        
+        self.plotbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1)
+        self.plotbutton["command"] = self.plot_function
+        
+        
         self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
-        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.5, relx=0, rely=0.5)
+        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.45, relx=0, rely=0.55)
 
         self.subframeright3 = tk.Frame(self.frameright, bg='#FCF6F5')
         self.subframeright3.place(in_ = self.frameright, relwidth = 1, relheight = 0.40, rely=0.60)
@@ -539,6 +559,7 @@ class MainWindow(tk.Frame):
 
         self.dataentry = ScrolledText(self.subframeleft2)
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
+        
 
     def secondary_window(self, title, message):
 
@@ -603,6 +624,7 @@ class MainWindow(tk.Frame):
         self.data_sets = read_file(data,float)
 
 
+    def plot_function(self):
         self.datastring = self.dataentry.get("1.0", "end-1c")
         print(self.datastring)
 
@@ -651,15 +673,22 @@ class MainWindow(tk.Frame):
                      xticks = x_ticks, yticks = y_ticks, ylabel = self.yaxistitleentry.get(),
                      xlabel = self.xaxistitleentry.get())
 
-
+        self.subframeleft1.destroy()
+        self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
+        self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
 
 
         a.errorbar(self.abc, self.ord, xerr = self.erabc, yerr = self.erord, fmt = 'none')
+        
+        print(self.wantline)
+        if(self.wantline.get() == 1):
+            a.plot(self.abc, self.ord)
 
         self.canvas = FigureCanvasTkAgg(fig, master=self.subframeleft1)
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
 
+        
     def update_parameter(self):
         global count
         self.parameter = self.parameterentry.get()
