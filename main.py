@@ -153,9 +153,7 @@ def parser(expr, params, indep):
 
     # Substituir a variável independente
     expr = expr.split(indep)
-    for i in enumerate(expr):
-        expr[i[0]]=expr[i[0]].replace('x','X')
-    expr = 'x'.join(expr)
+    expr = '_x'.join(expr)
 
     # Voltar a substituir os elementos pelas funções
     for function in enumerate(functions):
@@ -166,7 +164,7 @@ def parser(expr, params, indep):
     # Valores de teste só porque sim
     print(expr)
     B = [np.pi/2]*len(clean_split)
-    x=-1
+    _x=-1
     try:
         eval(expr)
     except NameError as error:
@@ -798,7 +796,7 @@ class MainWindow(tk.Frame):
     
             count = 2
 
-    def fit_function(self, x, B):
+    def fit_function(self, _x, B):
         return eval(self.function)
 
 root = tk.Tk()
