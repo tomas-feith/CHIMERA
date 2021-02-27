@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from io import StringIO
+from scipy import odr
 
 
 # Isto serve para quê? 
@@ -342,7 +343,6 @@ class MainWindow(tk.Frame):
             self.place_item("./img/Name_white.PNG", 0.6, self.title_canvas)
             self.place_item("./img/Image_white.PNG", 0.25, self.logo_canvas)
 
-
     def create_widgets(self):
         # Criar botão para um novo fit
         self.new = tk.Button(self.bottom,
@@ -384,7 +384,6 @@ class MainWindow(tk.Frame):
         global count
         count = 1
         self.master.configure(background='#FCF6F5')
-
 
     def create_new(self):
         # Destruir tudo o que estava na janela
@@ -605,7 +604,6 @@ class MainWindow(tk.Frame):
         warning.place(relx=.5, rely=.5, anchor="c")
         canvas2.place(relx=.9, rely=.5, anchor="c")
 
-
     def compile_function(self):
         # A partir daqui a função já está definida e podemos usá-la
         # ATENÇÃO: Para usar é a função fit_func, não a self.function
@@ -629,7 +627,6 @@ class MainWindow(tk.Frame):
         # Nível 2: A coordenada/incerteza
         data = StringIO(self.dataentry.get("1.0", "end-1c"))
         self.data_sets = read_file(data,float)
-
 
     def plot_function(self):
         self.datastring = self.dataentry.get("1.0", "end-1c")
@@ -699,7 +696,6 @@ class MainWindow(tk.Frame):
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
 
-        
     def update_parameter(self):
         global count
         self.parameter = self.parameterentry.get()
@@ -809,6 +805,48 @@ class MainWindow(tk.Frame):
     
             count = 2
 
+    def fit_data(self, data, init_params, max_iter):
+        """
+        
+
+        Parameters
+        ----------
+        data : array of array
+            Pontos, no formato [[x1,ex1,y1,ey1],[x2,ex2,y2,ey2],...]
+        
+        init_params: array
+            Estimativas iniciais para os valores dos parâmetros
+
+        Returns
+        -------
+        None.
+
+        """
+        func = odr.Model(self.fit_function)
+        
+        x_points = []
+        y_points = []
+        x_err    = []
+        y_err    = []
+        
+        for point in range(len(data)):
+            x_points.append(point[0])
+            y_points.append(point[-1])
+            y_err.append(point[-2])
+            if len(point) == 4:
+                x_err.append(point[1])
+        
+        if (len(data[0])==3):
+            fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0]*len(x_points))
+        else:
+            fit_data = odr.RealData(x_points, y_points, sx=x_err, sy=y_err, fix=[0]*len(x_points))
+
+        my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
+        fit = my_odr.run()
+        fit.pprint()
+        
+        return (fit.beta, fit.sd_beta, fit.res_var)
+        
     def fit_function(self, _x, B):
         return eval(self.function)
 
