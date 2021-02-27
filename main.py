@@ -514,52 +514,61 @@ class MainWindow(tk.Frame):
 
         self.xaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.xaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.15, rely=0.1)
+        self.xaxisminentry.insert(0, "0")
 
         self.xaxistolabel = tk.Label(self.subframeright3, text = "to", bg='#FCF6F5')
         self.xaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.25, rely=0.1)
 
         self.xaxismaxentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.xaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.3, rely=0.1)
-
+        self.xaxismaxentry.insert(0, "10")
+        
         self.xaxistitlelabel = tk.Label(self.subframeright3, text = "Title", bg='#FCF6F5')
         self.xaxistitlelabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0, rely=0.25)
+        
 
         self.xaxistitleentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.xaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.4, relheight = 0.1, relx = 0.1, rely=0.25)
+        self.xaxistitleentry.insert(0, "Abcissas")
 
         self.xaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
         self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.15, relheight = 0.1, relx=0, rely= 0.4)
 
         self.xaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.15, rely=0.4)
+        self.xaxistickspentry.insert(0, "1")
 
         self.yaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#FCF6F5')
         self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.15, relheight=0.1, relx = 5, rely = 0.1)
 
         self.yaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.yaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.65, rely=0.1)
+        self.yaxisminentry.insert(0, "0")
 
         self.yaxistolabel = tk.Label(self.subframeright3, text = "to", bg='#FCF6F5')
         self.yaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.75, rely=0.1)
 
         self.yaxismaxentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.yaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.8, rely=0.1)
-
+        self.yaxismaxentry.insert(0, "10")
+        
         self.yaxistitlelabel = tk.Label(self.subframeright3, text = "Title", bg='#FCF6F5')
         self.yaxistitlelabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0.5, rely=0.25)
 
         self.yaxistitleentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.yaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.4, relheight = 0.1, relx = 0.6, rely=0.25)
-
+        self.yaxistitleentry.insert(0, "Ordenadas")
+        
         self.yaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
         self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.15, relheight = 0.1, relx=0.5, rely= 0.4)
 
         self.yaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.65, rely=0.4)
-
+        self.yaxistickspentry.insert(0, "1")
+        
         self.dataentry = ScrolledText(self.subframeleft2)
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
-        
+        self.dataentry.insert(tk.INSERT,"1 0.5 1 0.5\n2 0.5 2 0.5\n")
 
     def secondary_window(self, title, message):
 
@@ -676,14 +685,18 @@ class MainWindow(tk.Frame):
         self.subframeleft1.destroy()
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
+        
+        
 
-
-        a.errorbar(self.abc, self.ord, xerr = self.erabc, yerr = self.erord, fmt = 'none')
+        a.errorbar(self.abc, self.ord, xerr = self.erabc, yerr = self.erord, fmt = 'none',zorder = -1)
+        
+        a.scatter(self.abc, self.ord, marker = 'o', color = 'red', zorder = 1)
         
         print(self.wantline)
         if(self.wantline.get() == 1):
             a.plot(self.abc, self.ord)
 
+        
         self.canvas = FigureCanvasTkAgg(fig, master=self.subframeleft1)
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
