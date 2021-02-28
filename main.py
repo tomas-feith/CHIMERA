@@ -452,23 +452,27 @@ class MainWindow(tk.Frame):
         self.wanterrorgreen.set(0)
         self.wanterrorblack.set(1)
         
-        
         self.linecolorvar = "black"
         self.markercolorvar = "black"
         self.errorcolorvar = "black"
         
-        self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred, command = self.colormarkerred)
-        self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue, command = self.colormarkerblue)
-        self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen, command = self.colormarkergreen)
-        self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantmarkerblack, command = self.colormarkerblack)
-        self.linecolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantlinered, command = self.colorlinered)
-        self.linecolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantlineblue, command = self.colorlineblue)
-        self.linecolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantlinegreen, command = self.colorlinegreen)
-        self.linecolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantlineblack, command = self.colorlineblack)
-        self.errorcolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wanterrorred, command = self.colorerrorred)
-        self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue, command = self.colorerrorblue)
-        self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen, command = self.colorerrorgreen)
-        self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack, command = self.colorerrorblack)
+        # Store variable for markers, lines and errors
+        self.markers = [self.wantmarkerred, self.wantmarkerblue, self.wantmarkergreen, self.wantmarkerblack]
+        self.lines   = [self.wantlinered,   self.wantlineblue,   self.wantlinegreen,   self.wantlineblack]
+        self.errors  = [self.wanterrorred,  self.wanterrorblue,  self.wanterrorgreen,  self.wanterrorblack]
+        
+        self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred, command = lambda: self.edit_color('m_red0'))
+        self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue, command = lambda: self.edit_color('m_blue1'))
+        self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen, command = lambda: self.edit_color('m_green2'))
+        self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantmarkerblack, command = lambda: self.edit_color('m_black3'))
+        self.linecolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantlinered, command = lambda: self.edit_color('l_red0'))
+        self.linecolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantlineblue, command = lambda: self.edit_color('l_blue1'))
+        self.linecolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantlinegreen, command = lambda: self.edit_color('l_green2'))
+        self.linecolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantlineblack, command = lambda: self.edit_color('l_black3'))
+        self.errorcolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wanterrorred, command = lambda: self.edit_color('e_red0'))
+        self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue, command = lambda: self.edit_color('e_blue1'))
+        self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen, command = lambda: self.edit_color('e_green2'))
+        self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack, command = lambda: self.edit_color('e_black3'))
 
         self.master.configure(background='#FCF6F5')
 
@@ -623,92 +627,20 @@ class MainWindow(tk.Frame):
         self.dataentry.append( ScrolledText(self.subframeleft2))
         self.dataentry[0].pack(expand = 1, fill = tk.BOTH)
         self.dataentry[0].insert(tk.INSERT,"1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 4 0.5\n4 0.5 2 0.5\n5 0.5 5 0.5")
-        
-    def colormarkerblue(self):
-            self.wantmarkerblue.set(1)
-            self.wantmarkerblack.set(0)
-            self.wantmarkerred.set(0)
-            self.wantmarkergreen.set(0)
-            self.markercolorvar = "blue"
-        
-    def colormarkerblack(self):
-            self.wantmarkerblue.set(0)
-            self.wantmarkerred.set(0)
-            self.wantmarkergreen.set(0)
-            self.wantmarkerblack.set(1)
-            self.markercolorvar = "black"
-        
-    def colormarkerred(self):
-            self.wantmarkerblue.set(0)
-            self.wantmarkerblack.set(0)
-            self.wantmarkergreen.set(0)
-            self.wantmarkerred.set(1)
-            self.markercolorvar = "red"
-        
-    def colormarkergreen(self):
-            self.wantmarkerblue.set(0)
-            self.wantmarkerred.set(0)
-            self.wantmarkerblack.set(0)
-            self.wantmarkergreen.set(1)
-            self.markercolorvar = "green"
     
-    def colorlineblue(self):
-            self.wantlineblue.set(1)
-            self.wantlineblack.set(0)
-            self.wantlinered.set(0)
-            self.wantlinegreen.set(0)
-            self.linecolorvar = "blue"
-        
-    def colorlineblack(self):
-            self.wantlineblue.set(0)
-            self.wantlinered.set(0)
-            self.wantlinegreen.set(0)
-            self.wantlineblack.set(1)
-            self.linecolorvar = "black"
-        
-    def colorlinered(self):
-            self.wantlineblue.set(0)
-            self.wantlineblack.set(0)
-            self.wantlinegreen.set(0)
-            self.wantlinered.set(1)
-            self.linecolorvar = "red"
-        
-    def colorlinegreen(self):
-            self.wantlineblue.set(0)
-            self.wantlinered.set(0)
-            self.wantlineblack.set(0)
-            self.wantlinegreen.set(1)
-            self.linecolorvar = "green"
-            
-    def colorerrorblue(self):
-            self.wanterrorblue.set(1)
-            self.wanterrorblack.set(0)
-            self.wanterrorred.set(0)
-            self.wanterrorgreen.set(0)
-            self.errorcolorvar = "blue"
-        
-    def colorerrorblack(self):
-            self.wanterrorblue.set(0)
-            self.wanterrorred.set(0)
-            self.wanterrorgreen.set(0)
-            self.wanterrorblack.set(1)
-            self.errorcolorvar = "black"
-        
-    def colorerrorred(self):
-            self.wanterrorblue.set(0)
-            self.wanterrorblack.set(0)
-            self.wanterrorgreen.set(0)
-            self.wanterrorred.set(1)
-            self.errorcolorvar = "red"
-        
-    def colorerrorgreen(self):
-            self.wanterrorblue.set(0)
-            self.wanterrorred.set(0)
-            self.wanterrorblack.set(0)
-            self.wanterrorgreen.set(1)
-            self.errorcolorvar = "green"
-    
-        
+    def edit_color(self, variable):
+        if variable[0] == 'm':
+            for i in range(len(self.markers)):
+                self.markers[i].set(i == int(variable[-1]))
+            self.markercolorvar = variable[2:-1]
+        elif variable[0] == 'l':
+            for i in range(len(self.lines)):
+                self.lines[i].set(i == int(variable[-1]))
+            self.linecolorvar = variable[2:-1]
+        else:
+            for i in range(len(self.errors)):
+                self.errors[i].set(i == int(variable[-1]))
+            self.errorcolorvar = variable[2:-1]
 
     def secondary_window(self, title, message):
 
@@ -748,9 +680,6 @@ class MainWindow(tk.Frame):
         canvas2.place(relx=.9, rely=.5, anchor="c")
 
     def compile_function(self):
-        # A partir daqui a função já está definida e podemos usá-la
-        # ATENÇÃO: Para usar é a função fit_func, não a self.function
-        # A primeira devolve números, a segunda é só uma string
         parsed_input = parser(self.functionentry.get(),
                               self.parameterentry.get(),
                               self.independententry.get())
@@ -772,6 +701,7 @@ class MainWindow(tk.Frame):
         self.data_sets = read_file(data,float)
 
     def plot_function(self):
+        print(self.markers)
         self.datastring = self.dataentry[0].get("1.0", "end-1c")
         print(self.datastring)
 
@@ -834,6 +764,9 @@ class MainWindow(tk.Frame):
         print(self.wantline)
         if(self.wantline.get() == 1):
             a.plot(self.abc, self.ord, color = self.linecolorvar)
+            
+        # Se calhar por também uma condição para ver se o utilizador quer grid
+        a.grid(True)
 
         
         self.canvas = FigureCanvasTkAgg(fig, master=self.subframeleft1)
