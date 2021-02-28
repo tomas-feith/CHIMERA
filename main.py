@@ -406,12 +406,15 @@ class MainWindow(tk.Frame):
         
         self.wantpoints = tk.BooleanVar()
         self.wantline = tk.BooleanVar()
+        self.wanterror = tk.BooleanVar()
         
         self.wantpoints.set(1)
         self.wantline.set(0)
+        self.wanterror.set(0)
 
         self.plotoptions.add_checkbutton( label = "plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
         self.plotoptions.add_checkbutton( label = "plot line", onvalue = 1, offvalue = 0, variable = self.wantline)
+        self.plotoptions.add_checkbutton( label = "error bars", onvalue = 1, offvalue = 0, variable = self.wanterror)
        
         self.markercolor = tk.Menu(menubar)
         menubar.add_cascade(label="Marker Color", menu = self.markercolor)
@@ -619,7 +622,7 @@ class MainWindow(tk.Frame):
         
         self.dataentry.append( ScrolledText(self.subframeleft2))
         self.dataentry[0].pack(expand = 1, fill = tk.BOTH)
-        self.dataentry[0].insert(tk.INSERT,"1 0.5 1 0.5\n2 0.5 2 0.5\n")
+        self.dataentry[0].insert(tk.INSERT,"1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 4 0.5\n4 0.5 2 0.5\n5 0.5 5 0.5")
         
     def colormarkerblue(self):
             self.wantmarkerblue.set(1)
@@ -822,10 +825,11 @@ class MainWindow(tk.Frame):
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
         
         
-
-        a.errorbar(self.abc, self.ord, xerr = self.erabc, yerr = self.erord, fmt = 'none',zorder = -1, ecolor = self.errorcolorvar)
+        if(self.wanterror.get() == 1):
+            a.errorbar(self.abc, self.ord, xerr = self.erabc, yerr = self.erord, fmt = 'none',zorder = -1, ecolor = self.errorcolorvar)
         
-        a.scatter(self.abc, self.ord, marker = 'o', color = self.markercolorvar, zorder = 1)
+        if(self.wantpoints.get() == 1):
+            a.scatter(self.abc, self.ord, marker = 'o', color = self.markercolorvar, zorder = 1)
         
         print(self.wantline)
         if(self.wantline.get() == 1):
