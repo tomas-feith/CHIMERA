@@ -641,12 +641,19 @@ class MainWindow(tk.Frame):
                                        activeforeground='red')
         
         self.adddatasetbutton.place(in_  = self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
-        self.adddatasetbutton["command"] = self.plot_function
+        self.adddatasetbutton["command"] = self.add_dataset
         
         self.dataentry.append( ScrolledText(self.subframeleft2))
         self.dataentry[0].pack(expand = 1, fill = tk.BOTH)
         self.dataentry[0].insert(tk.INSERT,"1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 4 0.5\n4 0.5 2 0.5\n5 0.5 5 0.5")
     
+    def add_dataset(self):
+        self.datalist.append("dataset 2")
+        self.datasetselector.destroy()
+        self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
+        self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
+        
+        
     def edit_color(self, variable):
         if variable[0] == 'm':
             for i in range(len(self.markers)):
