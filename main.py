@@ -425,54 +425,68 @@ class MainWindow(tk.Frame):
         self.errorcolor = tk.Menu(menubar)
         menubar.add_cascade(label="Errorbar Color", menu = self.errorcolor)
         
-        self.wantmarkerred = tk.BooleanVar()
-        self.wantmarkerblue = tk.BooleanVar()
-        self.wantmarkergreen = tk.BooleanVar()
-        self.wantmarkerblack = tk.BooleanVar()
-        self.wantlinered = tk.BooleanVar()
-        self.wantlineblue = tk.BooleanVar()
-        self.wantlinegreen = tk.BooleanVar()
-        self.wantlineblack = tk.BooleanVar()
-        self.wanterrorred = tk.BooleanVar()
-        self.wanterrorblue = tk.BooleanVar()
-        self.wanterrorgreen = tk.BooleanVar()
-        self.wanterrorblack = tk.BooleanVar()
+        self.wantmarkerred=[]
+        self.wantmarkerblue = []
+        self.wantmarkergreen = []
+        self.wantmarkerblack = []
+        self.wantmarkerred.append( tk.BooleanVar())
+        self.wantmarkerblue.append(tk.BooleanVar())
+        self.wantmarkergreen.append(tk.BooleanVar())
+        self.wantmarkerblack.append(tk.BooleanVar())
+        
+        self.wantlinered=[]
+        self.wantlineblue = []
+        self.wantlinegreen = []
+        self.wantlineblack = []
+        self.wantlinered.append( tk.BooleanVar())
+        self.wantlineblue.append(tk.BooleanVar())
+        self.wantlinegreen.append(tk.BooleanVar())
+        self.wantlineblack.append(tk.BooleanVar())
+        
+        self.wanterrorred=[]
+        self.wanterrorblue = []
+        self.wanterrorgreen = []
+        self.wanterrorblack = []
+        self.wanterrorred.append( tk.BooleanVar())
+        self.wanterrorblue.append(tk.BooleanVar())
+        self.wanterrorgreen.append(tk.BooleanVar())
+        self.wanterrorblack.append(tk.BooleanVar())
         
         
-        self.wantmarkerred.set(0)
-        self.wantmarkerblue.set(0)
-        self.wantmarkergreen.set(0)
-        self.wantmarkerblack.set(1)  
-        self.wantlinered.set(0)
-        self.wantlineblue.set(0)
-        self.wantlinegreen.set(0)
-        self.wantlineblack.set(1)
-        self.wanterrorred.set(0)
-        self.wanterrorblue.set(0)
-        self.wanterrorgreen.set(0)
-        self.wanterrorblack.set(1)
+        self.wantmarkerred[0].set(0)
+        self.wantmarkerblue[0].set(0)
+        self.wantmarkergreen[0].set(0)
+        self.wantmarkerblack[0].set(1)  
+        self.wantlinered[0].set(0)
+        self.wantlineblue[0].set(0)
+        self.wantlinegreen[0].set(0)
+        self.wantlineblack[0].set(1)
+        self.wanterrorred[0].set(0)
+        self.wanterrorblue[0].set(0)
+        self.wanterrorgreen[0].set(0)
+        self.wanterrorblack[0].set(1)
         
-        self.linecolorvar = "black"
-        self.markercolorvar = "black"
-        self.errorcolorvar = "black"
         
-        # Store variable for markers, lines and errors
-        self.markers = [self.wantmarkerred, self.wantmarkerblue, self.wantmarkergreen, self.wantmarkerblack]
-        self.lines   = [self.wantlinered,   self.wantlineblue,   self.wantlinegreen,   self.wantlineblack]
-        self.errors  = [self.wanterrorred,  self.wanterrorblue,  self.wanterrorgreen,  self.wanterrorblack]
+        self.markercolorvar = []
+        self.linecolorvar = []
+        self.errorcolorvar = []
+        self.markercolorvar.append("black")
+        self.linecolorvar.append("black")
+        self.errorcolorvar.append("black")
         
-        self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred, command = lambda: self.edit_color('m_red0'))
-        self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue, command = lambda: self.edit_color('m_blue1'))
-        self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen, command = lambda: self.edit_color('m_green2'))
-        self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantmarkerblack, command = lambda: self.edit_color('m_black3'))
-        self.linecolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantlinered, command = lambda: self.edit_color('l_red0'))
-        self.linecolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantlineblue, command = lambda: self.edit_color('l_blue1'))
-        self.linecolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantlinegreen, command = lambda: self.edit_color('l_green2'))
-        self.linecolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantlineblack, command = lambda: self.edit_color('l_black3'))
-        self.errorcolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wanterrorred, command = lambda: self.edit_color('e_red0'))
-        self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue, command = lambda: self.edit_color('e_blue1'))
-        self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen, command = lambda: self.edit_color('e_green2'))
-        self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack, command = lambda: self.edit_color('e_black3'))
+       
+        self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred[0], command = self.colormarkerred)
+        self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue[0], command = self.colormarkerblue)
+        self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen[0], command = self.colormarkergreen)
+        self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantmarkerblack[0], command = self.colormarkerblack)
+        self.linecolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantlinered[0], command = self.colorlinered)
+        self.linecolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantlineblue[0], command = self.colorlineblue)
+        self.linecolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantlinegreen[0], command = self.colorlinegreen)
+        self.linecolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantlineblack[0], command = self.colorlineblack)
+        self.errorcolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wanterrorred[0], command = self.colorerrorred)
+        self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue[0], command = self.colorerrorblue)
+        self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen[0], command = self.colorerrorgreen)
+        self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack[0], command = self.colorerrorblack)
 
         self.master.configure(background='#FCF6F5')
 
@@ -492,6 +506,7 @@ class MainWindow(tk.Frame):
         self.independentlabel.place(relwidth=0.2, rely=0, relheight=0.1)
         self.independententry = tk.Entry(self.subframeright1, font=40)
         self.independententry.place(relwidth=0.8, rely=0, relheight=0.1, relx = 0.2)
+        self.independententry.insert(0, 'x')
         self.independententry.focus_set()
 
         # Criação da zona para inserir os parâmetros
@@ -500,6 +515,7 @@ class MainWindow(tk.Frame):
         self.parameterlabel.place(relwidth=0.2, rely=0.1, relheight=0.1)
         self.parameterentry = tk.Entry(self.subframeright1, font=40)
         self.parameterentry.place(relwidth=0.6, rely=0.1, relheight=0.1,relx = 0.2)
+        self.parameterentry.insert(0, "a,b")
         self.parameterentry.focus_set()
         self.upbutton = tk.Button(self.subframeright1,
                                   text="UPDATE",
@@ -518,6 +534,7 @@ class MainWindow(tk.Frame):
         self.functionlabel.place(relwidth=0.2, rely=0.2, relheight=0.1)
         self.functionentry = tk.Entry(self.subframeright1, font=40)
         self.functionentry.place(relwidth=0.8,relx=0.2, rely=0.2, relheight=0.1)
+        self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
         self.compilebutton = tk.Button(self.subframeright1,
                                        text="COMPILE",
@@ -550,7 +567,18 @@ class MainWindow(tk.Frame):
                                        activeforeground='red')
         
         self.plotbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1)
-        self.plotbutton["command"] = self.plot_function
+        self.plotbutton["command"] = self.plot_dataset
+        
+        self.plotfunctionbutton = tk.Button(self.plotbuttonframe,
+                                       text="PLOT FUNCTION",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red')
+        
+        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.8)
+        self.plotfunctionbutton["command"] = self.plot_function
+        
         
         
         self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
@@ -622,8 +650,8 @@ class MainWindow(tk.Frame):
         self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.65, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
         
-        self.dataentry = []
-        
+        self.datasettext = []
+        self.datasettext.append("1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 4 0.5\n4 0.5 2 0.5\n5 0.5 5 0.5")
         
         self.datalistvariable = tk.StringVar()
         self.datalistvariable.set('dataset 1')
@@ -632,6 +660,7 @@ class MainWindow(tk.Frame):
         
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
+        self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
         
         self.adddatasetbutton = tk.Button(self.plotbuttonframe,
                                        text="+",
@@ -643,30 +672,215 @@ class MainWindow(tk.Frame):
         self.adddatasetbutton.place(in_  = self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
         self.adddatasetbutton["command"] = self.add_dataset
         
-        self.dataentry.append( ScrolledText(self.subframeleft2))
-        self.dataentry[0].pack(expand = 1, fill = tk.BOTH)
-        self.dataentry[0].insert(tk.INSERT,"1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 4 0.5\n4 0.5 2 0.5\n5 0.5 5 0.5")
+      
+        self.dataentry = ( ScrolledText(self.subframeleft2))
+        self.dataentry.pack(expand = 1, fill = tk.BOTH)
+        self.dataentry.insert(tk.INSERT,self.datasettext[0])
+        
+        self.abcissas = [[1, 1, 1, 1]]
+        self.erabcissas = [[1, 1, 1, 1]]
+        self.ordenadas = [[1,1,1,1]]
+        self.erordenadas = [[1,1,1,1]]
+        
+        self.abc=[]
+        self.erabc = []
+        self.ord = []
+        self.erord = []
+        
+        self.selecteddataset = 0
+        self.numberdatasets = 1
+        
+        self.abc.append(np.array(self.abcissas[0]))
+        self.erabc.append(np.array(self.erabcissas[0]))
+        self.ord.append(np.array(self.erabcissas[0]))
+        self.erord.append(np.array(self.erabcissas[0]))
+        
+    def colormarkerblue(self):
+            self.wantmarkerblue[self.selecteddataset].set(1)
+            self.wantmarkerblack[self.selecteddataset].set(0)
+            self.wantmarkerred[self.selecteddataset].set(0)
+            self.wantmarkergreen[self.selecteddataset].set(0)
+            self.markercolorvar[self.selecteddataset] = "blue"
+        
+    def colormarkerblack(self):
+            self.wantmarkerblue[self.selecteddataset].set(0)
+            self.wantmarkerred[self.selecteddataset].set(0)
+            self.wantmarkergreen[self.selecteddataset].set(0)
+            self.wantmarkerblack[self.selecteddataset].set(1)
+            self.markercolorvar[self.selecteddataset] = "black"
+        
+    def colormarkerred(self):
+            self.wantmarkerblue[self.selecteddataset].set(0)
+            self.wantmarkerblack[self.selecteddataset].set(0)
+            self.wantmarkergreen[self.selecteddataset].set(0)
+            self.wantmarkerred[self.selecteddataset].set(1)
+            self.markercolorvar[self.selecteddataset] = "red"
+        
+    def colormarkergreen(self):
+            self.wantmarkerblue[self.selecteddataset].set(0)
+            self.wantmarkerred[self.selecteddataset].set(0)
+            self.wantmarkerblack[self.selecteddataset].set(0)
+            self.wantmarkergreen[self.selecteddataset].set(1)
+            self.markercolorvar[self.selecteddataset] = "green"
+    
+    def colorlineblue(self):
+            self.wantlineblue[self.selecteddataset].set(1)
+            self.wantlineblack[self.selecteddataset].set(0)
+            self.wantlinered[self.selecteddataset].set(0)
+            self.wantlinegreen[self.selecteddataset].set(0)
+            self.linecolorvar[self.selecteddataset] = "blue"
+        
+    def colorlineblack(self):
+            self.wantlineblue[self.selecteddataset].set(0)
+            self.wantlinered[self.selecteddataset].set(0)
+            self.wantlinegreen[self.selecteddataset].set(0)
+            self.wantlineblack[self.selecteddataset].set(1)
+            self.linecolorvar[self.selecteddataset] = "black"
+        
+    def colorlinered(self):
+            self.wantlineblue[self.selecteddataset].set(0)
+            self.wantlineblack[self.selecteddataset].set(0)
+            self.wantlinegreen[self.selecteddataset].set(0)
+            self.wantlinered[self.selecteddataset].set(1)
+            self.linecolorvar[self.selecteddataset] = "red"
+        
+    def colorlinegreen(self):
+            self.wantlineblue[self.selecteddataset].set(0)
+            self.wantlinered[self.selecteddataset].set(0)
+            self.wantlineblack[self.selecteddataset].set(0)
+            self.wantlinegreen[self.selecteddataset].set(1)
+            self.linecolorvar[self.selecteddataset] = "green"
+            
+    def colorerrorblue(self):
+            self.wanterrorblue[self.selecteddataset].set(1)
+            self.wanterrorblack[self.selecteddataset].set(0)
+            self.wanterrorred[self.selecteddataset].set(0)
+            self.wanterrorgreen[self.selecteddataset].set(0)
+            self.errorcolorvar[self.selecteddataset] = "blue"
+        
+    def colorerrorblack(self):
+            self.wanterrorblue[self.selecteddataset].set(0)
+            self.wanterrorred[self.selecteddataset].set(0)
+            self.wanterrorgreen[self.selecteddataset].set(0)
+            self.wanterrorblack[self.selecteddataset].set(1)
+            self.errorcolorvar[self.selecteddataset] = "black"
+        
+    def colorerrorred(self):
+            self.wanterrorblue[self.selecteddataset].set(0)
+            self.wanterrorblack[self.selecteddataset].set(0)
+            self.wanterrorgreen[self.selecteddataset].set(0)
+            self.wanterrorred[self.selecteddataset].set(1)
+            self.errorcolorvar[self.selecteddataset] = "red"
+        
+    def colorerrorgreen(self):
+            self.wanterrorblue[self.selecteddataset].set(0)
+            self.wanterrorred[self.selecteddataset].set(0)
+            self.wanterrorblack[self.selecteddataset].set(0)
+            self.wanterrorgreen[self.selecteddataset].set(1)
+            self.errorcolorvar[self.selecteddataset] = "green"
     
     def add_dataset(self):
-        self.datalist.append("dataset 2")
+        self.numberdatasets = self.numberdatasets+1
+        self.datalist.append("dataset " + str(len(self.datalist)+1))
         self.datasetselector.destroy()
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
+        self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
+    
+        self.datasettext.append("1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5")
         
+        self.abcissas.append([1, 1, 1, 1])
+        self.erabcissas.append([1, 1, 1, 1])
+        self.ordenadas.append([1, 1, 1, 1])
+        self.erordenadas.append([1, 1, 1, 1])
         
-    def edit_color(self, variable):
-        if variable[0] == 'm':
-            for i in range(len(self.markers)):
-                self.markers[i].set(i == int(variable[-1]))
-            self.markercolorvar = variable[2:-1]
-        elif variable[0] == 'l':
-            for i in range(len(self.lines)):
-                self.lines[i].set(i == int(variable[-1]))
-            self.linecolorvar = variable[2:-1]
-        else:
-            for i in range(len(self.errors)):
-                self.errors[i].set(i == int(variable[-1]))
-            self.errorcolorvar = variable[2:-1]
+        self.abc.append(np.array(self.abcissas[0]))
+        self.erabc.append(np.array(self.abcissas[0]))
+        self.ord.append(np.array(self.abcissas[0]))
+        self.erord.append(np.array(self.abcissas[0]))
+        
+        self.wantmarkerred.append( tk.BooleanVar())
+        self.wantmarkerblue.append(tk.BooleanVar())
+        self.wantmarkergreen.append(tk.BooleanVar())
+        self.wantmarkerblack.append(tk.BooleanVar())
+        
+        self.wantlinered.append( tk.BooleanVar())
+        self.wantlineblue.append(tk.BooleanVar())
+        self.wantlinegreen.append(tk.BooleanVar())
+        self.wantlineblack.append(tk.BooleanVar())
+        
+        self.wanterrorred.append( tk.BooleanVar())
+        self.wanterrorblue.append(tk.BooleanVar())
+        self.wanterrorgreen.append(tk.BooleanVar())
+        self.wanterrorblack.append(tk.BooleanVar())
+        
+        self.markercolorvar.append("black")
+        self.linecolorvar.append("black")
+        self.errorcolorvar.append("black")
+        
+        self.wantmarkerred[int(len(self.datalist)-1)].set(0)
+        self.wantmarkerblue[int(len(self.datalist)-1)].set(0)
+        self.wantmarkergreen[int(len(self.datalist)-1)].set(0)
+        self.wantmarkerblack[int(len(self.datalist)-1)].set(1)
+        
+        self.wantlinered[int(len(self.datalist)-1)].set(0)
+        self.wantlineblue[int(len(self.datalist)-1)].set(0)
+        self.wantlinegreen[int(len(self.datalist)-1)].set(0)
+        self.wantlineblack[int(len(self.datalist)-1)].set(1)
+        
+        self.wanterrorred[int(len(self.datalist)-1)].set(0)
+        self.wanterrorblue[int(len(self.datalist)-1)].set(0)
+        self.wanterrorgreen[int(len(self.datalist)-1)].set(0)
+        self.wanterrorblack[int(len(self.datalist)-1)].set(1)
+    
+    
+    
+    def update_databox(self, event):
+        select = int(self.datalistvariable.get()[-1])
+        print(select)
+        self.subframeleft2.destroy()
+        self.dataentry.destroy()
+        
+        self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
+        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.45, relx=0, rely=0.55)
+        
+        self.dataentry = ( ScrolledText(self.subframeleft2))
+        self.dataentry.pack(expand = 1, fill = tk.BOTH)
+        self.dataentry.insert(tk.INSERT,self.datasettext[int(select-1)])
+        
+        self.markercolor.delete("blue")
+        self.markercolor.delete("red")
+        self.markercolor.delete("green")
+        self.markercolor.delete("black")
+        
+        self.linecolor.delete("blue")
+        self.linecolor.delete("red")
+        self.linecolor.delete("green")
+        self.linecolor.delete("black")
+        
+        self.errorcolor.delete("blue")
+        self.errorcolor.delete("red")
+        self.errorcolor.delete("green")
+        self.errorcolor.delete("black")
+        
+        self.selecteddataset = int(select-1)
+        
+        self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred[self.selecteddataset], command = self.colormarkerred)
+        self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue[self.selecteddataset], command = self.colormarkerblue)
+        self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen[self.selecteddataset], command = self.colormarkergreen)
+        self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantmarkerblack[self.selecteddataset], command = self.colormarkerblack)
+         
+        
+        self.linecolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantlinered[self.selecteddataset], command = self.colorlinered)
+        self.linecolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantlineblue[self.selecteddataset], command = self.colorlineblue)
+        self.linecolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantlinegreen[self.selecteddataset], command = self.colorlinegreen)
+        self.linecolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantlineblack[self.selecteddataset], command = self.colorlineblack)
+         
+        self.errorcolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wanterrorred[self.selecteddataset], command = self.colorerrorred)
+        self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue[self.selecteddataset], command = self.colorerrorblue)
+        self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen[self.selecteddataset], command = self.colorerrorgreen)
+        self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack[self.selecteddataset], command = self.colorerrorblack)
+
 
     def secondary_window(self, title, message):
 
@@ -715,7 +929,7 @@ class MainWindow(tk.Frame):
             self.secondary_window('ERROR', parsed_input[1])
             self.function = ''
 
-
+        print(self.function)
         # Daqui para baixo é fazer o plot em si
 
         # Estas duas linhas extraem todos o dataset
@@ -727,34 +941,144 @@ class MainWindow(tk.Frame):
         self.data_sets = read_file(data,float)
 
     def plot_function(self):
-        print(self.markers)
-        self.datastring = self.dataentry[0].get("1.0", "end-1c")
+        
+        
+        np.seterr(all='raise')
+        # Funções do numpy a utilizar
+        # Ainda falta acrescentar as funções de estatística
+        functions = ['sin',
+                     'cos',
+                     'tan',
+                     'arcsin',
+                     'arccos',
+                     'arctan',
+                     'exp',
+                     'log',
+                     'sqrt',
+                     'absolute',
+                     'heaviside',
+                     'cbrt',
+                     'sign'
+                     ]
+        
+        expr = self.functionentry.get()
+        params = self.parameterentry.get()
+        indep = self.independententry.get()
+        
+        
+        
+        # Ver se a função não está vazia
+        expr=expr.replace(' ','')
+        if expr == '':
+            return (False, 'Não foi encontrada nenhuma função de ajustamento.')
+    
+        process = process_params(params, indep)
+        print(process)
+        if process[0]:
+            clean_split = process[1]
+        else:
+            return (False, process[1])
+        
+    
+        # Substituir as funções pelo equivalente numpy
+        # Primeira substituição temporária para não haver erros de conversão
+        for function in enumerate(functions):
+            expr = expr.split(function[1])
+            expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
+        # Substituir os nomes dos parâmetros
+        for pair in enumerate(clean_split):
+            expr = expr.split(pair[1])
+            expr = (str(self.plotparamboxes[pair[0]].get())).join(expr)
+    
+       
+    
+        # Voltar a substituir os elementos pelas funções
+        for function in enumerate(functions):
+            expr = expr.split('['+str(function[0]+len(clean_split))+']')
+            expr = ('np.'+str(function[1])).join(expr)
+    
+       
+    
+        # Vamos finalmente testar se a função funciona
+        # Valores de teste só porque sim
+        print(expr)
+       
+        fig = Figure(figsize=(10,10))
+
+        x_ticks = []
+        y_ticks = []
+
+        xticknumber =1+int((float(self.xaxismaxentry.get())-float(self.xaxisminentry.get()))/float(self.xaxistickspentry.get()))
+        yticknumber =1+int((float(self.yaxismaxentry.get())-float(self.yaxisminentry.get()))/float(self.yaxistickspentry.get()))
+        
+        for x in range(xticknumber):
+            x_ticks.append(x*float(self.xaxistickspentry.get()) + float(self.xaxisminentry.get()))
+
+        for x in range(yticknumber):
+            y_ticks.append(x*float(self.yaxistickspentry.get()) + float(self.yaxisminentry.get()))
+        
+        self.a = fig.add_subplot(111,projection = None, xlim = (float(self.xaxisminentry.get()), float(self.xaxismaxentry.get())),
+                     ylim = (float(self.yaxisminentry.get()), float(self.yaxismaxentry.get())),
+                     xticks = x_ticks, yticks = y_ticks, ylabel = self.yaxistitleentry.get(),
+                     xlabel = self.xaxistitleentry.get())
+
+        self.subframeleft1.destroy()
+        self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
+        self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
+        
+        xfunc=[]
+        yfunc=[]
+        
+        for i in range(100):
+            x=0.2*i
+            xfunc.append(x)
+            yfunc.append(eval(expr))
+        
+       
+            
+        # Se calhar por também uma condição para ver se o utilizador quer grid
+        self.a.grid(True)
+        self.a.plot(xfunc, yfunc)
+        
+        
+        self.canvas = FigureCanvasTkAgg(fig, master=self.subframeleft1)
+        self.canvas.get_tk_widget().pack()
+        self.canvas.draw()
+        
+
+    def plot_dataset(self):
+        select = int(self.datalistvariable.get()[-1])
+        self.datastring = self.datasettext[int(select-1)]
         print(self.datastring)
 
         first_split = self.datastring.split()
 
         print(first_split)
 
-        self.abcissas = []
-        self.erabcissas = []
-        self.ordenadas = []
-        self.erordenadas = []
+        self.abcissas[int(select-1)] = []
+        self.erabcissas[int(select-1)] = []
+        self.ordenadas[int(select-1)] = []
+        self.erordenadas[int(select-1)] = []
 
         #adicionar condiçoes
         tam = int(len(first_split)/4)
         print(tam)
         for x in range(tam):
-            self.abcissas.append(float(first_split[0+x*4]))
-            self.erabcissas.append(float(first_split[1+x*4]))
-            self.ordenadas.append(float(first_split[2+x*4]))
-            self.erordenadas.append(float(first_split[3+x*4]))
+            self.abcissas[int(select-1)].append(float(first_split[0+x*4]))
+            self.erabcissas[int(select-1)].append(float(first_split[1+x*4]))
+            self.ordenadas[int(select-1)].append(float(first_split[2+x*4]))
+            self.erordenadas[int(select-1)].append(float(first_split[3+x*4]))
 
-
-
-        self.abc = np.array(self.abcissas)
-        self.erabc = np.array(self.erabcissas)
-        self.ord = np.array(self.ordenadas)
-        self.erord = np.array(self.erordenadas)
+        #self.abc[int(select-1)] = []
+        #self.erabc[int(select-1)] = []
+        #self.ord[int(select-1)] = []
+        #self.erord[int(select-1)] = []
+        
+        
+        self.abc[int(select-1)] = np.array(self.abcissas[int(select-1)])
+        self.erabc[int(select-1)] = np.array(self.erabcissas[int(select-1)])
+        self.ord[int(select-1)] = np.array(self.ordenadas[int(select-1)])
+        self.erord[int(select-1)] = np.array(self.erordenadas[int(select-1)])
 
         fig = Figure(figsize=(10,10))
 
@@ -771,7 +1095,7 @@ class MainWindow(tk.Frame):
         for x in range(yticknumber):
             y_ticks.append(x*float(self.yaxistickspentry.get()) + float(self.yaxisminentry.get()))
 
-        a = fig.add_subplot(111,projection = None, xlim = (float(self.xaxisminentry.get()), float(self.xaxismaxentry.get())),
+        self.a = fig.add_subplot(111,projection = None, xlim = (float(self.xaxisminentry.get()), float(self.xaxismaxentry.get())),
                      ylim = (float(self.yaxisminentry.get()), float(self.yaxismaxentry.get())),
                      xticks = x_ticks, yticks = y_ticks, ylabel = self.yaxistitleentry.get(),
                      xlabel = self.xaxistitleentry.get())
@@ -782,17 +1106,20 @@ class MainWindow(tk.Frame):
         
         
         if(self.wanterror.get() == 1):
-            a.errorbar(self.abc, self.ord, xerr = self.erabc, yerr = self.erord, fmt = 'none',zorder = -1, ecolor = self.errorcolorvar)
+            for x in range(self.numberdatasets):
+                self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x])
         
         if(self.wantpoints.get() == 1):
-            a.scatter(self.abc, self.ord, marker = 'o', color = self.markercolorvar, zorder = 1)
+            for x in range(self.numberdatasets):
+                self.a.scatter(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1)
         
         print(self.wantline)
         if(self.wantline.get() == 1):
-            a.plot(self.abc, self.ord, color = self.linecolorvar)
+            for x in range(self.numberdatasets):
+                self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x])
             
         # Se calhar por também uma condição para ver se o utilizador quer grid
-        a.grid(True)
+        self.a.grid(True)
 
         
         self.canvas = FigureCanvasTkAgg(fig, master=self.subframeleft1)
@@ -873,11 +1200,16 @@ class MainWindow(tk.Frame):
     
                 self.paramlabel=[]
                 self.paramboxes=[]
+                self.plotparamlabel = []
+                self.plotparamboxes = []
     
                 self.boxnumber = len(clean_split)
     
                 self.inicialguesslabel = tk.Label(self.subframeright1, text="Initial Guess", bg='#FCF6F5')
-                self.inicialguesslabel.place(rely=0.4, relwidth=0.3, relheight = 0.1, relx=0)
+                self.inicialguesslabel.place(rely=0.4, relwidth=0.3, relheight = 0.1, relx=0.3)
+                
+                self.funcplotlabel = tk.Label(self.subframeright1, text="Plot Function", bg='#FCF6F5')
+                self.funcplotlabel.place(rely=0.4, relwidth=0.3, relheight = 0.1, relx=0)
     
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#FCF6F5')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
@@ -902,12 +1234,17 @@ class MainWindow(tk.Frame):
     
                 for x in range(self.boxnumber):
                     self.paramboxes.append(tk.Entry(self.anotherframe))
-                    self.paramboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
+                    self.paramboxes[x].grid(column = 4, row = x,padx=30, pady=10, sticky='nsew')
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
-                    self.paramlabel[x].grid(column = 0, row = x, pady=10, sticky= 'nsew')
-    
+                    self.paramlabel[x].grid(column = 3, row = x, pady=10, sticky= 'nsew')
+                    self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#FCF6F5'))
+                    self.plotparamlabel[x].grid(column=0, row = x, pady = 10, sticky = 'nsew')
+                    self.plotparamboxes.append(tk.Entry(self.anotherframe))
+                    self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
             count = 2
-
+            
+            
+            
     def fit_data(self, data, init_params, max_iter):
         """
         
