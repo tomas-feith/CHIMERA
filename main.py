@@ -624,6 +624,25 @@ class MainWindow(tk.Frame):
         
         self.dataentry = []
         
+        
+        self.datalistvariable = tk.StringVar()
+        self.datalistvariable.set('dataset 1')
+        self.datalist = ['dataset 1']
+    
+        
+        self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
+        self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
+        
+        self.adddatasetbutton = tk.Button(self.plotbuttonframe,
+                                       text="+",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red')
+        
+        self.adddatasetbutton.place(in_  = self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
+        self.adddatasetbutton["command"] = self.plot_function
+        
         self.dataentry.append( ScrolledText(self.subframeleft2))
         self.dataentry[0].pack(expand = 1, fill = tk.BOTH)
         self.dataentry[0].insert(tk.INSERT,"1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 4 0.5\n4 0.5 2 0.5\n5 0.5 5 0.5")
