@@ -983,12 +983,22 @@ class MainWindow(tk.Frame):
         
         #verificar que os parametros nas caixinhas corretas foram inseridos
         
+        prohibited = list('\|qwertyuiopasdfghjklç+º´~-<>zxcvbnm;:-_!"#$%&/()=?@£§€{[]}«»')
+        
         for x in range(len(self.plotparamboxes)):
             paramboxes = self.plotparamboxes[x].get()
             paramboxes = paramboxes.replace(' ', '')
             if(paramboxes == ''):
                 self.secondary_window('ERROR', 'Por favor insira os valores para os parâmetros desejados')
                 return False
+            for val in paramboxes:
+                for char in val:
+                    if char in prohibited:
+                        self.secondary_window('ERROR', 'Por favor insira um valor numérico para o parâmetro desejado')
+                        return False
+        
+        
+       
         
         
         # Substituir as funções pelo equivalente numpy
