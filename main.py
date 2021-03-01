@@ -695,6 +695,8 @@ class MainWindow(tk.Frame):
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
         
+        self.update_parameter()
+        
     def colormarkerblue(self):
             self.wantmarkerblue[self.selecteddataset].set(1)
             self.wantmarkerblack[self.selecteddataset].set(0)
@@ -979,7 +981,16 @@ class MainWindow(tk.Frame):
         else:
             return (False, process[1])
         
-    
+        #verificar que os parametros nas caixinhas corretas foram inseridos
+        
+        for x in range(len(self.plotparamboxes)):
+            paramboxes = self.plotparamboxes[x].get()
+            paramboxes = paramboxes.replace(' ', '')
+            if(paramboxes == ''):
+                self.secondary_window('ERROR', 'Por favor insira os valores para os parâmetros desejados')
+                return False
+        
+        
         # Substituir as funções pelo equivalente numpy
         # Primeira substituição temporária para não haver erros de conversão
         for function in enumerate(functions):
