@@ -177,7 +177,7 @@ def parser(expr, params, indep):
 
     return (True, expr)
 
-def read_file(src, out):
+def read_file(src, out, mode):
     """
     Função para ler os dados de ficheiros de texto ou excel
 
@@ -187,6 +187,8 @@ def read_file(src, out):
         Caminho para o ficheiro.
     out : type
         str/float - devolver os elementos todos neste formato.
+    mode : bool
+        true: enviar os dados para a variavel dos dados
 
     Returns
     -------
@@ -214,6 +216,7 @@ def read_file(src, out):
     # Se for da classe Excel
     else:
         data = pd.read_excel(src, dtype="object",header=None)
+    
 
     # Fazer a divisão nos datasets fornecidos
     # Se não houver incerteza no x, então o número de colunas é ímpar
@@ -268,6 +271,12 @@ def read_file(src, out):
                     ):
                     points.append([x, ex, y, ey])
             full_sets.append(points)
+    
+    if mode:
+        for i in range(len(full_sets)):
+            for j in range(len(full_sets[i])):
+                full_sets[i][j] = " ".join(full_sets[i][j])
+            full_sets[i] = "\n".join(full_sets[i])        
 
     return full_sets
 
@@ -942,7 +951,7 @@ class MainWindow(tk.Frame):
         # Nível 1: O ponto
         # Nível 2: A coordenada/incerteza
         data = StringIO(self.dataentry.get("1.0", "end-1c"))
-        self.data_sets = read_file(data,float)
+        self.data_sets = read_file(data,float,False)
 
     def plot_function(self):
         
@@ -1316,6 +1325,10 @@ class MainWindow(tk.Frame):
         # Isto ainda não faz nada, preciso de compreender melhor o programa
         file = tk.filedialog.askopenfilename()
         print(file)
+        new_data = read_file(file,str,True)
+        for data in new_data:
+            self.datastring.append(data)
+        
         
 
 root = tk.Tk()
