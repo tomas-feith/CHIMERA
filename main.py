@@ -1127,9 +1127,13 @@ class MainWindow(tk.Frame):
         self.datastring = self.datasettext[int(select-1)]
         print(self.datastring)
 
-        first_split = self.datastring.split()
 
-        print(first_split)
+
+        
+        data = StringIO(self.datastring)
+        data_sets = read_file(data,float,False)
+        
+        print(data_sets)
 
         self.abcissas[int(select-1)] = []
         self.erabcissas[int(select-1)] = []
@@ -1137,19 +1141,18 @@ class MainWindow(tk.Frame):
         self.erordenadas[int(select-1)] = []
 
         #adicionar condiçoes
-        tam = int(len(first_split)/4)
-        print(tam)
-        for x in range(tam):
-            self.abcissas[int(select-1)].append(float(first_split[0+x*4]))
-            self.erabcissas[int(select-1)].append(float(first_split[1+x*4]))
-            self.ordenadas[int(select-1)].append(float(first_split[2+x*4]))
-            self.erordenadas[int(select-1)].append(float(first_split[3+x*4]))
+
+        for x in range(len(data_sets[0])):
+            self.abcissas[int(select-1)].append(data_sets[0][x][0])
+            self.erabcissas[int(select-1)].append(data_sets[0][x][1])
+            self.ordenadas[int(select-1)].append(data_sets[0][x][2])
+            self.erordenadas[int(select-1)].append(data_sets[0][x][3])
 
         #self.abc[int(select-1)] = []
         #self.erabc[int(select-1)] = []
         #self.ord[int(select-1)] = []
         #self.erord[int(select-1)] = []
-        
+        print(self.abcissas[int(select-1)])
         
         self.abc[int(select-1)] = np.array(self.abcissas[int(select-1)])
         self.erabc[int(select-1)] = np.array(self.erabcissas[int(select-1)])
