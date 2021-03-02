@@ -402,7 +402,8 @@ class MainWindow(tk.Frame):
         self.new.destroy()
         global count
         count = 1
-
+        
+        self.datastringcarrier = "1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5"
         # Criar uma menu bar
         # esta menubar é a mais geral, é a que contem as outras
         menubar = tk.Menu(self.master)
@@ -716,10 +717,10 @@ class MainWindow(tk.Frame):
                                        fg='white',
                                        bg='red',
                                        activebackground='white',
-                                       activeforeground='red')
+                                       activeforeground='red', command = lambda: self.add_dataset(''))
         
         self.adddatasetbutton.place(in_ =self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
-        self.adddatasetbutton["command"] = self.add_dataset
+        #self.adddatasetbutton["command"] = self.add_dataset
         
         #Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
         self.dataentry = ( ScrolledText(self.subframeleft2))
@@ -836,7 +837,7 @@ class MainWindow(tk.Frame):
             self.errorcolorvar[self.selecteddataset] = "green"
     
     # Função para adicionar um dataset
-    def add_dataset(self):
+    def add_dataset(self, string):
         #adicionar o texto merdoso, dar update À variavel do número de datasets
         self.numberdatasets = self.numberdatasets+1
         self.datalist.append("dataset " + str(len(self.datalist)+1))
@@ -845,7 +846,8 @@ class MainWindow(tk.Frame):
         self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
     
-        self.datasettext.append("1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5")
+
+        self.datasettext.append(string)
         
         #Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([1, 1, 1, 1])
@@ -1372,8 +1374,12 @@ class MainWindow(tk.Frame):
         file = tk.filedialog.askopenfilename()
         print(file)
         new_data = read_file(file,str,True)
-        for data in new_data:
-            self.datastring.append(data)
+
+        
+        for x in range(len(new_data)):
+            self.add_dataset(new_data[x])
+        
+        print(self.datasettext)
         
         
 
