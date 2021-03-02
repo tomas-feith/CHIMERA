@@ -579,6 +579,10 @@ class MainWindow(tk.Frame):
         self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.8)
         self.plotfunctionbutton["command"] = self.plot_function
         
+        self.import_data = tk.Button(self.plotbuttonframe, text='IMPORT DATA')
+        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.6)
+        self.import_data["command"] = self.open_file
+        
         
         
         self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
@@ -669,13 +673,14 @@ class MainWindow(tk.Frame):
                                        activebackground='white',
                                        activeforeground='red')
         
-        self.adddatasetbutton.place(in_  = self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
+        self.adddatasetbutton.place(in_ =self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
         self.adddatasetbutton["command"] = self.add_dataset
         
       
         self.dataentry = ( ScrolledText(self.subframeleft2))
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
         self.dataentry.insert(tk.INSERT,self.datasettext[0])
+        
         
         self.abcissas = [[1, 1, 1, 1]]
         self.erabcissas = [[1, 1, 1, 1]]
@@ -835,8 +840,6 @@ class MainWindow(tk.Frame):
         self.wanterrorgreen[int(len(self.datalist)-1)].set(0)
         self.wanterrorblack[int(len(self.datalist)-1)].set(1)
     
-    
-    
     def update_databox(self, event):
         select = int(self.datalistvariable.get()[-1])
         print(select)
@@ -882,7 +885,6 @@ class MainWindow(tk.Frame):
         self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue[self.selecteddataset], command = self.colorerrorblue)
         self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen[self.selecteddataset], command = self.colorerrorgreen)
         self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack[self.selecteddataset], command = self.colorerrorblack)
-
 
     def secondary_window(self, title, message):
 
@@ -1068,7 +1070,6 @@ class MainWindow(tk.Frame):
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
         
-
     def plot_dataset(self):
         select = int(self.datalistvariable.get()[-1])
         self.datastring = self.datasettext[int(select-1)]
@@ -1266,8 +1267,6 @@ class MainWindow(tk.Frame):
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
             count = 2
             
-            
-            
     def fit_data(self, data, init_params, max_iter):
         """
         
@@ -1312,6 +1311,12 @@ class MainWindow(tk.Frame):
         
     def fit_function(self, _x, B):
         return eval(self.function)
+
+    def open_file(self):
+        # Isto ainda não faz nada, preciso de compreender melhor o programa
+        file = tk.filedialog.askopenfilename()
+        print(file)
+        
 
 root = tk.Tk()
 app = MainWindow(master=root)
