@@ -470,8 +470,9 @@ class MainWindow(tk.Frame):
                                        activebackground='white',
                                        activeforeground='red')
         
-        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.8)
+        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.25, relheight=1,relx = 0.75)
         self.plotfunctionbutton["command"] = self.plot_function
+        self.wantfunction = 0
         
         # Botão para importar ficheiros
         self.import_data = tk.Button(self.plotbuttonframe,
@@ -480,7 +481,7 @@ class MainWindow(tk.Frame):
                                      bg='red',
                                      activebackground='white',
                                      activeforeground='red')
-        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.6)
+        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.55)
         self.import_data["command"] = self.open_file
         
         #Criação do botão ligado à funçao que adiciona mais um dataset
@@ -915,12 +916,22 @@ class MainWindow(tk.Frame):
             split = self.datasettext[x].split("\n")
             for i in range(len(split)):
                 ponto = split[i].split(' ')
-                print(ponto)
                 if(len(ponto)!= 3 and len(ponto)!= 4):
                      self.secondary_window('ERROR', 'verifique que os seus datasets têm 3 ou 4 colunas')
                      return False
-                
-            
+        
+        for x in range(len(self.datasettext)):
+            split=[]
+            split = self.datasettext[x].split("\n")
+            for i in range(len(split)):
+                ponto = split[i].split(' ')
+                print(ponto)
+                for k in ponto:
+                     try:
+                         float(k)
+                     except ValueError:
+                             self.secondary_window('ERROR', 'Por favor insira um valor numérico nos datasets')
+                             return False
         return True
     
     def update_databox(self, event):
@@ -1098,48 +1109,26 @@ class MainWindow(tk.Frame):
             expr = ('np.'+str(function[1])).join(expr)
     
         #Criação da figura que vai segurar o plot, e seguidamente espetada no canvas
-        fig = Figure(figsize=(10,10))
-
-        x_ticks = []
-        y_ticks = []
-        
-        #Isto serve pra definir os ticks da funçao, de acordo com o que foi dado nas entrys
-        xticknumber =1+int((float(self.xaxismaxentry.get())-float(self.xaxisminentry.get()))/float(self.xaxistickspentry.get()))
-        yticknumber =1+int((float(self.yaxismaxentry.get())-float(self.yaxisminentry.get()))/float(self.yaxistickspentry.get()))
-        
-        for x in range(xticknumber):
-            x_ticks.append(x*float(self.xaxistickspentry.get()) + float(self.xaxisminentry.get()))
-
-        for x in range(yticknumber):
-            y_ticks.append(x*float(self.yaxistickspentry.get()) + float(self.yaxisminentry.get()))
-        
-        #Criação do subplot
-        self.a = fig.add_subplot(111,projection = None, xlim = (float(self.xaxisminentry.get()), float(self.xaxismaxentry.get())),
-                     ylim = (float(self.yaxisminentry.get()), float(self.yaxismaxentry.get())),
-                     xticks = x_ticks, yticks = y_ticks, ylabel = self.yaxistitleentry.get(),
-                     xlabel = self.xaxistitleentry.get())
-
-        self.subframeleft1.destroy()
-        self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
-        self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
-        
+       
         #Criação dos arrays com muitos pontinhos x e y(x)
-        xfunc=[]
-        yfunc=[]
+        self.xfunc=[]
+        self.yfunc=[]
         
         for i in range(100):
             x=0.2*i
-            xfunc.append(x)
-            yfunc.append(eval(expr))
+            self.xfunc.append(x)
+            self.yfunc.append(eval(expr))
         
         # Se calhar por também uma condição para ver se o utilizador quer grid
-        self.a.grid(True)
-        self.a.plot(xfunc, yfunc)
+        if(self.wantfunction == 0):
+            self.wantfunction = 1
+            self.plotfunctionbutton['text'] = 'UN-PLOT FUNCTION'
+        else:
+            self.wantfunction = 0
+            self.plotfunctionbutton['text'] = 'PLOT FUNCTION'
+            
         
-        #Desenhar
-        self.canvas = FigureCanvasTkAgg(fig, master=self.subframeleft1)
-        self.canvas.get_tk_widget().pack()
-        self.canvas.draw()
+        self.plot_dataset()
         
     def plot_dataset(self):
         
@@ -1224,6 +1213,10 @@ class MainWindow(tk.Frame):
             if(self.wantline.get() == 1):
                 for x in range(self.numberdatasets):
                     self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x])
+            
+            if(self.wantfunction == 1):
+                self.a.plot(self.xfunc, self.yfunc)
+                
             
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
