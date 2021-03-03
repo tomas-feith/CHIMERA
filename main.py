@@ -2,7 +2,7 @@
 """
 Created on Tue Feb 16 11:58:13 2021
 
-@author: tsfeith
+@author:
 """
 
 import tkinter as tk
@@ -19,7 +19,6 @@ from matplotlib.figure import Figure
 from tkinter.scrolledtext import ScrolledText
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 from io import StringIO
 from scipy import odr
 
@@ -141,7 +140,6 @@ def parser(expr, params, indep):
     else:
         return (False, process[1])
     
-
     # Substituir as funções pelo equivalente numpy
     # Primeira substituição temporária para não haver erros de conversão
     for function in enumerate(functions):
@@ -216,7 +214,6 @@ def read_file(src, out, mode):
     # Se for da classe Excel
     else:
         data = pd.read_excel(src, dtype="object",header=None)
-    
 
     # Fazer a divisão nos datasets fornecidos
     # Se não houver incerteza no x, então o número de colunas é ímpar
@@ -403,36 +400,146 @@ class MainWindow(tk.Frame):
         global count
         count = 1
         
+        self.master.configure(background='#FCF6F5')
+
+        # Criação da estrutura de frames da janela
+        self.frameleft = tk.Frame(self.master,  bg='#FCF6F5')
+        self.frameleft.place(in_=self.master, relwidth=0.5, relheight=1, relx=0, rely=0)
+        
+        #Frameright, contem tudo na parte direita da janela
+        self.frameright = tk.Frame(self.master,  bg='#FCF6F5')
+        self.frameright.place( in_ = self.master, relwidth=0.5, relheight=1,relx=0.5, rely=0)
+
+        #Subsecção da mesma onde se inserem as entrys de parametros, variavel independente e funçao
+        self.subframeright1=tk.Frame(self.frameright, bg='#FCF6F5', highlightbackground="black", highlightthickness=1, padx=20, pady=20)
+        self.subframeright1.place(in_=self.frameright, relwidth=1, relheight=0.5, relx=0, rely=0)
+        
+         # Criação das frames para a edição visual do gráfico
+        self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
+        self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.3, relx=0, rely=0.25)
+
+        self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
+        self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
+
+        self.plotbuttonframe = tk.Frame(self.frameleft, bg= '#FCF6F5')
+        self.plotbuttonframe.place(in_ = self.frameleft, relwidth=1, relheight=0.05, relx=0, rely=0.5)
+        
+        self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
+        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.45, relx=0, rely=0.55)
+        
+        #Criação da zona onde se inserem as informaçoes relativas aos eixos do grafico
+        self.subframeright3 = tk.Frame(self.frameright, bg='#FCF6F5')
+        self.subframeright3.place(in_ = self.frameright, relwidth = 1, relheight = 0.40, rely=0.60)
+
+        #Criação do botão que chama a função que processa a funçao
+        self.compilebutton = tk.Button(self.subframeright1,
+                                       text="COMPILE",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red')
+        self.compilebutton.place(relwidth=0.2,relx=0.8, rely=0.2,relheight=0.1 )
+        self.compilebutton["command"] = self.compile_function
+        
+        #Botão que serve para updatar a lista de entries dos parâmetros
+        self.upbutton = tk.Button(self.subframeright1,
+                                  text="UPDATE",
+                                  fg='white',
+                                  bg='red',
+                                  activebackground='white',
+                                  activeforeground='red')
+        self.upbutton.place(relwidth=0.2,relx=0.8, rely=0.1,relheight=0.1 )
+        self.upbutton["command"] = self.update_parameter
+        
+        #Botão pra plottar o dataset, chama a função plot_dataset
+        self.plotbutton = tk.Button(self.plotbuttonframe,
+                                       text="PLOT",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red')
+        
+        self.plotbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1)
+        self.plotbutton["command"] = self.plot_dataset
+        
+        #Botão pra plottar a funçao, chama a funçao plot_function
+        self.plotfunctionbutton = tk.Button(self.plotbuttonframe,
+                                       text="PLOT FUNCTION",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red')
+        
+        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.8)
+        self.plotfunctionbutton["command"] = self.plot_function
+        
+        # Botão para importar ficheiros
+        self.import_data = tk.Button(self.plotbuttonframe,
+                                     text='IMPORT DATA',
+                                     fg='white',
+                                     bg='red',
+                                     activebackground='white',
+                                     activeforeground='red')
+        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.6)
+        self.import_data["command"] = self.open_file
+        
+        #Criação do botão ligado à funçao que adiciona mais um dataset
+        self.adddatasetbutton = tk.Button(self.plotbuttonframe,
+                                       text="+",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red', command = lambda: self.add_dataset(''))
+        self.adddatasetbutton.place(in_ =self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
+        
+        # Variável para armazenar todos os botoes
+        buttons = [self.upbutton, 
+                  self.compilebutton,
+                  self.plotbutton,
+                  self.plotfunctionbutton,
+                  self.import_data,
+                  self.adddatasetbutton
+                  ]
+        
+        for button in buttons:
+            def hover(button):
+                return lambda e: button.config(bg='white',fg='red')
+            def unhover(button):
+                return lambda e: button.config(bg='red',fg='white')
+            button.bind("<Enter>", hover(button))
+            button.bind("<Leave>", unhover(button))
+            button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        
         self.datastringcarrier = "1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5"
         # Criar uma menu bar
         # esta menubar é a mais geral, é a que contem as outras
         menubar = tk.Menu(self.master)
         self.master.config(menu=menubar)
 
-        #Este é o botão file na menubar
+        # Este é o botão file na menubar
         self.fileMenu = tk.Menu(menubar)
         menubar.add_cascade(label="File", menu=self.fileMenu)
         
-        #Botao na menubar para escolher as opçoes do plot
+        # Botao na menubar para escolher as opçoes do plot
         self.plotoptions = tk.Menu(menubar)
         menubar.add_cascade(label="Plot options", menu=self.plotoptions)
         
-        #Estas 3 variáveis servem para o utilizador escolher o que quer ver
+        # Estas 3 variáveis servem para o utilizador escolher o que quer ver
         self.wantpoints = tk.BooleanVar()
         self.wantline = tk.BooleanVar()
         self.wanterror = tk.BooleanVar()
-        #Valores default para as ditas variáveis
+        # Valores default para as ditas variáveis
         self.wantpoints.set(1)
         self.wantline.set(0)
         self.wanterror.set(0)
 
-        #Aqui adicionam-se os 3 checkbuttons da dita checklist do que o utilizador quer ler,
-        #as variáveis definidas anteriormente servem para registar se o utilizador tem o dito setting selecionado ou nao
+        # Aqui adicionam-se os 3 checkbuttons da dita checklist do que o utilizador quer ler,
+        # as variáveis definidas anteriormente servem para registar se o utilizador tem o dito setting selecionado ou nao
         self.plotoptions.add_checkbutton( label = "plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
         self.plotoptions.add_checkbutton( label = "plot line", onvalue = 1, offvalue = 0, variable = self.wantline)
         self.plotoptions.add_checkbutton( label = "error bars", onvalue = 1, offvalue = 0, variable = self.wanterror)
        
-        #Estes 3 menus na menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
+        # Estes 3 menus na menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
         self.markercolor = tk.Menu(menubar)
         menubar.add_cascade(label="Marker Color", menu = self.markercolor)
         
@@ -442,11 +549,17 @@ class MainWindow(tk.Frame):
         self.errorcolor = tk.Menu(menubar)
         menubar.add_cascade(label="Errorbar Color", menu = self.errorcolor)
         
+<<<<<<< HEAD
         self.currentselection = 1
         
         #Como é preciso guardar a informaçao para cada plot, é preciso ter um array para as
         #cores que o utilizador quer para cada coisa, adiciona-se uma boolean_Var por array,
         #sendo que se assume que começamos já com um dataset
+=======
+        # Como é preciso guardar a informaçao para cada plot, é preciso ter um array para as
+        # cores que o utilizador quer para cada coisa, adiciona-se uma boolean_Var por array,
+        # sendo que se assume que começamos já com um dataset
+>>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
         self.wantmarkerred=[]
         self.wantmarkerblue = []
         self.wantmarkergreen = []
@@ -474,9 +587,9 @@ class MainWindow(tk.Frame):
         self.wanterrorgreen.append(tk.BooleanVar())
         self.wanterrorblack.append(tk.BooleanVar())
         
-        #Por default defini tudo a preto
-        #estas variáveis servem para os checkbuttons, por isso vao já definidas com 
-        #o valor default 1 no preto, para aparecer o "checkmark" nas barras
+        # Por default defini tudo a preto
+        # estas variáveis servem para os checkbuttons, por isso vao já definidas com 
+        # o valor default 1 no preto, para aparecer o "checkmark" nas barras
         self.wantmarkerred[0].set(0)
         self.wantmarkerblue[0].set(0)
         self.wantmarkergreen[0].set(0)
@@ -490,9 +603,8 @@ class MainWindow(tk.Frame):
         self.wanterrorgreen[0].set(0)
         self.wanterrorblack[0].set(1)
         
-        
-        #Estas variáveis guardam de facto as palavras respetivas a cada cor, sendo que irão ser postas
-        #no parametro color do plot.
+        # Estas variáveis guardam de facto as palavras respetivas a cada cor, sendo que irão ser postas
+        # no parametro color do plot.
         self.markercolorvar = []
         self.linecolorvar = []
         self.errorcolorvar = []
@@ -500,7 +612,7 @@ class MainWindow(tk.Frame):
         self.linecolorvar.append("black")
         self.errorcolorvar.append("black")
         
-        #Aqui tou so a meter os checkbuttons nas caixas
+        # Aqui tou so a meter os checkbuttons nas caixas
         self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred[0], command = self.colormarkerred)
         self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue[0], command = self.colormarkerblue)
         self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen[0], command = self.colormarkergreen)
@@ -513,23 +625,6 @@ class MainWindow(tk.Frame):
         self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue[0], command = self.colorerrorblue)
         self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen[0], command = self.colorerrorgreen)
         self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack[0], command = self.colorerrorblack)
-
-        
-
-        self.master.configure(background='#FCF6F5')
-
-        # Criação da estrutura de frames da janela
-        self.frameleft = tk.Frame(self.master,  bg='#FCF6F5')
-        self.frameleft.place(in_=self.master, relwidth=0.5, relheight=1, relx=0, rely=0)
-        
-        #Frameright, contem tudo na parte direita da janela
-        self.frameright = tk.Frame(self.master,  bg='#FCF6F5')
-        self.frameright.place( in_ = self.master, relwidth=0.5, relheight=1,relx=0.5, rely=0)
-
-        
-        #Subsecção da mesma onde se inserem as entrys de parametros, variavel independente e funçao
-        self.subframeright1=tk.Frame(self.frameright, bg='#FCF6F5', highlightbackground="black", highlightthickness=1, padx=20, pady=20)
-        self.subframeright1.place(in_=self.frameright, relwidth=1, relheight=0.5, relx=0, rely=0)
 
         # Criação da zona para inserir a variável independente
         self.independentlabel = tk.Label(self.subframeright1,text="Independent Variable", bg='#FCF6F5')
@@ -549,20 +644,7 @@ class MainWindow(tk.Frame):
         self.parameterentry.insert(0, "a,b")
         self.parameterentry.focus_set()
         
-        #Botão que serve para updatar a lista de entris dos parâmetros
-        self.upbutton = tk.Button(self.subframeright1,
-                                  text="UPDATE",
-                                  fg='white',
-                                  bg='red',
-                                  activebackground='white',
-                                  activeforeground='red')
-        self.upbutton.place(relwidth=0.2,relx=0.8, rely=0.1,relheight=0.1 )
-        self.upbutton["command"] = self.update_parameter
-        self.upbutton.bind("<Enter>", func=lambda e: self.upbutton.config(bg='white',fg='red'))
-        self.upbutton.bind("<Leave>", func=lambda e: self.upbutton.config(bg='red',fg='white'))
-        self.upbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
-
-        #Criação da zona onde se insere a função
+        # Criação da zona onde se insere a função
         self.functionlabel = tk.Label(self.subframeright1,text= "Function", bg='#FCF6F5')
         self.functionlabel["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
         self.functionlabel.place(relwidth=0.2, rely=0.2, relheight=0.1)
@@ -571,65 +653,6 @@ class MainWindow(tk.Frame):
         self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
         
-        #Criação do botão que chama a função que processa a funçao
-        self.compilebutton = tk.Button(self.subframeright1,
-                                       text="COMPILE",
-                                       fg='white',
-                                       bg='red',
-                                       activebackground='white',
-                                       activeforeground='red')
-        self.compilebutton.place(relwidth=0.2,relx=0.8, rely=0.2,relheight=0.1 )
-        self.compilebutton["command"] = self.compile_function
-        self.compilebutton.bind("<Enter>", func=lambda e: self.compilebutton.config(bg='white',fg='red'))
-        self.compilebutton.bind("<Leave>", func=lambda e: self.compilebutton.config(bg='red',fg='white'))
-        self.compilebutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
-
-
-        # Criação das frames para a edição visual do gráfico
-        self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
-        self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.3, relx=0, rely=0.25)
-
-        self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
-        self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
-
-        self.plotbuttonframe = tk.Frame(self.frameleft, bg= '#FCF6F5')
-        self.plotbuttonframe.place(in_ = self.frameleft, relwidth=1, relheight=0.05, relx=0, rely=0.5)
-        
-        #Butão pra plottar o dataset, chama a função plot_dataset
-        self.plotbutton = tk.Button(self.plotbuttonframe,
-                                       text="PLOT",
-                                       fg='white',
-                                       bg='red',
-                                       activebackground='white',
-                                       activeforeground='red')
-        
-        self.plotbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1)
-        self.plotbutton["command"] = self.plot_dataset
-        
-        #Botão pra plottar a funçao, chama a funçao plot_function
-        self.plotfunctionbutton = tk.Button(self.plotbuttonframe,
-                                       text="PLOT FUNCTION",
-                                       fg='white',
-                                       bg='red',
-                                       activebackground='white',
-                                       activeforeground='red')
-        
-        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.8)
-        self.plotfunctionbutton["command"] = self.plot_function
-        
-        self.import_data = tk.Button(self.plotbuttonframe, text='IMPORT DATA')
-        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.6)
-        self.import_data["command"] = self.open_file
-        
-        
-        
-        self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
-        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.45, relx=0, rely=0.55)
-        
-        #Criação da zona onde se inserem as informaçoes relativas aos eixos do grafico
-        self.subframeright3 = tk.Frame(self.frameright, bg='#FCF6F5')
-        self.subframeright3.place(in_ = self.frameright, relwidth = 1, relheight = 0.40, rely=0.60)
-
         self.xaxislabel = tk.Label(self.subframeright3, text="X Axis", bg='#FCF6F5')
         self.xaxislabel.place(in_ = self.subframeright3, relwidth = 0.5, relheight=0.1, relx=0, rely=0)
 
@@ -653,7 +676,6 @@ class MainWindow(tk.Frame):
         self.xaxistitlelabel = tk.Label(self.subframeright3, text = "Title", bg='#FCF6F5')
         self.xaxistitlelabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0, rely=0.25)
         
-
         self.xaxistitleentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.xaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.4, relheight = 0.1, relx = 0.1, rely=0.25)
         self.xaxistitleentry.insert(0, "Abcissas")
@@ -706,22 +728,10 @@ class MainWindow(tk.Frame):
         #Variável que contem os datasets e respetivo numero
         self.datalist = ['dataset 1']
         
-        
         #Criação do botão seletor de data-sets, ligalo à função update_databox
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
-        
-        #Criação do botão ligado à funçao que adiciona mais um dataset
-        self.adddatasetbutton = tk.Button(self.plotbuttonframe,
-                                       text="+",
-                                       fg='white',
-                                       bg='red',
-                                       activebackground='white',
-                                       activeforeground='red', command = lambda: self.add_dataset(''))
-        
-        self.adddatasetbutton.place(in_ =self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
-        #self.adddatasetbutton["command"] = self.add_dataset
         
         #Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
         self.dataentry = ( ScrolledText(self.subframeleft2))
@@ -754,92 +764,92 @@ class MainWindow(tk.Frame):
         
     #Funções para mudar as cores
     def colormarkerblue(self):
-            self.wantmarkerblue[self.selecteddataset].set(1)
-            self.wantmarkerblack[self.selecteddataset].set(0)
-            self.wantmarkerred[self.selecteddataset].set(0)
-            self.wantmarkergreen[self.selecteddataset].set(0)
-            self.markercolorvar[self.selecteddataset] = "blue"
+        self.wantmarkerblue[self.selecteddataset].set(1)
+        self.wantmarkerblack[self.selecteddataset].set(0)
+        self.wantmarkerred[self.selecteddataset].set(0)
+        self.wantmarkergreen[self.selecteddataset].set(0)
+        self.markercolorvar[self.selecteddataset] = "blue"
         
     def colormarkerblack(self):
-            self.wantmarkerblue[self.selecteddataset].set(0)
-            self.wantmarkerred[self.selecteddataset].set(0)
-            self.wantmarkergreen[self.selecteddataset].set(0)
-            self.wantmarkerblack[self.selecteddataset].set(1)
-            self.markercolorvar[self.selecteddataset] = "black"
+        self.wantmarkerblue[self.selecteddataset].set(0)
+        self.wantmarkerred[self.selecteddataset].set(0)
+        self.wantmarkergreen[self.selecteddataset].set(0)
+        self.wantmarkerblack[self.selecteddataset].set(1)
+        self.markercolorvar[self.selecteddataset] = "black"
         
     def colormarkerred(self):
-            self.wantmarkerblue[self.selecteddataset].set(0)
-            self.wantmarkerblack[self.selecteddataset].set(0)
-            self.wantmarkergreen[self.selecteddataset].set(0)
-            self.wantmarkerred[self.selecteddataset].set(1)
-            self.markercolorvar[self.selecteddataset] = "red"
+        self.wantmarkerblue[self.selecteddataset].set(0)
+        self.wantmarkerblack[self.selecteddataset].set(0)
+        self.wantmarkergreen[self.selecteddataset].set(0)
+        self.wantmarkerred[self.selecteddataset].set(1)
+        self.markercolorvar[self.selecteddataset] = "red"
         
     def colormarkergreen(self):
-            self.wantmarkerblue[self.selecteddataset].set(0)
-            self.wantmarkerred[self.selecteddataset].set(0)
-            self.wantmarkerblack[self.selecteddataset].set(0)
-            self.wantmarkergreen[self.selecteddataset].set(1)
-            self.markercolorvar[self.selecteddataset] = "green"
+        self.wantmarkerblue[self.selecteddataset].set(0)
+        self.wantmarkerred[self.selecteddataset].set(0)
+        self.wantmarkerblack[self.selecteddataset].set(0)
+        self.wantmarkergreen[self.selecteddataset].set(1)
+        self.markercolorvar[self.selecteddataset] = "green"
     
     def colorlineblue(self):
-            self.wantlineblue[self.selecteddataset].set(1)
-            self.wantlineblack[self.selecteddataset].set(0)
-            self.wantlinered[self.selecteddataset].set(0)
-            self.wantlinegreen[self.selecteddataset].set(0)
-            self.linecolorvar[self.selecteddataset] = "blue"
+        self.wantlineblue[self.selecteddataset].set(1)
+        self.wantlineblack[self.selecteddataset].set(0)
+        self.wantlinered[self.selecteddataset].set(0)
+        self.wantlinegreen[self.selecteddataset].set(0)
+        self.linecolorvar[self.selecteddataset] = "blue"
         
     def colorlineblack(self):
-            self.wantlineblue[self.selecteddataset].set(0)
-            self.wantlinered[self.selecteddataset].set(0)
-            self.wantlinegreen[self.selecteddataset].set(0)
-            self.wantlineblack[self.selecteddataset].set(1)
-            self.linecolorvar[self.selecteddataset] = "black"
+        self.wantlineblue[self.selecteddataset].set(0)
+        self.wantlinered[self.selecteddataset].set(0)
+        self.wantlinegreen[self.selecteddataset].set(0)
+        self.wantlineblack[self.selecteddataset].set(1)
+        self.linecolorvar[self.selecteddataset] = "black"
         
     def colorlinered(self):
-            self.wantlineblue[self.selecteddataset].set(0)
-            self.wantlineblack[self.selecteddataset].set(0)
-            self.wantlinegreen[self.selecteddataset].set(0)
-            self.wantlinered[self.selecteddataset].set(1)
-            self.linecolorvar[self.selecteddataset] = "red"
+        self.wantlineblue[self.selecteddataset].set(0)
+        self.wantlineblack[self.selecteddataset].set(0)
+        self.wantlinegreen[self.selecteddataset].set(0)
+        self.wantlinered[self.selecteddataset].set(1)
+        self.linecolorvar[self.selecteddataset] = "red"
         
     def colorlinegreen(self):
-            self.wantlineblue[self.selecteddataset].set(0)
-            self.wantlinered[self.selecteddataset].set(0)
-            self.wantlineblack[self.selecteddataset].set(0)
-            self.wantlinegreen[self.selecteddataset].set(1)
-            self.linecolorvar[self.selecteddataset] = "green"
+        self.wantlineblue[self.selecteddataset].set(0)
+        self.wantlinered[self.selecteddataset].set(0)
+        self.wantlineblack[self.selecteddataset].set(0)
+        self.wantlinegreen[self.selecteddataset].set(1)
+        self.linecolorvar[self.selecteddataset] = "green"
             
     def colorerrorblue(self):
-            self.wanterrorblue[self.selecteddataset].set(1)
-            self.wanterrorblack[self.selecteddataset].set(0)
-            self.wanterrorred[self.selecteddataset].set(0)
-            self.wanterrorgreen[self.selecteddataset].set(0)
-            self.errorcolorvar[self.selecteddataset] = "blue"
+        self.wanterrorblue[self.selecteddataset].set(1)
+        self.wanterrorblack[self.selecteddataset].set(0)
+        self.wanterrorred[self.selecteddataset].set(0)
+        self.wanterrorgreen[self.selecteddataset].set(0)
+        self.errorcolorvar[self.selecteddataset] = "blue"
         
     def colorerrorblack(self):
-            self.wanterrorblue[self.selecteddataset].set(0)
-            self.wanterrorred[self.selecteddataset].set(0)
-            self.wanterrorgreen[self.selecteddataset].set(0)
-            self.wanterrorblack[self.selecteddataset].set(1)
-            self.errorcolorvar[self.selecteddataset] = "black"
-        
+        self.wanterrorblue[self.selecteddataset].set(0)
+        self.wanterrorred[self.selecteddataset].set(0)
+        self.wanterrorgreen[self.selecteddataset].set(0)
+        self.wanterrorblack[self.selecteddataset].set(1)
+        self.errorcolorvar[self.selecteddataset] = "black"
+    
     def colorerrorred(self):
-            self.wanterrorblue[self.selecteddataset].set(0)
-            self.wanterrorblack[self.selecteddataset].set(0)
-            self.wanterrorgreen[self.selecteddataset].set(0)
-            self.wanterrorred[self.selecteddataset].set(1)
-            self.errorcolorvar[self.selecteddataset] = "red"
+        self.wanterrorblue[self.selecteddataset].set(0)
+        self.wanterrorblack[self.selecteddataset].set(0)
+        self.wanterrorgreen[self.selecteddataset].set(0)
+        self.wanterrorred[self.selecteddataset].set(1)
+        self.errorcolorvar[self.selecteddataset] = "red"
         
     def colorerrorgreen(self):
-            self.wanterrorblue[self.selecteddataset].set(0)
-            self.wanterrorred[self.selecteddataset].set(0)
-            self.wanterrorblack[self.selecteddataset].set(0)
-            self.wanterrorgreen[self.selecteddataset].set(1)
-            self.errorcolorvar[self.selecteddataset] = "green"
-    
+        self.wanterrorblue[self.selecteddataset].set(0)
+        self.wanterrorred[self.selecteddataset].set(0)
+        self.wanterrorblack[self.selecteddataset].set(0)
+        self.wanterrorgreen[self.selecteddataset].set(1)
+        self.errorcolorvar[self.selecteddataset] = "green"
+
     # Função para adicionar um dataset
     def add_dataset(self, string):
-        #adicionar o texto merdoso, dar update À variavel do número de datasets
+        # adicionar o texto merdoso, dar update À variavel do número de datasets
         self.numberdatasets = self.numberdatasets+1
         self.datalist.append("dataset " + str(len(self.datalist)+1))
         self.datasetselector.destroy()
@@ -847,22 +857,28 @@ class MainWindow(tk.Frame):
         self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
     
-
         self.datasettext.append(string)
         
+<<<<<<< HEAD
         #Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
         self.erabcissas.append([0, 0, 0, 0])
         self.ordenadas.append([0, 0, 0, 0])
         self.erordenadas.append([0, 0, 0, 0])
+=======
+        # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
+        self.abcissas.append([1, 1, 1, 1])
+        self.erabcissas.append([1, 1, 1, 1])
+        self.ordenadas.append([1, 1, 1, 1])
+        self.erordenadas.append([1, 1, 1, 1])
+>>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
         
         self.abc.append(np.array(self.abcissas[-1]))
         self.erabc.append(np.array(self.abcissas[-1]))
         self.ord.append(np.array(self.abcissas[-1]))
         self.erord.append(np.array(self.abcissas[-1]))
         
-        #Criar as variáveis respetivas À escolha de cores para cada plot
-        
+        # Criar as variáveis respetivas à escolha de cores para cada plot
         self.wantmarkerred.append( tk.BooleanVar())
         self.wantmarkerblue.append(tk.BooleanVar())
         self.wantmarkergreen.append(tk.BooleanVar())
@@ -882,7 +898,7 @@ class MainWindow(tk.Frame):
         self.linecolorvar.append("black")
         self.errorcolorvar.append("black")
         
-        #Definir a preto por defualt
+        # Definir a preto por defualt
         self.wantmarkerred[int(len(self.datalist)-1)].set(0)
         self.wantmarkerblue[int(len(self.datalist)-1)].set(0)
         self.wantmarkergreen[int(len(self.datalist)-1)].set(0)
@@ -908,6 +924,7 @@ class MainWindow(tk.Frame):
         return True
     
     def update_databox(self, event):
+<<<<<<< HEAD
         #Guardar o atual na cena
         self.datasettext[int(self.currentselection - 1)] = self.dataentry.get("1.0", "end-1c")
         
@@ -915,6 +932,11 @@ class MainWindow(tk.Frame):
         #Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         #Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         #respetiva ao novo data-set
+=======
+        # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
+        # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
+        # respetiva ao novo data-set
+>>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
         select = int(self.datalistvariable.get()[-1])
         self.currentselection = select
         
@@ -924,13 +946,13 @@ class MainWindow(tk.Frame):
         self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.45, relx=0, rely=0.55)
         
-        #Criação da caixa de texto com a informaçao respetiva
+        # Criação da caixa de texto com a informaçao respetiva
         self.dataentry = ( ScrolledText(self.subframeleft2))
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
         self.dataentry.insert(tk.INSERT,self.datasettext[int(select-1)])
         
-        #Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
-        #ao dataset selecionado
+        # Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
+        # ao dataset selecionado
         self.markercolor.delete("blue")
         self.markercolor.delete("red")
         self.markercolor.delete("green")
@@ -946,16 +968,14 @@ class MainWindow(tk.Frame):
         self.errorcolor.delete("green")
         self.errorcolor.delete("black")
         
-        #Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
+        # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
         self.selecteddataset = int(select-1)
-        
         
         self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred[self.selecteddataset], command = self.colormarkerred)
         self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue[self.selecteddataset], command = self.colormarkerblue)
         self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen[self.selecteddataset], command = self.colormarkergreen)
         self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantmarkerblack[self.selecteddataset], command = self.colormarkerblack)
          
-        
         self.linecolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantlinered[self.selecteddataset], command = self.colorlinered)
         self.linecolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantlineblue[self.selecteddataset], command = self.colorlineblue)
         self.linecolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantlinegreen[self.selecteddataset], command = self.colorlinegreen)
@@ -997,8 +1017,6 @@ class MainWindow(tk.Frame):
         warning["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         warning.configure(background='#FCF6F5')
         
-        
-        
         canvas1.place(relx=.1, rely=.5, anchor="c")
         warning.place(relx=.5, rely=.5, anchor="c")
         canvas2.place(relx=.9, rely=.5, anchor="c")
@@ -1024,10 +1042,8 @@ class MainWindow(tk.Frame):
         #data = StringIO(self.dataentry.get("1.0", "end-1c"))
         #self.data_sets = read_file(data,float,False)
 
-
-#Função para plottar a funçao com parametros numericos dados pelo utilizador
+    # Função para plottar a funçao com parametros numericos dados pelo utilizador
     def plot_function(self):
-        
         np.seterr(all='raise')
         functions = ['sin',
                      'cos',
@@ -1048,8 +1064,6 @@ class MainWindow(tk.Frame):
         params = self.parameterentry.get()
         indep = self.independententry.get()
         
-        
-        
         # Ver se a função não está vazia
         expr=expr.replace(' ','')
         if expr == '':
@@ -1061,7 +1075,6 @@ class MainWindow(tk.Frame):
             clean_split = process[1]
         else:
             return (False, process[1])
-        
         
         for x in range(len(self.plotparamboxes)):
             paramboxes = self.plotparamboxes[x].get()
@@ -1075,7 +1088,6 @@ class MainWindow(tk.Frame):
                 self.secondary_window('ERROR', 'Por favor insira um valor numérico para o parâmetro desejado')
                 return False
                 
-   
         for function in enumerate(functions):
             expr = expr.split(function[1])
             expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
@@ -1083,8 +1095,6 @@ class MainWindow(tk.Frame):
         for pair in enumerate(clean_split):
             expr = expr.split(pair[1])
             expr = (str(self.plotparamboxes[pair[0]].get())).join(expr)
-    
-       
     
         # Por np atras da funçao para tipo, plottar isso
         for function in enumerate(functions):
@@ -1117,7 +1127,6 @@ class MainWindow(tk.Frame):
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
         
-        
         #Criação dos arrays com muitos pontinhos x e y(x)
         xfunc=[]
         yfunc=[]
@@ -1127,8 +1136,6 @@ class MainWindow(tk.Frame):
             xfunc.append(x)
             yfunc.append(eval(expr))
         
-       
-            
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
         self.a.plot(xfunc, yfunc)
@@ -1145,11 +1152,16 @@ class MainWindow(tk.Frame):
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[int(select-1)]= self.dataentry.get("1.0", "end-1c")
         self.datastring = self.datasettext[int(select-1)]
+<<<<<<< HEAD
         
 
 
         
         
+=======
+        print(self.datastring)
+
+>>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False)
         
@@ -1161,7 +1173,6 @@ class MainWindow(tk.Frame):
         self.erordenadas[int(select-1)] = []
 
         #adicionar condiçoes
-
         for x in range(len(data_sets[0])):
             self.abcissas[int(select-1)].append(data_sets[0][x][0])
             self.erabcissas[int(select-1)].append(data_sets[0][x][1])
@@ -1187,7 +1198,6 @@ class MainWindow(tk.Frame):
         xticknumber =1+int((float(self.xaxismaxentry.get())-float(self.xaxisminentry.get()))/float(self.xaxistickspentry.get()))
         yticknumber =1+int((float(self.yaxismaxentry.get())-float(self.yaxisminentry.get()))/float(self.yaxistickspentry.get()))
 
-
         for x in range(xticknumber):
             x_ticks.append(x*float(self.xaxistickspentry.get()) + float(self.xaxisminentry.get()))
 
@@ -1203,11 +1213,17 @@ class MainWindow(tk.Frame):
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
         
+<<<<<<< HEAD
         if(self.check_databox()):
         
             if(self.wanterror.get() == 1):
                 for x in range(self.numberdatasets):
                     self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x])
+=======
+        if(self.wanterror.get() == 1):
+            for x in range(self.numberdatasets):
+                self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x])
+>>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
         
             if(self.wantpoints.get() == 1):
                 for x in range(self.numberdatasets):
@@ -1221,7 +1237,6 @@ class MainWindow(tk.Frame):
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
 
-        
         self.canvas = FigureCanvasTkAgg(fig, master=self.subframeleft1)
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
@@ -1250,8 +1265,7 @@ class MainWindow(tk.Frame):
                     self.paramboxes[x].grid_forget()
                     self.paramlabel[x].grid_forget()
                     self.paramboxes[x].grid_rowconfigure(x, weight=1)
-    
-
+                    
                 self.subframeright2.destroy()
     
                 self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
@@ -1266,7 +1280,6 @@ class MainWindow(tk.Frame):
                 self.anotherframe.destroy()
                 self.paramcanvas.destroy()
     
-    
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0)
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
     
@@ -1276,18 +1289,13 @@ class MainWindow(tk.Frame):
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
                 self.paramcanvas.bind('<Configure>', lambda e: self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all")))
     
-    
                 self.anotherframe=tk.Frame(self.paramcanvas)
     
                 self.anotherframe.grid_columnconfigure(0, weight=1)
                 self.anotherframe.grid_columnconfigure(1, weight=1)
                 self.paramcanvas.create_window((0,0), window = self.anotherframe, anchor = "nw")
     
-    
                 self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
-    
-    
-    
     
                 for x in range(self.boxnumber):
                     self.anotherframe.grid_rowconfigure(x, weight=1)
@@ -1314,23 +1322,17 @@ class MainWindow(tk.Frame):
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#FCF6F5')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
     
-    
-    
-    
                 self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
     
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
                 self.paramcanvas.bind('<Configure>', lambda e: self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all")))
     
-    
                 self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
     
                 self.anotherframe=tk.Frame(self.paramcanvas, bg='#FCF6F5')
     
                 self.paramcanvas.create_window((0,0), window = self.anotherframe, anchor = "nw")
-    
-    
     
                 for x in range(self.boxnumber):
                     self.paramboxes.append(tk.Entry(self.anotherframe))
@@ -1345,8 +1347,6 @@ class MainWindow(tk.Frame):
             
     def fit_data(self, data, init_params, max_iter):
         """
-        
-
         Parameters
         ----------
         data : array of array
@@ -1357,7 +1357,9 @@ class MainWindow(tk.Frame):
 
         Returns
         -------
-        None.
+        fit.beta: parametros de ajustamento
+        fit.sd_beta: incertezas dos parametros
+        fit.res_var: chi quadrado reduzido
 
         """
         func = odr.Model(self.fit_function)
@@ -1393,15 +1395,12 @@ class MainWindow(tk.Frame):
         file = tk.filedialog.askopenfilename()
         print(file)
         new_data = read_file(file,str,True)
-
         
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
         
         
         
-        
-
 root = tk.Tk()
 app = MainWindow(master=root)
 app.mainloop()
