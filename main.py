@@ -756,6 +756,7 @@ class MainWindow(tk.Frame):
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
         
+        self.dataset_points = []
         self.update_parameter()
         
     #Funções para mudar as cores
@@ -905,7 +906,7 @@ class MainWindow(tk.Frame):
     
     def check_databox(self):
         for x in range(len(self.datasettext)):
-            print(self.datasettext[x])
+            
             if (self.datasettext[x] == ''):
                 self.secondary_window('ERROR', 'verifique que os seus datasets têm dados corretamente inseridos')
                 return False
@@ -1132,7 +1133,7 @@ class MainWindow(tk.Frame):
         
     def plot_dataset(self):
 
-            
+        
         #Basicamente a msm coisa
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[int(select-1)]= self.dataentry.get("1.0", "end-1c")
@@ -1141,6 +1142,7 @@ class MainWindow(tk.Frame):
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False)
         
+       
         
 
         self.abcissas[int(select-1)] = []
@@ -1149,16 +1151,20 @@ class MainWindow(tk.Frame):
         self.erordenadas[int(select-1)] = []
 
         #adicionar condiçoes
+        
         for x in range(len(data_sets[0])):
-            self.abcissas[int(select-1)].append(data_sets[0][x][0])
-            self.erabcissas[int(select-1)].append(data_sets[0][x][1])
-            self.ordenadas[int(select-1)].append(data_sets[0][x][2])
-            self.erordenadas[int(select-1)].append(data_sets[0][x][3])
+            if(len(data_sets[0][x]) == 4):
+                self.abcissas[int(select-1)].append(data_sets[0][x][0])
+                self.erabcissas[int(select-1)].append(data_sets[0][x][1])
+                self.ordenadas[int(select-1)].append(data_sets[0][x][2])
+                self.erordenadas[int(select-1)].append(data_sets[0][x][3])
+            
+            if(len(data_sets[0][x]) == 3):
+                self.abcissas[int(select-1)].append(data_sets[0][x][0])
+                self.erabcissas[int(select-1)].append(0)
+                self.ordenadas[int(select-1)].append(data_sets[0][x][1])
+                self.erordenadas[int(select-1)].append(data_sets[0][x][2])
 
-        #self.abc[int(select-1)] = []
-        #self.erabc[int(select-1)] = []
-        #self.ord[int(select-1)] = []
-        #self.erord[int(select-1)] = []
        
         
         self.abc[int(select-1)] = np.array(self.abcissas[int(select-1)])
