@@ -135,7 +135,7 @@ def parser(expr, params, indep):
         return (False, 'Não foi encontrada nenhuma função de ajustamento.')
 
     process = process_params(params, indep)
-    print(process)
+    
     if process[0]:
         clean_split = process[1]
     else:
@@ -163,7 +163,7 @@ def parser(expr, params, indep):
 
     # Vamos finalmente testar se a função funciona
     # Valores de teste só porque sim
-    print(expr)
+    
     B = [np.pi/2]*len(clean_split)
     _x=-1
     try:
@@ -442,6 +442,7 @@ class MainWindow(tk.Frame):
         self.errorcolor = tk.Menu(menubar)
         menubar.add_cascade(label="Errorbar Color", menu = self.errorcolor)
         
+        self.currentselection = 1
         
         #Como é preciso guardar a informaçao para cada plot, é preciso ter um array para as
         #cores que o utilizador quer para cada coisa, adiciona-se uma boolean_Var por array,
@@ -850,15 +851,15 @@ class MainWindow(tk.Frame):
         self.datasettext.append(string)
         
         #Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
-        self.abcissas.append([1, 1, 1, 1])
-        self.erabcissas.append([1, 1, 1, 1])
-        self.ordenadas.append([1, 1, 1, 1])
-        self.erordenadas.append([1, 1, 1, 1])
+        self.abcissas.append([0, 0, 0, 0])
+        self.erabcissas.append([0, 0, 0, 0])
+        self.ordenadas.append([0, 0, 0, 0])
+        self.erordenadas.append([0, 0, 0, 0])
         
-        self.abc.append(np.array(self.abcissas[0]))
-        self.erabc.append(np.array(self.abcissas[0]))
-        self.ord.append(np.array(self.abcissas[0]))
-        self.erord.append(np.array(self.abcissas[0]))
+        self.abc.append(np.array(self.abcissas[-1]))
+        self.erabc.append(np.array(self.abcissas[-1]))
+        self.ord.append(np.array(self.abcissas[-1]))
+        self.erord.append(np.array(self.abcissas[-1]))
         
         #Criar as variáveis respetivas À escolha de cores para cada plot
         
@@ -897,12 +898,26 @@ class MainWindow(tk.Frame):
         self.wanterrorgreen[int(len(self.datalist)-1)].set(0)
         self.wanterrorblack[int(len(self.datalist)-1)].set(1)
     
+    def check_databox(self):
+        for x in range(len(self.datasettext)):
+            print(self.datasettext[x])
+            if (self.datasettext[x] == ''):
+                self.secondary_window('ERROR', 'verifique que os seus datasets têm dados corretamente inseridos')
+                return False
+        
+        return True
+    
     def update_databox(self, event):
+        #Guardar o atual na cena
+        self.datasettext[int(self.currentselection - 1)] = self.dataentry.get("1.0", "end-1c")
+        
+        
         #Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         #Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         #respetiva ao novo data-set
         select = int(self.datalistvariable.get()[-1])
-        print(select)
+        self.currentselection = select
+        
         self.subframeleft2.destroy()
         self.dataentry.destroy()
         
@@ -998,7 +1013,7 @@ class MainWindow(tk.Frame):
             self.secondary_window('ERROR', parsed_input[1])
             self.function = ''
 
-        print(self.function)
+
         # Daqui para baixo é fazer o plot em si
 
         # Estas duas linhas extraem todos o dataset
@@ -1006,8 +1021,8 @@ class MainWindow(tk.Frame):
         # Nível 0: O data set
         # Nível 1: O ponto
         # Nível 2: A coordenada/incerteza
-        data = StringIO(self.dataentry.get("1.0", "end-1c"))
-        self.data_sets = read_file(data,float,False)
+        #data = StringIO(self.dataentry.get("1.0", "end-1c"))
+        #self.data_sets = read_file(data,float,False)
 
 
 #Função para plottar a funçao com parametros numericos dados pelo utilizador
@@ -1041,7 +1056,7 @@ class MainWindow(tk.Frame):
             return (False, 'Não foi encontrada nenhuma função de ajustamento.')
     
         process = process_params(params, indep)
-        print(process)
+        
         if process[0]:
             clean_split = process[1]
         else:
@@ -1124,18 +1139,21 @@ class MainWindow(tk.Frame):
         self.canvas.draw()
         
     def plot_dataset(self):
+
+            
         #Basicamente a msm coisa
         select = int(self.datalistvariable.get()[-1])
+        self.datasettext[int(select-1)]= self.dataentry.get("1.0", "end-1c")
         self.datastring = self.datasettext[int(select-1)]
-        print(self.datastring)
+        
 
 
-
+        
         
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False)
         
-        print(data_sets)
+        
 
         self.abcissas[int(select-1)] = []
         self.erabcissas[int(select-1)] = []
@@ -1154,7 +1172,7 @@ class MainWindow(tk.Frame):
         #self.erabc[int(select-1)] = []
         #self.ord[int(select-1)] = []
         #self.erord[int(select-1)] = []
-        print(self.abcissas[int(select-1)])
+       
         
         self.abc[int(select-1)] = np.array(self.abcissas[int(select-1)])
         self.erabc[int(select-1)] = np.array(self.erabcissas[int(select-1)])
@@ -1185,19 +1203,20 @@ class MainWindow(tk.Frame):
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
         
+        if(self.check_databox()):
         
-        if(self.wanterror.get() == 1):
-            for x in range(self.numberdatasets):
-                self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x])
+            if(self.wanterror.get() == 1):
+                for x in range(self.numberdatasets):
+                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x])
         
-        if(self.wantpoints.get() == 1):
-            for x in range(self.numberdatasets):
-                self.a.scatter(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1)
+            if(self.wantpoints.get() == 1):
+                for x in range(self.numberdatasets):
+                    self.a.scatter(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1)
         
-        print(self.wantline)
-        if(self.wantline.get() == 1):
-            for x in range(self.numberdatasets):
-                self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x])
+       
+            if(self.wantline.get() == 1):
+                for x in range(self.numberdatasets):
+                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x])
             
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
@@ -1379,7 +1398,7 @@ class MainWindow(tk.Frame):
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
         
-        print(self.datasettext)
+        
         
         
 
