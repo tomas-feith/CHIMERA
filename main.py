@@ -905,12 +905,22 @@ class MainWindow(tk.Frame):
         self.wanterrorblack[int(len(self.datalist)-1)].set(1)
     
     def check_databox(self):
-        for x in range(len(self.datasettext)):
-            
+        for x in range(len(self.datasettext)):   
             if (self.datasettext[x] == ''):
                 self.secondary_window('ERROR', 'verifique que os seus datasets têm dados corretamente inseridos')
                 return False
         
+        for x in range(len(self.datasettext)):
+            split=[]
+            split = self.datasettext[x].split("\n")
+            for i in range(len(split)):
+                ponto = split[i].split(' ')
+                print(ponto)
+                if(len(ponto)!= 3 and len(ponto)!= 4):
+                     self.secondary_window('ERROR', 'verifique que os seus datasets têm 3 ou 4 colunas')
+                     return False
+                
+            
         return True
     
     def update_databox(self, event):
@@ -1132,13 +1142,17 @@ class MainWindow(tk.Frame):
         self.canvas.draw()
         
     def plot_dataset(self):
-
+        
+        
         
         #Basicamente a msm coisa
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[int(select-1)]= self.dataentry.get("1.0", "end-1c")
         self.datastring = self.datasettext[int(select-1)]
 
+        if(self.check_databox() == False):
+            return False
+        
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False)
         
