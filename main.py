@@ -1321,8 +1321,6 @@ class MainWindow(tk.Frame):
             
     def fit_data(self, data, init_params, max_iter):
         """
-        
-
         Parameters
         ----------
         data : array of array
@@ -1333,7 +1331,9 @@ class MainWindow(tk.Frame):
 
         Returns
         -------
-        None.
+        fit.beta: parametros de ajustamento
+        fit.sd_beta: incertezas dos parametros
+        fit.res_var: chi quadrado reduzido
 
         """
         func = odr.Model(self.fit_function)
