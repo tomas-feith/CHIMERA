@@ -402,7 +402,8 @@ class MainWindow(tk.Frame):
         self.new.destroy()
         global count
         count = 1
-
+        
+        self.datastringcarrier = "1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5"
         # Criar uma menu bar
         # esta menubar é a mais geral, é a que contem as outras
         menubar = tk.Menu(self.master)
@@ -716,10 +717,10 @@ class MainWindow(tk.Frame):
                                        fg='white',
                                        bg='red',
                                        activebackground='white',
-                                       activeforeground='red')
+                                       activeforeground='red', command = lambda: self.add_dataset(''))
         
         self.adddatasetbutton.place(in_ =self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
-        self.adddatasetbutton["command"] = self.add_dataset
+        #self.adddatasetbutton["command"] = self.add_dataset
         
         #Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
         self.dataentry = ( ScrolledText(self.subframeleft2))
@@ -836,7 +837,7 @@ class MainWindow(tk.Frame):
             self.errorcolorvar[self.selecteddataset] = "green"
     
     # Função para adicionar um dataset
-    def add_dataset(self):
+    def add_dataset(self, string):
         #adicionar o texto merdoso, dar update À variavel do número de datasets
         self.numberdatasets = self.numberdatasets+1
         self.datalist.append("dataset " + str(len(self.datalist)+1))
@@ -845,7 +846,8 @@ class MainWindow(tk.Frame):
         self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
     
-        self.datasettext.append("1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5")
+
+        self.datasettext.append(string)
         
         #Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([1, 1, 1, 1])
@@ -1127,9 +1129,13 @@ class MainWindow(tk.Frame):
         self.datastring = self.datasettext[int(select-1)]
         print(self.datastring)
 
-        first_split = self.datastring.split()
 
-        print(first_split)
+
+        
+        data = StringIO(self.datastring)
+        data_sets = read_file(data,float,False)
+        
+        print(data_sets)
 
         self.abcissas[int(select-1)] = []
         self.erabcissas[int(select-1)] = []
@@ -1137,19 +1143,18 @@ class MainWindow(tk.Frame):
         self.erordenadas[int(select-1)] = []
 
         #adicionar condiçoes
-        tam = int(len(first_split)/4)
-        print(tam)
-        for x in range(tam):
-            self.abcissas[int(select-1)].append(float(first_split[0+x*4]))
-            self.erabcissas[int(select-1)].append(float(first_split[1+x*4]))
-            self.ordenadas[int(select-1)].append(float(first_split[2+x*4]))
-            self.erordenadas[int(select-1)].append(float(first_split[3+x*4]))
+
+        for x in range(len(data_sets[0])):
+            self.abcissas[int(select-1)].append(data_sets[0][x][0])
+            self.erabcissas[int(select-1)].append(data_sets[0][x][1])
+            self.ordenadas[int(select-1)].append(data_sets[0][x][2])
+            self.erordenadas[int(select-1)].append(data_sets[0][x][3])
 
         #self.abc[int(select-1)] = []
         #self.erabc[int(select-1)] = []
         #self.ord[int(select-1)] = []
         #self.erord[int(select-1)] = []
-        
+        print(self.abcissas[int(select-1)])
         
         self.abc[int(select-1)] = np.array(self.abcissas[int(select-1)])
         self.erabc[int(select-1)] = np.array(self.erabcissas[int(select-1)])
@@ -1369,8 +1374,12 @@ class MainWindow(tk.Frame):
         file = tk.filedialog.askopenfilename()
         print(file)
         new_data = read_file(file,str,True)
-        for data in new_data:
-            self.datastring.append(data)
+
+        
+        for x in range(len(new_data)):
+            self.add_dataset(new_data[x])
+        
+        print(self.datasettext)
         
         
 
