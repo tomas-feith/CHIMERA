@@ -549,17 +549,13 @@ class MainWindow(tk.Frame):
         self.errorcolor = tk.Menu(menubar)
         menubar.add_cascade(label="Errorbar Color", menu = self.errorcolor)
         
-<<<<<<< HEAD
+
         self.currentselection = 1
         
-        #Como é preciso guardar a informaçao para cada plot, é preciso ter um array para as
-        #cores que o utilizador quer para cada coisa, adiciona-se uma boolean_Var por array,
-        #sendo que se assume que começamos já com um dataset
-=======
         # Como é preciso guardar a informaçao para cada plot, é preciso ter um array para as
         # cores que o utilizador quer para cada coisa, adiciona-se uma boolean_Var por array,
         # sendo que se assume que começamos já com um dataset
->>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
+
         self.wantmarkerred=[]
         self.wantmarkerblue = []
         self.wantmarkergreen = []
@@ -858,20 +854,13 @@ class MainWindow(tk.Frame):
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
     
         self.datasettext.append(string)
-        
-<<<<<<< HEAD
-        #Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
+    
+        # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
         self.erabcissas.append([0, 0, 0, 0])
         self.ordenadas.append([0, 0, 0, 0])
         self.erordenadas.append([0, 0, 0, 0])
-=======
-        # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
-        self.abcissas.append([1, 1, 1, 1])
-        self.erabcissas.append([1, 1, 1, 1])
-        self.ordenadas.append([1, 1, 1, 1])
-        self.erordenadas.append([1, 1, 1, 1])
->>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
+
         
         self.abc.append(np.array(self.abcissas[-1]))
         self.erabc.append(np.array(self.abcissas[-1]))
@@ -924,19 +913,15 @@ class MainWindow(tk.Frame):
         return True
     
     def update_databox(self, event):
-<<<<<<< HEAD
+
         #Guardar o atual na cena
         self.datasettext[int(self.currentselection - 1)] = self.dataentry.get("1.0", "end-1c")
         
-        
-        #Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
-        #Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
-        #respetiva ao novo data-set
-=======
+    
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
->>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
+
         select = int(self.datalistvariable.get()[-1])
         self.currentselection = select
         
@@ -1152,16 +1137,7 @@ class MainWindow(tk.Frame):
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[int(select-1)]= self.dataentry.get("1.0", "end-1c")
         self.datastring = self.datasettext[int(select-1)]
-<<<<<<< HEAD
-        
 
-
-        
-        
-=======
-        print(self.datastring)
-
->>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False)
         
@@ -1213,17 +1189,12 @@ class MainWindow(tk.Frame):
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
         
-<<<<<<< HEAD
+
         if(self.check_databox()):
         
             if(self.wanterror.get() == 1):
                 for x in range(self.numberdatasets):
                     self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x])
-=======
-        if(self.wanterror.get() == 1):
-            for x in range(self.numberdatasets):
-                self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x])
->>>>>>> 8e3a2343ca26f201ecbb0c6ae23e54c134dd541d
         
             if(self.wantpoints.get() == 1):
                 for x in range(self.numberdatasets):
