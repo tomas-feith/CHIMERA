@@ -175,7 +175,7 @@ def parser(expr, params, indep):
 
     return (True, expr)
 
-def read_file(src, out, mode):
+def read_file(src, out, mode, datatype):
     """
     Função para ler os dados de ficheiros de texto ou excel
 
@@ -218,56 +218,114 @@ def read_file(src, out, mode):
     # Fazer a divisão nos datasets fornecidos
     # Se não houver incerteza no x, então o número de colunas é ímpar
     full_sets = []
-    if (data.shape[1]%2)!=0:
-        for i in range(1,int((data.shape[1]+1)/2)):
-            points = []
-            for j in range(len(data[i].to_numpy())):
-                x = data[0].to_numpy(out)[j]
-                y = data[2*i-1].to_numpy(out)[j]
-                ey = data[2*i].to_numpy(out)[j]
-                # Procurar incoerências nas linhas
-                if (
-                        (out==float and np.isnan(y)!=np.isnan(ey)) or
-                        (out==str and y=='nan' and ey!='nan') or
-                        (out==str and y!='nan'and ey=='nan')
-                    ):
-                    return -2
-                # Se a linha estiver vazia não se acrescenta
-                if (
-                        not (out==float and np.isnan(x)) and
-                        not (out==str and x=='nan') and
-                        not (out==float and np.isnan(y) and np.isnan(ey)) and
-                        not (out==str and y=='nan' and ey=='nan')
-                    ):
-                    points.append([x, y, ey])
-            full_sets.append(points)
+    
+    #Datatype 0 funciona dentro do programa, os outros dois so sao chamados caso venha de excel
+    if(datatype == 0):
+        if (data.shape[1]%2)!=0:
+            for i in range(1,int((data.shape[1]+1)/2)):
+                points = []
+                for j in range(len(data[i].to_numpy())):
+                    x = data[0].to_numpy(out)[j]
+                    y = data[2*i-1].to_numpy(out)[j]
+                    ey = data[2*i].to_numpy(out)[j]
+                    # Procurar incoerências nas linhas
+                    if (
+                            (out==float and np.isnan(y)!=np.isnan(ey)) or
+                            (out==str and y=='nan' and ey!='nan') or
+                            (out==str and y!='nan'and ey=='nan')
+                        ):
+                        return -2
+                    # Se a linha estiver vazia não se acrescenta
+                    if (
+                            not (out==float and np.isnan(x)) and
+                            not (out==str and x=='nan') and
+                            not (out==float and np.isnan(y) and np.isnan(ey)) and
+                            not (out==str and y=='nan' and ey=='nan')
+                        ):
+                        points.append([x, y, ey])
+                full_sets.append(points)
+        # Se houver incerteza no x o tratamento é ligeiramente diferente
+        else:
+            for i in range(1,int((data.shape[1])/2)):
+                points = []
+                for j in range(len(data[2*i].to_numpy())):
+                    x = data[0].to_numpy(out)[j]
+                    ex = data[1].to_numpy(out)[j]
+                    y = data[2*i].to_numpy(out)[j]
+                    ey = data[2*i+1].to_numpy(out)[j]
+                    # Procurar incoerências nas linhas
+                    if (
+                            (out==float and np.isnan(x)!=np.isnan(ex)) or
+                            (out==str and x!='nan' and ex!='nan') or
+                            (out==float and np.isnan(y)!=np.isnan(ey)) or
+                            (out==str and y=='nan' and ey!='nan') or
+                            (out==str and y!='nan'and ey=='nan')
+                        ):
+                        return -3
+                    # Se a linha estiver vazia não se acrescenta
+                    if (
+                            not (out==float and np.isnan(x) and np.isnan(ex)) and
+                            not (out==str and x=='nan' and ex=='nan') and
+                            not (out==float and np.isnan(y) and np.isnan(ey)) and
+                            not (out==str and y=='nan' and ey=='nan')
+                        ):
+                        points.append([x, ex, y, ey])
+                full_sets.append(points)
+    
+    if(datatype == 1):
+            for i in range(0,int((data.shape[1])/3)):
+                points = []
+                for j in range(len(data[3*i].to_numpy())):
+                    x = data[3*i].to_numpy(out)[j]
+                    y = data[3*i+1].to_numpy(out)[j]
+                    ey = data[3*i+2].to_numpy(out)[j]
+                    # Procurar incoerências nas linhas
+                    #if (
+                     #       (out==float and np.isnan(y)!=np.isnan(ey)) or
+                      #      (out==str and y=='nan' and ey!='nan') or
+                       #     (out==str and y!='nan'and ey=='nan')
+                        #):
+                        #return -2
+                    # Se a linha estiver vazia não se acrescenta
+                    if (
+                            not (out==float and np.isnan(x)) and
+                            not (out==str and x=='nan') and
+                            not (out==float and np.isnan(y) and np.isnan(ey)) and
+                            not (out==str and y=='nan' and ey=='nan')
+                        ):
+                        points.append([x, y, ey])
+                full_sets.append(points)
+                
+                
     # Se houver incerteza no x o tratamento é ligeiramente diferente
-    else:
-        for i in range(1,int((data.shape[1])/2)):
-            points = []
-            for j in range(len(data[2*i].to_numpy())):
-                x = data[0].to_numpy(out)[j]
-                ex = data[1].to_numpy(out)[j]
-                y = data[2*i].to_numpy(out)[j]
-                ey = data[2*i+1].to_numpy(out)[j]
-                # Procurar incoerências nas linhas
-                if (
-                        (out==float and np.isnan(x)!=np.isnan(ex)) or
-                        (out==str and x!='nan' and ex!='nan') or
-                        (out==float and np.isnan(y)!=np.isnan(ey)) or
-                        (out==str and y=='nan' and ey!='nan') or
-                        (out==str and y!='nan'and ey=='nan')
-                    ):
-                    return -3
-                # Se a linha estiver vazia não se acrescenta
-                if (
-                        not (out==float and np.isnan(x) and np.isnan(ex)) and
-                        not (out==str and x=='nan' and ex=='nan') and
-                        not (out==float and np.isnan(y) and np.isnan(ey)) and
-                        not (out==str and y=='nan' and ey=='nan')
-                    ):
-                    points.append([x, ex, y, ey])
-            full_sets.append(points)
+    if(datatype == 2):
+            for i in range(0,int((data.shape[1])/4)):
+                print(int(data.shape[1]))
+                points = []
+                for j in range(len(data[4*i].to_numpy())):
+                    x = data[4*i].to_numpy(out)[j]
+                    ex = data[4*i+1].to_numpy(out)[j]
+                    y = data[4*i+2].to_numpy(out)[j]
+                    ey = data[4*i+3].to_numpy(out)[j]
+                    # Procurar incoerências nas linhas
+                    #if (
+                     #       (out==float and np.isnan(x)!=np.isnan(ex)) or
+                      #      (out==str and x!='nan' and ex!='nan') or
+                       #     (out==float and np.isnan(y)!=np.isnan(ey)) or
+                        #    (out==str and y=='nan' and ey!='nan') or
+                          #  (out==str and y!='nan'and ey=='nan')
+                        #):
+                        #return -32
+                    # Se a linha estiver vazia não se acrescenta
+                    if (
+                            not (out==float and np.isnan(x) and np.isnan(ex)) and
+                            not (out==str and x=='nan' and ex=='nan') and
+                            not (out==float and np.isnan(y) and np.isnan(ey)) and
+                            not (out==str and y=='nan' and ey=='nan')
+                        ):
+                        points.append([x, ex, y, ey])
+                full_sets.append(points)
+        
     
     if mode:
         for i in range(len(full_sets)):
@@ -482,7 +540,7 @@ class MainWindow(tk.Frame):
                                      activebackground='white',
                                      activeforeground='red')
         self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.55)
-        self.import_data["command"] = self.open_file
+        self.import_data["command"] = self.import_window
         
         #Criação do botão ligado à funçao que adiciona mais um dataset
         self.adddatasetbutton = tk.Button(self.plotbuttonframe,
@@ -769,7 +827,61 @@ class MainWindow(tk.Frame):
         
         self.dataset_points = []
         self.update_parameter()
+    
+    def import_window(self):
+        self.import_window = tk.Toplevel(self.master)
+        self.import_window.title('pilinha')
+        self.import_window.geometry('400x250')
+        self.import_window.configure(background='#FCF6F5')
+        self.import_window.resizable(False, False)
         
+        self.samex = tk.BooleanVar()
+        self.difx = tk.BooleanVar()
+        self.difxerror = tk.BooleanVar()
+                
+        self.samex.set(1)
+        self.difx.set(0)
+        self.difxerror.set(0)
+        
+        
+        samexbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.samex, text = 'All datasets have same (x,ex)', command = self.samexfunction)
+        samexbutton.place(in_ = self.import_window, relwidth = 0.7, relheight = 0.1, rely = 0.05, relx = 0.15)
+        
+        samexbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        
+        samextext=tk.Label(self.import_window, bg = '#FCF6F5', text = '2 first columns will be (x,ex).\nSubsequencial columns will be (y1, ey1, y2, ey2, ...)')
+        samextext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.15, rely = 0.15, relx = 0.05)
+        
+        difxbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.difx, text = 'All datasets have their own (x, ex)',  command = self.difxfunction)
+        difxbutton.place(in_ = self.import_window, relwidth = 0.8, relheight = 0.15, rely = 0.35, relx = 0.1)
+        
+        difxbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        
+        difxtext=tk.Label(self.import_window, bg = '#FCF6F5', text = 'Columns will be (x1, ex1, y1, ey1, ...)')
+        difxtext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.1, rely = 0.45, relx = 0.05)
+        
+        difxerrorbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.difxerror, text = 'Include ex',  command = self.difxerrorfunction)
+        difxerrorbutton.place(in_ = self.import_window, relwidth = 0.5, relheight = 0.1, rely = 0.6, relx = 0.25)
+        
+        importbutton = tk.Button(self.import_window, text = "CHOOSE FILE", command = self.open_file, fg='white',
+                                  bg='red',
+                                  activebackground='white',
+                                  activeforeground='red')
+        importbutton.place(in_ = self.import_window, relwidth =0.5, relheight = 0.15, relx=0.25, rely=0.8)
+        importbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        
+    def samexfunction(self):
+        self.difxerror.set(0)
+        self.difx.set(0)
+    
+    def difxfunction(self):
+        self.samex.set(0)
+        self.difxerror.set(0)
+    
+    def difxerrorfunction(self):
+        self.samex.set(0)
+        self.difx.set(1)
+    
     #Funções para mudar as cores
     def colormarkerblue(self):
         self.wantmarkerblue[self.selecteddataset].set(1)
@@ -1155,7 +1267,7 @@ class MainWindow(tk.Frame):
             return False
         
         data = StringIO(self.datastring)
-        data_sets = read_file(data,float,False)
+        data_sets = read_file(data,float,False,0)
         
        
         
@@ -1429,10 +1541,22 @@ class MainWindow(tk.Frame):
         return eval(self.function)
 
     def open_file(self):
+        
+        self.import_window.destroy()
+        
         # Isto ainda não faz nada, preciso de compreender melhor o programa
         file = tk.filedialog.askopenfilename()
-        print(file)
-        new_data = read_file(file,str,True)
+        
+        if(self.samex.get() == 1):
+            new_data = read_file(file,str,True,0)
+        
+        if(self.difx.get() == 1 and self.difxerror.get()== 0):
+            new_data = read_file(file,str,True,1)
+        
+        if(self.difxerror.get() == 1):
+            new_data = read_file(file,str,True,2)
+        
+        print(new_data)
         
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
