@@ -1233,7 +1233,6 @@ class MainWindow(tk.Frame):
             expr = ('np.'+str(function[1])).join(expr)
     
         #Criação da figura que vai segurar o plot, e seguidamente espetada no canvas
-       
         #Criação dos arrays com muitos pontinhos x e y(x)
         self.xfunc=[]
         self.yfunc=[]
@@ -1251,12 +1250,9 @@ class MainWindow(tk.Frame):
             self.wantfunction = 0
             self.plotfunctionbutton['text'] = 'PLOT FUNCTION'
             
-        
         self.plot_dataset()
         
     def plot_dataset(self):
-        
-        
         
         #Basicamente a msm coisa
         select = int(self.datalistvariable.get()[-1])
@@ -1268,8 +1264,6 @@ class MainWindow(tk.Frame):
         
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False,0)
-        
-       
         
 
         self.abcissas[int(select-1)] = []
@@ -1487,21 +1481,18 @@ class MainWindow(tk.Frame):
     
                 self.anotherframe=tk.Frame(self.paramcanvas, bg='#FCF6F5')
                 
-                
-
-    
                 for x in range(self.boxnumber):
                     self.paramboxes.append(tk.Entry(self.anotherframe))
-                    self.paramboxes[x].grid(column = 4, row = x,padx=30, pady=10, sticky='nsew')
+                    self.paramboxes[x].grid(column=4, row=x, padx=0, pady=10, sticky='nsew')
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
-                    self.paramlabel[x].grid(column = 3, row = x, pady=10, sticky= tk.E)
+                    self.paramlabel[x].grid(column = 3, row = x, padx=(70,20), pady=10, sticky= tk.E)
                     self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#FCF6F5'))
-                    self.plotparamlabel[x].grid(column=0, row = x, pady = 10, sticky = tk.E)
+                    self.plotparamlabel[x].grid(column=0, row=x, padx=(30,20), pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
             count = 2
             
-            self.paramcanvas.create_window((0,0), window = self.anotherframe, anchor = "nw")
+            self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw", width=self.master.winfo_screenwidth()/2.)
             
             
     def fit_data(self, data, init_params, max_iter):
@@ -1569,7 +1560,6 @@ class MainWindow(tk.Frame):
         
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
-        
         
         
 root = tk.Tk()
