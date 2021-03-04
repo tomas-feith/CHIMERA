@@ -1425,12 +1425,14 @@ class MainWindow(tk.Frame):
     
                 self.paramlabel=[]
                 self.paramboxes=[]
+                self.plotparamlabel = []
+                self.plotparamboxes = []
     
                 self.paramscrolly.destroy()
                 self.anotherframe.destroy()
                 self.paramcanvas.destroy()
     
-                self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0)
+                self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#FCF6F5')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
     
                 self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
@@ -1439,7 +1441,7 @@ class MainWindow(tk.Frame):
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
                 self.paramcanvas.bind('<Configure>', lambda e: self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all")))
     
-                self.anotherframe=tk.Frame(self.paramcanvas)
+                self.anotherframe=tk.Frame(self.paramcanvas,  bg='#FCF6F5')
     
                 self.anotherframe.grid_columnconfigure(0, weight=1)
                 self.anotherframe.grid_columnconfigure(1, weight=1)
@@ -1448,11 +1450,14 @@ class MainWindow(tk.Frame):
                 self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
     
                 for x in range(self.boxnumber):
-                    self.anotherframe.grid_rowconfigure(x, weight=1)
                     self.paramboxes.append(tk.Entry(self.anotherframe))
-                    self.paramboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
-                    self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}'))
-                    self.paramlabel[x].grid(column = 0, row = x, pady=10, sticky= 'nsew')
+                    self.paramboxes[x].grid(column = 4, row = x,padx=30, pady=10, sticky='nsew')
+                    self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
+                    self.paramlabel[x].grid(column = 3, row = x, pady=10, sticky= tk.E)
+                    self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#FCF6F5'))
+                    self.plotparamlabel[x].grid(column=0, row = x, pady = 10, sticky = tk.E)
+                    self.plotparamboxes.append(tk.Entry(self.anotherframe))
+                    self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
 
             if (count == 1):
     
@@ -1481,19 +1486,23 @@ class MainWindow(tk.Frame):
                 self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
     
                 self.anotherframe=tk.Frame(self.paramcanvas, bg='#FCF6F5')
-    
-                self.paramcanvas.create_window((0,0), window = self.anotherframe, anchor = "nw")
+                
+                
+
     
                 for x in range(self.boxnumber):
                     self.paramboxes.append(tk.Entry(self.anotherframe))
                     self.paramboxes[x].grid(column = 4, row = x,padx=30, pady=10, sticky='nsew')
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
-                    self.paramlabel[x].grid(column = 3, row = x, pady=10, sticky= 'nsew')
+                    self.paramlabel[x].grid(column = 3, row = x, pady=10, sticky= tk.E)
                     self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#FCF6F5'))
-                    self.plotparamlabel[x].grid(column=0, row = x, pady = 10, sticky = 'nsew')
+                    self.plotparamlabel[x].grid(column=0, row = x, pady = 10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
             count = 2
+            
+            self.paramcanvas.create_window((0,0), window = self.anotherframe, anchor = "nw")
+            
             
     def fit_data(self, data, init_params, max_iter):
         """
