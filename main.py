@@ -683,6 +683,11 @@ class MainWindow(tk.Frame):
         self.xaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.15, rely=0.4)
         self.xaxistickspentry.insert(0, "1")
+        
+        self.autoscalex = tk.BooleanVar()
+        self.autoscalex.set(0)
+        self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale X')
+        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.5, relheight = 0.1, rely = 0.5)
 
         self.yaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#FCF6F5')
         self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.15, relheight=0.1, relx = 5, rely = 0.1)
@@ -711,6 +716,11 @@ class MainWindow(tk.Frame):
         self.yaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.65, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
+        
+        self.autoscaley = tk.BooleanVar()
+        self.autoscaley.set(0)
+        self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale Y')
+        self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.5, relheight = 0.1, rely = 0.5, relx = 0.5)
         
         #Criação do texto respetivo ao primeiro dataset
         #A variável datasettext contém os textos presentes em cada dataset
@@ -844,6 +854,8 @@ class MainWindow(tk.Frame):
         self.wanterrorblack[self.selecteddataset].set(0)
         self.wanterrorgreen[self.selecteddataset].set(1)
         self.errorcolorvar[self.selecteddataset] = "green"
+        
+
 
     # Função para adicionar um dataset
     def add_dataset(self, string):
@@ -1168,7 +1180,7 @@ class MainWindow(tk.Frame):
                 self.ordenadas[int(select-1)].append(data_sets[0][x][1])
                 self.erordenadas[int(select-1)].append(data_sets[0][x][2])
 
-       
+        print(self.abcissas)
         
         self.abc[int(select-1)] = np.array(self.abcissas[int(select-1)])
         self.erabc[int(select-1)] = np.array(self.erabcissas[int(select-1)])
@@ -1177,6 +1189,46 @@ class MainWindow(tk.Frame):
 
         fig = Figure(figsize=(10,10))
 
+       
+            
+        
+        if(self.autoscalex.get() == 1):
+            allabc = []
+            for x in range(len(self.abcissas)):
+                allabc.append(max(self.abcissas[x]))
+                allabc.append(min(self.abcissas[x]))
+            
+            minabc = min(allabc)
+            maxabc = max(allabc)
+            amp = maxabc - minabc
+            maxabc = maxabc + 0.05*amp
+            minabc = minabc - 0.05*amp
+            
+            self.xaxismaxentry.delete(0, 'end')
+            self.xaxisminentry.delete(0, 'end')
+            
+            self.xaxismaxentry.insert(0, maxabc)
+            self.xaxisminentry.insert(0, minabc)
+            
+            
+        if(self.autoscaley.get() == 1):
+            allord = []
+            for x in range(len(self.ordenadas)):
+                allord.append(max(self.ordenadas[x]))
+                allord.append(min(self.ordenadas[x]))
+            
+            minord = min(allord)
+            maxord = max(allord)
+            amp = maxord - minord
+            maxord = maxord + 0.05*amp
+            minord = minord - 0.05*amp
+            
+            self.yaxismaxentry.delete(0, 'end')
+            self.yaxisminentry.delete(0, 'end')
+            
+            self.yaxismaxentry.insert(0, maxord)
+            self.yaxisminentry.insert(0, minord)
+        
         x_ticks = []
         y_ticks = []
 
@@ -1188,11 +1240,13 @@ class MainWindow(tk.Frame):
 
         for x in range(yticknumber):
             y_ticks.append(x*float(self.yaxistickspentry.get()) + float(self.yaxisminentry.get()))
-
+        
         self.a = fig.add_subplot(111,projection = None, xlim = (float(self.xaxisminentry.get()), float(self.xaxismaxentry.get())),
                      ylim = (float(self.yaxisminentry.get()), float(self.yaxismaxentry.get())),
                      xticks = x_ticks, yticks = y_ticks, ylabel = self.yaxistitleentry.get(),
                      xlabel = self.xaxistitleentry.get())
+        
+        
 
         self.subframeleft1.destroy()
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
