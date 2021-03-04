@@ -1445,11 +1445,11 @@ class MainWindow(tk.Frame):
     
                 for x in range(self.boxnumber):
                     self.paramboxes.append(tk.Entry(self.anotherframe))
-                    self.paramboxes[x].grid(column = 4, row = x,padx=30, pady=10, sticky='nsew')
+                    self.paramboxes[x].grid(column=4, row=x, padx=0, pady=10, sticky='nsew')
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
-                    self.paramlabel[x].grid(column = 3, row = x, pady=10, sticky= tk.E)
+                    self.paramlabel[x].grid(column = 3, row = x, padx=(70,20), pady=10, sticky= tk.E)
                     self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#FCF6F5'))
-                    self.plotparamlabel[x].grid(column=0, row = x, pady = 10, sticky = tk.E)
+                    self.plotparamlabel[x].grid(column=0, row=x, padx=(30,20), pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
 
@@ -1492,7 +1492,7 @@ class MainWindow(tk.Frame):
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
             count = 2
             
-            self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw", width=self.master.winfo_screenwidth()/2.)
+            self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw", width=500)
             
             
     def fit_data(self, data, init_params, max_iter):
