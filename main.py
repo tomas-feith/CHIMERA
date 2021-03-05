@@ -781,6 +781,7 @@ class MainWindow(tk.Frame):
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
         
+        
         self.dataset_points = []
         self.update_parameter()
     
