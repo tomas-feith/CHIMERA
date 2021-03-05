@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from io import StringIO
 from scipy import odr
-
+from tkinter import colorchooser
 
 # Isto serve para quê? 
 count = 0
@@ -586,7 +586,9 @@ class MainWindow(tk.Frame):
         # esta menubar é a mais geral, é a que contem as outras
         menubar = tk.Menu(self.master)
         self.master.config(menu=menubar)
-
+        
+        menubar.add_radiobutton
+        
         # Este é o botão file na menubar
         self.fileMenu = tk.Menu(menubar)
         menubar.add_cascade(label="File", menu=self.fileMenu)
@@ -611,87 +613,29 @@ class MainWindow(tk.Frame):
         self.plotoptions.add_checkbutton( label = "error bars", onvalue = 1, offvalue = 0, variable = self.wanterror)
        
         # Estes 3 menus na menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
-        self.markercolor = tk.Menu(menubar)
-        menubar.add_cascade(label="Marker Color", menu = self.markercolor)
+        self.choosecolor = tk.Menu(menubar)
+        menubar.add_cascade(label="Choose Colors", menu = self.choosecolor)
         
-        self.linecolor = tk.Menu(menubar)
-        menubar.add_cascade(label="Line Color", menu = self.linecolor)
-        
-        self.errorcolor = tk.Menu(menubar)
-        menubar.add_cascade(label="Errorbar Color", menu = self.errorcolor)
         
 
         self.currentselection = 1
         
-        # Como é preciso guardar a informaçao para cada plot, é preciso ter um array para as
-        # cores que o utilizador quer para cada coisa, adiciona-se uma boolean_Var por array,
-        # sendo que se assume que começamos já com um dataset
-
-        self.wantmarkerred=[]
-        self.wantmarkerblue = []
-        self.wantmarkergreen = []
-        self.wantmarkerblack = []
-        self.wantmarkerred.append( tk.BooleanVar())
-        self.wantmarkerblue.append(tk.BooleanVar())
-        self.wantmarkergreen.append(tk.BooleanVar())
-        self.wantmarkerblack.append(tk.BooleanVar())
-        
-        self.wantlinered=[]
-        self.wantlineblue = []
-        self.wantlinegreen = []
-        self.wantlineblack = []
-        self.wantlinered.append( tk.BooleanVar())
-        self.wantlineblue.append(tk.BooleanVar())
-        self.wantlinegreen.append(tk.BooleanVar())
-        self.wantlineblack.append(tk.BooleanVar())
-        
-        self.wanterrorred=[]
-        self.wanterrorblue = []
-        self.wanterrorgreen = []
-        self.wanterrorblack = []
-        self.wanterrorred.append( tk.BooleanVar())
-        self.wanterrorblue.append(tk.BooleanVar())
-        self.wanterrorgreen.append(tk.BooleanVar())
-        self.wanterrorblack.append(tk.BooleanVar())
-        
-        # Por default defini tudo a preto
-        # estas variáveis servem para os checkbuttons, por isso vao já definidas com 
-        # o valor default 1 no preto, para aparecer o "checkmark" nas barras
-        self.wantmarkerred[0].set(0)
-        self.wantmarkerblue[0].set(0)
-        self.wantmarkergreen[0].set(0)
-        self.wantmarkerblack[0].set(1)  
-        self.wantlinered[0].set(0)
-        self.wantlineblue[0].set(0)
-        self.wantlinegreen[0].set(0)
-        self.wantlineblack[0].set(1)
-        self.wanterrorred[0].set(0)
-        self.wanterrorblue[0].set(0)
-        self.wanterrorgreen[0].set(0)
-        self.wanterrorblack[0].set(1)
-        
-        # Estas variáveis guardam de facto as palavras respetivas a cada cor, sendo que irão ser postas
-        # no parametro color do plot.
         self.markercolorvar = []
         self.linecolorvar = []
         self.errorcolorvar = []
-        self.markercolorvar.append("black")
-        self.linecolorvar.append("black")
-        self.errorcolorvar.append("black")
+        
+        self.markercolorvar.append('black')
+        self.linecolorvar.append('black')
+        self.errorcolorvar.append('black')
+
+
+       
         
         # Aqui tou so a meter os checkbuttons nas caixas
-        self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred[0], command = self.colormarkerred)
-        self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue[0], command = self.colormarkerblue)
-        self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen[0], command = self.colormarkergreen)
-        self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantmarkerblack[0], command = self.colormarkerblack)
-        self.linecolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantlinered[0], command = self.colorlinered)
-        self.linecolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantlineblue[0], command = self.colorlineblue)
-        self.linecolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantlinegreen[0], command = self.colorlinegreen)
-        self.linecolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantlineblack[0], command = self.colorlineblack)
-        self.errorcolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wanterrorred[0], command = self.colorerrorred)
-        self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue[0], command = self.colorerrorblue)
-        self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen[0], command = self.colorerrorgreen)
-        self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack[0], command = self.colorerrorblack)
+        self.choosecolor.add_command(label = 'Marker Color', command = self.markercolorpick)
+        self.choosecolor.add_command(label = 'Line Color', command = self.linecolorpick)
+        self.choosecolor.add_command(label = 'Errorbar Color', command = self.errorcolorpick)
+       
 
         # Criação da zona para inserir a variável independente
         self.independentlabel = tk.Label(self.subframeright1,text="Independent Variable", bg='#FCF6F5')
@@ -851,6 +795,20 @@ class MainWindow(tk.Frame):
         
         self.plot_dataset()
         
+    def markercolorpick(self):
+        pick_color = tk.colorchooser.askcolor()[1]
+        self.markercolorvar[self.selecteddataset] = pick_color
+        self.plot_dataset()
+    
+    def linecolorpick(self):
+        pick_color = tk.colorchooser.askcolor()[1]
+        self.linecolorvar[self.selecteddataset] = pick_color
+        self.plot_dataset()
+    
+    def errorcolorpick(self):
+        pick_color = tk.colorchooser.askcolor()[1]
+        self.errorcolorvar[self.selecteddataset] = pick_color
+        self.plot_dataset()
         
     def import_window(self):
         self.import_window = tk.Toplevel(self.master)
@@ -905,93 +863,6 @@ class MainWindow(tk.Frame):
     def difxerrorfunction(self):
         self.samex.set(0)
         self.difx.set(1)
-    
-    #Funções para mudar as cores
-    def colormarkerblue(self):
-        self.wantmarkerblue[self.selecteddataset].set(1)
-        self.wantmarkerblack[self.selecteddataset].set(0)
-        self.wantmarkerred[self.selecteddataset].set(0)
-        self.wantmarkergreen[self.selecteddataset].set(0)
-        self.markercolorvar[self.selecteddataset] = "blue"
-        
-    def colormarkerblack(self):
-        self.wantmarkerblue[self.selecteddataset].set(0)
-        self.wantmarkerred[self.selecteddataset].set(0)
-        self.wantmarkergreen[self.selecteddataset].set(0)
-        self.wantmarkerblack[self.selecteddataset].set(1)
-        self.markercolorvar[self.selecteddataset] = "black"
-        
-    def colormarkerred(self):
-        self.wantmarkerblue[self.selecteddataset].set(0)
-        self.wantmarkerblack[self.selecteddataset].set(0)
-        self.wantmarkergreen[self.selecteddataset].set(0)
-        self.wantmarkerred[self.selecteddataset].set(1)
-        self.markercolorvar[self.selecteddataset] = "red"
-        
-    def colormarkergreen(self):
-        self.wantmarkerblue[self.selecteddataset].set(0)
-        self.wantmarkerred[self.selecteddataset].set(0)
-        self.wantmarkerblack[self.selecteddataset].set(0)
-        self.wantmarkergreen[self.selecteddataset].set(1)
-        self.markercolorvar[self.selecteddataset] = "green"
-    
-    def colorlineblue(self):
-        self.wantlineblue[self.selecteddataset].set(1)
-        self.wantlineblack[self.selecteddataset].set(0)
-        self.wantlinered[self.selecteddataset].set(0)
-        self.wantlinegreen[self.selecteddataset].set(0)
-        self.linecolorvar[self.selecteddataset] = "blue"
-        
-    def colorlineblack(self):
-        self.wantlineblue[self.selecteddataset].set(0)
-        self.wantlinered[self.selecteddataset].set(0)
-        self.wantlinegreen[self.selecteddataset].set(0)
-        self.wantlineblack[self.selecteddataset].set(1)
-        self.linecolorvar[self.selecteddataset] = "black"
-        
-    def colorlinered(self):
-        self.wantlineblue[self.selecteddataset].set(0)
-        self.wantlineblack[self.selecteddataset].set(0)
-        self.wantlinegreen[self.selecteddataset].set(0)
-        self.wantlinered[self.selecteddataset].set(1)
-        self.linecolorvar[self.selecteddataset] = "red"
-        
-    def colorlinegreen(self):
-        self.wantlineblue[self.selecteddataset].set(0)
-        self.wantlinered[self.selecteddataset].set(0)
-        self.wantlineblack[self.selecteddataset].set(0)
-        self.wantlinegreen[self.selecteddataset].set(1)
-        self.linecolorvar[self.selecteddataset] = "green"
-            
-    def colorerrorblue(self):
-        self.wanterrorblue[self.selecteddataset].set(1)
-        self.wanterrorblack[self.selecteddataset].set(0)
-        self.wanterrorred[self.selecteddataset].set(0)
-        self.wanterrorgreen[self.selecteddataset].set(0)
-        self.errorcolorvar[self.selecteddataset] = "blue"
-        
-    def colorerrorblack(self):
-        self.wanterrorblue[self.selecteddataset].set(0)
-        self.wanterrorred[self.selecteddataset].set(0)
-        self.wanterrorgreen[self.selecteddataset].set(0)
-        self.wanterrorblack[self.selecteddataset].set(1)
-        self.errorcolorvar[self.selecteddataset] = "black"
-    
-    def colorerrorred(self):
-        self.wanterrorblue[self.selecteddataset].set(0)
-        self.wanterrorblack[self.selecteddataset].set(0)
-        self.wanterrorgreen[self.selecteddataset].set(0)
-        self.wanterrorred[self.selecteddataset].set(1)
-        self.errorcolorvar[self.selecteddataset] = "red"
-        
-    def colorerrorgreen(self):
-        self.wanterrorblue[self.selecteddataset].set(0)
-        self.wanterrorred[self.selecteddataset].set(0)
-        self.wanterrorblack[self.selecteddataset].set(0)
-        self.wanterrorgreen[self.selecteddataset].set(1)
-        self.errorcolorvar[self.selecteddataset] = "green"
-        
-
 
     # Função para adicionar um dataset
     def add_dataset(self, string):
@@ -1000,7 +871,7 @@ class MainWindow(tk.Frame):
         self.datalist.append("dataset " + str(len(self.datalist)+1))
         self.datasetselector.destroy()
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
-        self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
+        self.datasetselector.place(relx = 0.2, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
     
         self.datasettext.append(string)
