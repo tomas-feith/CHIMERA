@@ -300,7 +300,7 @@ def read_file(src, out, mode, datatype):
     # Se houver incerteza no x o tratamento é ligeiramente diferente
     if(datatype == 2):
             for i in range(0,int((data.shape[1])/4)):
-                print(int(data.shape[1]))
+               
                 points = []
                 for j in range(len(data[4*i].to_numpy())):
                     x = data[4*i].to_numpy(out)[j]
@@ -528,7 +528,7 @@ class MainWindow(tk.Frame):
                                        activebackground='white',
                                        activeforeground='red')
         
-        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.25, relheight=1,relx = 0.75)
+        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.25, relheight=1,relx = 0.6)
         self.plotfunctionbutton["command"] = self.plot_function
         self.wantfunction = 0
         
@@ -539,7 +539,7 @@ class MainWindow(tk.Frame):
                                      bg='red',
                                      activebackground='white',
                                      activeforeground='red')
-        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.55)
+        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.4)
         self.import_data["command"] = self.import_window
         
         #Criação do botão ligado à funçao que adiciona mais um dataset
@@ -549,7 +549,18 @@ class MainWindow(tk.Frame):
                                        bg='red',
                                        activebackground='white',
                                        activeforeground='red', command = lambda: self.add_dataset(''))
-        self.adddatasetbutton.place(in_ =self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.5)
+        self.adddatasetbutton.place(in_ =self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.35)
+        
+        self.fitbutton = tk.Button(self.plotbuttonframe,
+                                       text="FIT",
+                                       fg='white',
+                                       bg='red',
+                                       activebackground='white',
+                                       activeforeground='red')
+        self.fitbutton.place(in_ =self.plotbuttonframe, relwidth=0.15, relheight=1, relx = 0.85)
+        self.fitbutton["command"] = self.fit_activate
+        self.wantfit = tk.BooleanVar()
+        self.wantfit.set(0)
         
         # Variável para armazenar todos os botoes
         buttons = [self.upbutton, 
@@ -557,7 +568,8 @@ class MainWindow(tk.Frame):
                   self.plotbutton,
                   self.plotfunctionbutton,
                   self.import_data,
-                  self.adddatasetbutton
+                  self.adddatasetbutton,
+                  self.fitbutton
                   ]
         
         for button in buttons:
@@ -704,7 +716,7 @@ class MainWindow(tk.Frame):
         self.functionlabel["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
         self.functionlabel.place(relwidth=0.2, rely=0.2, relheight=0.1)
         self.functionentry = tk.Entry(self.subframeright1, font=40)
-        self.functionentry.place(relwidth=0.8,relx=0.2, rely=0.2, relheight=0.1)
+        self.functionentry.place(relwidth=0.6,relx=0.2, rely=0.2, relheight=0.1)
         self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
         
@@ -795,7 +807,7 @@ class MainWindow(tk.Frame):
         
         #Criação do botão seletor de data-sets, ligalo à função update_databox
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
-        self.datasetselector.place(relx = 0.3, relheight = 1, relwidth=0.2)
+        self.datasetselector.place(relx = 0.2, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
         
         #Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
@@ -828,6 +840,18 @@ class MainWindow(tk.Frame):
         self.dataset_points = []
         self.update_parameter()
     
+    def fit_activate(self):
+        
+        if(self.wantfit.get() == 0):
+            self.wantfit.set(1)
+            self.fitbutton["text"] = 'HIDE'
+        else:
+            self.wantfit.set(0)
+            self.fitbutton["text"] = 'FIT'
+        
+        self.plot_dataset()
+        
+        
     def import_window(self):
         self.import_window = tk.Toplevel(self.master)
         self.import_window.title('pilinha')
@@ -1049,7 +1073,7 @@ class MainWindow(tk.Frame):
             split = self.datasettext[x].split("\n")
             for i in range(len(split)):
                 ponto = split[i].split(' ')
-                print(ponto)
+             
                 for k in ponto:
                      try:
                          float(k)
@@ -1174,6 +1198,63 @@ class MainWindow(tk.Frame):
         #self.data_sets = read_file(data,float,False)
 
     # Função para plottar a funçao com parametros numericos dados pelo utilizador
+    def plot_fittedfunction(self):
+        np.seterr(all='raise')
+        functions = ['sin',
+                     'cos',
+                     'tan',
+                     'arcsin',
+                     'arccos',
+                     'arctan',
+                     'exp',
+                     'log',
+                     'sqrt',
+                     'absolute',
+                     'heaviside',
+                     'cbrt',
+                     'sign'
+                     ]
+        
+        expr = self.functionentry.get()
+        params = self.parameterentry.get()
+        indep = self.independententry.get()
+        
+        # Ver se a função não está vazia
+        expr=expr.replace(' ','')
+        if expr == '':
+            return (False, 'Não foi encontrada nenhuma função de ajustamento.')
+    
+        process = process_params(params, indep)
+        
+        if process[0]:
+            clean_split = process[1]
+        else:
+            return (False, process[1])
+                  
+        for function in enumerate(functions):
+            expr = expr.split(function[1])
+            expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
+        # Substituir os números dos parâmetros
+        for pair in enumerate(clean_split):
+            expr = expr.split(pair[1])
+            expr = (str(self.fittedparams[pair[0]])).join(expr)
+    
+        # Por np atras da funçao para tipo, plottar isso
+        for function in enumerate(functions):
+            expr = expr.split('['+str(function[0]+len(clean_split))+']')
+            expr = ('np.'+str(function[1])).join(expr)
+        
+       
+        
+        self.xfittedfunc=[]
+        self.yfittedfunc=[]
+        
+        for i in range(100):
+            x=0.2*i
+            self.xfittedfunc.append(x)
+            self.yfittedfunc.append(eval(expr))
+        
+        
     def plot_function(self):
         np.seterr(all='raise')
         functions = ['sin',
@@ -1286,7 +1367,6 @@ class MainWindow(tk.Frame):
                 self.ordenadas[int(select-1)].append(data_sets[0][x][1])
                 self.erordenadas[int(select-1)].append(data_sets[0][x][2])
 
-        print(self.abcissas)
         
         self.abc[int(select-1)] = np.array(self.abcissas[int(select-1)])
         self.erabc[int(select-1)] = np.array(self.erabcissas[int(select-1)])
@@ -1358,7 +1438,10 @@ class MainWindow(tk.Frame):
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
         
-
+        self.fittedparams = []
+        self.fittedparamserror = []
+        self.chisq = 0
+        
         if(self.check_databox()):
         
             if(self.wanterror.get() == 1):
@@ -1376,6 +1459,21 @@ class MainWindow(tk.Frame):
             
             if(self.wantfunction == 1):
                 self.a.plot(self.xfunc, self.yfunc)
+        
+        
+        
+            if(self.wantfit.get() == 1):
+                print("aaaaaaaaa")
+                init_values = []
+                for x in range(len(self.paramboxes)):
+                    init_values.append(float(self.paramboxes[x].get()))
+                
+                
+                (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(data_sets, init_values, 1000)
+                
+                self.plot_fittedfunction()
+                
+                self.a.plot(self.xfittedfunc, self.yfittedfunc)
                 
             
         # Se calhar por também uma condição para ver se o utilizador quer grid
@@ -1513,18 +1611,21 @@ class MainWindow(tk.Frame):
 
         """
         func = odr.Model(self.fit_function)
-        
+        print(self.function)
         x_points = []
         y_points = []
         x_err    = []
         y_err    = []
         
-        for point in range(len(data)):
-            x_points.append(point[0])
-            y_points.append(point[-1])
-            y_err.append(point[-2])
-            if len(point) == 4:
-                x_err.append(point[1])
+        for dataset in data:
+            for point in dataset:
+                x_points.append(point[0])
+                y_points.append(point[-2])
+                y_err.append(point[-1])
+                if len(point) == 4:
+                    x_err.append(point[1])
+        
+        print(x_points)
         
         if (len(data[0])==3):
             fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0]*len(x_points))
@@ -1535,9 +1636,11 @@ class MainWindow(tk.Frame):
         fit = my_odr.run()
         fit.pprint()
         
+        
+        
         return (fit.beta, fit.sd_beta, fit.res_var)
         
-    def fit_function(self, _x, B):
+    def fit_function(self, B, _x):
         return eval(self.function)
 
     def open_file(self):
@@ -1556,7 +1659,7 @@ class MainWindow(tk.Frame):
         if(self.difxerror.get() == 1):
             new_data = read_file(file,str,True,2)
         
-        print(new_data)
+        
         
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
