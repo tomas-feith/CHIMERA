@@ -795,6 +795,7 @@ class MainWindow(tk.Frame):
         
         self.plot_dataset()
         
+        
     def markercolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
         self.markercolorvar[self.selecteddataset] = pick_color
