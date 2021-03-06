@@ -891,40 +891,13 @@ class MainWindow(tk.Frame):
         self.erord.append(np.array(self.abcissas[-1]))
         
         # Criar as variáveis respetivas à escolha de cores para cada plot
-        self.wantmarkerred.append( tk.BooleanVar())
-        self.wantmarkerblue.append(tk.BooleanVar())
-        self.wantmarkergreen.append(tk.BooleanVar())
-        self.wantmarkerblack.append(tk.BooleanVar())
-        
-        self.wantlinered.append( tk.BooleanVar())
-        self.wantlineblue.append(tk.BooleanVar())
-        self.wantlinegreen.append(tk.BooleanVar())
-        self.wantlineblack.append(tk.BooleanVar())
-        
-        self.wanterrorred.append( tk.BooleanVar())
-        self.wanterrorblue.append(tk.BooleanVar())
-        self.wanterrorgreen.append(tk.BooleanVar())
-        self.wanterrorblack.append(tk.BooleanVar())
-        
+    
         self.markercolorvar.append("black")
         self.linecolorvar.append("black")
         self.errorcolorvar.append("black")
         
         # Definir a preto por defualt
-        self.wantmarkerred[int(len(self.datalist)-1)].set(0)
-        self.wantmarkerblue[int(len(self.datalist)-1)].set(0)
-        self.wantmarkergreen[int(len(self.datalist)-1)].set(0)
-        self.wantmarkerblack[int(len(self.datalist)-1)].set(1)
-        
-        self.wantlinered[int(len(self.datalist)-1)].set(0)
-        self.wantlineblue[int(len(self.datalist)-1)].set(0)
-        self.wantlinegreen[int(len(self.datalist)-1)].set(0)
-        self.wantlineblack[int(len(self.datalist)-1)].set(1)
-        
-        self.wanterrorred[int(len(self.datalist)-1)].set(0)
-        self.wanterrorblue[int(len(self.datalist)-1)].set(0)
-        self.wanterrorgreen[int(len(self.datalist)-1)].set(0)
-        self.wanterrorblack[int(len(self.datalist)-1)].set(1)
+       
     
     def check_databox(self):
         for x in range(len(self.datasettext)):   
@@ -981,38 +954,12 @@ class MainWindow(tk.Frame):
         
         # Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
         # ao dataset selecionado
-        self.markercolor.delete("blue")
-        self.markercolor.delete("red")
-        self.markercolor.delete("green")
-        self.markercolor.delete("black")
         
-        self.linecolor.delete("blue")
-        self.linecolor.delete("red")
-        self.linecolor.delete("green")
-        self.linecolor.delete("black")
-        
-        self.errorcolor.delete("blue")
-        self.errorcolor.delete("red")
-        self.errorcolor.delete("green")
-        self.errorcolor.delete("black")
         
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
         self.selecteddataset = int(select-1)
         
-        self.markercolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantmarkerred[self.selecteddataset], command = self.colormarkerred)
-        self.markercolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantmarkerblue[self.selecteddataset], command = self.colormarkerblue)
-        self.markercolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantmarkergreen[self.selecteddataset], command = self.colormarkergreen)
-        self.markercolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantmarkerblack[self.selecteddataset], command = self.colormarkerblack)
-         
-        self.linecolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wantlinered[self.selecteddataset], command = self.colorlinered)
-        self.linecolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wantlineblue[self.selecteddataset], command = self.colorlineblue)
-        self.linecolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wantlinegreen[self.selecteddataset], command = self.colorlinegreen)
-        self.linecolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wantlineblack[self.selecteddataset], command = self.colorlineblack)
-         
-        self.errorcolor.add_checkbutton(label = "red", onvalue = 1, offvalue = 0, variable = self.wanterrorred[self.selecteddataset], command = self.colorerrorred)
-        self.errorcolor.add_checkbutton(label = "blue", onvalue = 1, offvalue = 0, variable = self.wanterrorblue[self.selecteddataset], command = self.colorerrorblue)
-        self.errorcolor.add_checkbutton(label = "green", onvalue = 1, offvalue = 0, variable = self.wanterrorgreen[self.selecteddataset], command = self.colorerrorgreen)
-        self.errorcolor.add_checkbutton(label = "black", onvalue = 1, offvalue = 0, variable = self.wanterrorblack[self.selecteddataset], command = self.colorerrorblack)
+        
 
     def secondary_window(self, title, message):
 
