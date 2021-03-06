@@ -423,8 +423,10 @@ class MainWindow(tk.Frame):
             self.new.configure(height = 1)
             self.old.configure(height = 1)
             
-        #if(count == 1 or count == 2):  talvez faca algo com isto mais tarde    
             
+        if(count == 1 or count == 2): # talvez faca algo com isto mais tarde   
+            for button in self.buttons:
+                button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
             #self.independentlabel["font"] = ("Roboto",int(0.0080*self.master.winfo_width()))
             #self.independententry.configure()
             
@@ -553,7 +555,7 @@ class MainWindow(tk.Frame):
                                        activebackground='white',
                                        activeforeground='red')
         
-        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.25, relheight=1,relx = 0.6)
+        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.26, relheight=1,relx = 0.63)
         self.plotfunctionbutton["command"] = self.plot_function
         self.wantfunction = 0
         
@@ -564,7 +566,7 @@ class MainWindow(tk.Frame):
                                      bg='red',
                                      activebackground='white',
                                      activeforeground='red')
-        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.4)
+        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.23, relheight=1,relx = 0.4)
         self.import_data["command"] = self.import_window
         
         #Criação do botão ligado à funçao que adiciona mais um dataset
@@ -582,13 +584,13 @@ class MainWindow(tk.Frame):
                                        bg='red',
                                        activebackground='white',
                                        activeforeground='red')
-        self.fitbutton.place(in_ =self.plotbuttonframe, relwidth=0.15, relheight=1, relx = 0.85)
+        self.fitbutton.place(in_ =self.plotbuttonframe, relwidth=0.11, relheight=1, relx = 0.89)
         self.fitbutton["command"] = self.fit_activate
         self.wantfit = tk.BooleanVar()
         self.wantfit.set(0)
         
         # Variável para armazenar todos os botoes
-        buttons = [self.upbutton, 
+        self.buttons = [self.upbutton, 
                   self.compilebutton,
                   self.plotbutton,
                   self.plotfunctionbutton,
@@ -597,14 +599,14 @@ class MainWindow(tk.Frame):
                   self.fitbutton
                   ]
         
-        for button in buttons:
+        for button in self.buttons:
             def hover(button):
                 return lambda e: button.config(bg='white',fg='red')
             def unhover(button):
                 return lambda e: button.config(bg='red',fg='white')
             button.bind("<Enter>", hover(button))
             button.bind("<Leave>", unhover(button))
-            button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
         
         self.datastringcarrier = "1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5"
         # Criar uma menu bar
