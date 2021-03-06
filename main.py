@@ -348,7 +348,9 @@ class MainWindow(tk.Frame):
         super().__init__(master)
         # Esta é a janela principal
         self.master = master
-
+        
+        
+        
         master.state('zoomed')
 
         # Tirar o icon do tkinter
@@ -475,6 +477,7 @@ class MainWindow(tk.Frame):
         self.master.configure(background='#FCF6F5')
 
     def create_new(self):
+        self.countplots = 0
         # Destruir tudo o que estava na janela
         self.title_canvas.delete("all")
         self.logo_canvas.delete("all")
@@ -761,11 +764,24 @@ class MainWindow(tk.Frame):
         self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale Y')
         self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, rely = 0.4, relx = 0.7)
         
+        self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, label = 'Line Width')
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.6)
+        self.linewidthscale['state'] = tk.DISABLED
+        
+        self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider, label = 'Marker Size')
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.6)
+        self.markersizescale['state'] = tk.DISABLED
+        
+        self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, label = 'Errorbar Width')
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.67, rely=0.6)
+        self.errorsizescale['state'] = tk.DISABLED
+        
+        
         sty = ttk.Style(self.subframeright3)
         sty.configure("TSeparator", background="red")
         
         sep = ttk.Separator(self.subframeright3, orient = tk.VERTICAL )
-        sep.place(in_ = self.subframeright3, relx=0.5, relheight = 0.95, rely=0.05)
+        sep.place(in_ = self.subframeright3, relx=0.5, relheight = 0.5, rely=0.05)
         
         
         sep1 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
@@ -778,6 +794,8 @@ class MainWindow(tk.Frame):
         sep2 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
         sep2.place(in_ = self.subframeright3, relx=0.8, rely=0.05, relwidth = 0.2)
         
+        sep3 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL)
+        sep3.place(in_ = self.subframeright3, relx=0, rely=0.55, relwidth=1)
         
         
         
@@ -827,9 +845,24 @@ class MainWindow(tk.Frame):
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
         
+        self.linewidth = 2
+        self.markersize = 2
+        self.errorwidth = 1
         
         self.dataset_points = []
         self.update_parameter()
+    
+    def lineslider(self, a):
+        self.linewidth = a
+        self.plot_dataset()
+    
+    def markerslider(self, a):
+        self.markersize = a
+        self.plot_dataset()
+    
+    def errorslider(self, a):
+        self.errorwidth = a
+        self.plot_dataset()
     
     def fit_activate(self):
         
@@ -1202,6 +1235,11 @@ class MainWindow(tk.Frame):
         
     def plot_dataset(self):
         
+        if(self.countplots == 0):
+            self.linewidthscale['state'] = tk.NORMAL
+            self.markersizescale['state'] = tk.NORMAL
+            self.errorsizescale['state'] = tk.NORMAL
+            self.countplots = 1
         #Basicamente a msm coisa
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
@@ -1286,6 +1324,8 @@ class MainWindow(tk.Frame):
         
         x_ticks = []
         y_ticks = []
+        
+        
 
         xticknumber =1+int((float(self.xaxismaxentry.get())-float(self.xaxisminentry.get()))/float(self.xaxistickspentry.get()))
         yticknumber =1+int((float(self.yaxismaxentry.get())-float(self.yaxisminentry.get()))/float(self.yaxistickspentry.get()))
@@ -1311,20 +1351,24 @@ class MainWindow(tk.Frame):
         self.fittedparamserror = []
         self.chisq = 0
         
+        
+            
+        
+        
         if(self.check_databox()):
         
             if(self.wanterror.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x])
+                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x], elinewidth = float(self.errorwidth))
         
             if(self.wantpoints.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.scatter(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1)
+                    self.a.plot(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=float(self.markersize)*2)
         
        
             if(self.wantline.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x])
+                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth)
             
             if(self.wantfunction == 1):
                 self.a.plot(self.xfunc, self.yfunc)
