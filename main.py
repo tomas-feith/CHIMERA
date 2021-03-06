@@ -425,10 +425,17 @@ class MainWindow(tk.Frame):
             self.new.configure(height = 1)
             self.old.configure(height = 1)
             
-        #if(count == 1 or count == 2):  talvez faca algo com isto mais tarde    
             
-            #self.independentlabel["font"] = ("Roboto",int(0.0080*self.master.winfo_width()))
-            #self.independententry.configure()
+        if(count == 1 or count == 2):    
+            for button in self.buttons:
+                button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
+                self.functionlabel["font"] = ("Roboto",int(0.013*self.master.winfo_width()))
+                self.parameterlabel["font"] = ("Roboto",int(0.013*self.master.winfo_width()))
+                self.independentlabel["font"] = ("Roboto",int(0.012*self.master.winfo_width()))
+                self.independententry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
+                self.parameterentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
+                self.functionentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
+            
             
 
             
@@ -556,7 +563,7 @@ class MainWindow(tk.Frame):
                                        activebackground='white',
                                        activeforeground='red')
         
-        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.25, relheight=1,relx = 0.6)
+        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.26, relheight=1,relx = 0.63)
         self.plotfunctionbutton["command"] = self.plot_function
         self.wantfunction = 0
         
@@ -567,7 +574,7 @@ class MainWindow(tk.Frame):
                                      bg='red',
                                      activebackground='white',
                                      activeforeground='red')
-        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1,relx = 0.4)
+        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.23, relheight=1,relx = 0.4)
         self.import_data["command"] = self.import_window
         
         #Criação do botão ligado à funçao que adiciona mais um dataset
@@ -585,13 +592,13 @@ class MainWindow(tk.Frame):
                                        bg='red',
                                        activebackground='white',
                                        activeforeground='red')
-        self.fitbutton.place(in_ =self.plotbuttonframe, relwidth=0.15, relheight=1, relx = 0.85)
+        self.fitbutton.place(in_ =self.plotbuttonframe, relwidth=0.11, relheight=1, relx = 0.89)
         self.fitbutton["command"] = self.fit_activate
         self.wantfit = tk.BooleanVar()
         self.wantfit.set(0)
         
         # Variável para armazenar todos os botoes
-        buttons = [self.upbutton, 
+        self.buttons = [self.upbutton, 
                   self.compilebutton,
                   self.plotbutton,
                   self.plotfunctionbutton,
@@ -600,14 +607,14 @@ class MainWindow(tk.Frame):
                   self.fitbutton
                   ]
         
-        for button in buttons:
+        for button in self.buttons:
             def hover(button):
                 return lambda e: button.config(bg='white',fg='red')
             def unhover(button):
                 return lambda e: button.config(bg='red',fg='white')
             button.bind("<Enter>", hover(button))
             button.bind("<Leave>", unhover(button))
-            button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
         
         self.datastringcarrier = "1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5"
         # Criar uma menu bar
@@ -666,11 +673,11 @@ class MainWindow(tk.Frame):
        
 
         # Criação da zona para inserir a variável independente
-        self.independentlabel = tk.Label(self.subframeright1,text="Independent Variable", bg='#FCF6F5')
-        self.independentlabel["font"] = ("Roboto",int(0.0085*self.master.winfo_width()))
-        self.independentlabel.place(relwidth=0.22, rely=0, relheight=0.1)
-        self.independententry = tk.Entry(self.subframeright1, font=40)
-        self.independententry.place(relwidth=0.78, rely=0, relheight=0.1, relx = 0.22)
+        self.independentlabel = tk.Label(self.subframeright1,text="Independent Var", bg='#FCF6F5')
+        self.independentlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
+        self.independentlabel.place(relwidth=0.25, rely=0, relheight=0.1)
+        self.independententry = tk.Entry(self.subframeright1, font=int(0.01*self.master.winfo_width()))
+        self.independententry.place(relwidth=0.30, rely=0, relheight=0.1, relx = 0.27)
         self.independententry.insert(0, 'x')
         self.independententry.focus_set()
 
@@ -679,7 +686,7 @@ class MainWindow(tk.Frame):
         self.parameterlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
         self.parameterlabel.place(relwidth=0.22, rely=0.1, relheight=0.1)
         self.parameterentry = tk.Entry(self.subframeright1, font=40)
-        self.parameterentry.place(relwidth=0.6, rely=0.1, relheight=0.1,relx = 0.22)
+        self.parameterentry.place(relwidth=0.55, rely=0.1, relheight=0.1,relx = 0.27)
         self.parameterentry.insert(0, "a,b")
         self.parameterentry.focus_set()
         
@@ -688,7 +695,7 @@ class MainWindow(tk.Frame):
         self.functionlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
         self.functionlabel.place(relwidth=0.22, rely=0.2, relheight=0.1)
         self.functionentry = tk.Entry(self.subframeright1, font=40)
-        self.functionentry.place(relwidth=0.6,relx=0.22, rely=0.2, relheight=0.1)
+        self.functionentry.place(relwidth=0.55,relx=0.27, rely=0.2, relheight=0.1)
         self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
         
