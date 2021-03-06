@@ -424,11 +424,16 @@ class MainWindow(tk.Frame):
             self.old.configure(height = 1)
             
             
-        if(count == 1 or count == 2): # talvez faca algo com isto mais tarde   
+        if(count == 1 or count == 2):    
             for button in self.buttons:
                 button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
-            #self.independentlabel["font"] = ("Roboto",int(0.0080*self.master.winfo_width()))
-            #self.independententry.configure()
+                self.functionlabel["font"] = ("Roboto",int(0.013*self.master.winfo_width()))
+                self.parameterlabel["font"] = ("Roboto",int(0.013*self.master.winfo_width()))
+                self.independentlabel["font"] = ("Roboto",int(0.012*self.master.winfo_width()))
+                self.independententry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
+                self.parameterentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
+                self.functionentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
+            
             
 
             
@@ -665,11 +670,11 @@ class MainWindow(tk.Frame):
        
 
         # Criação da zona para inserir a variável independente
-        self.independentlabel = tk.Label(self.subframeright1,text="Independent Variable", bg='#FCF6F5')
-        self.independentlabel["font"] = ("Roboto",int(0.0085*self.master.winfo_width()))
-        self.independentlabel.place(relwidth=0.22, rely=0, relheight=0.1)
-        self.independententry = tk.Entry(self.subframeright1, font=40)
-        self.independententry.place(relwidth=0.78, rely=0, relheight=0.1, relx = 0.22)
+        self.independentlabel = tk.Label(self.subframeright1,text="Independent Var", bg='#FCF6F5')
+        self.independentlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
+        self.independentlabel.place(relwidth=0.25, rely=0, relheight=0.1)
+        self.independententry = tk.Entry(self.subframeright1, font=int(0.01*self.master.winfo_width()))
+        self.independententry.place(relwidth=0.30, rely=0, relheight=0.1, relx = 0.27)
         self.independententry.insert(0, 'x')
         self.independententry.focus_set()
 
@@ -678,7 +683,7 @@ class MainWindow(tk.Frame):
         self.parameterlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
         self.parameterlabel.place(relwidth=0.22, rely=0.1, relheight=0.1)
         self.parameterentry = tk.Entry(self.subframeright1, font=40)
-        self.parameterentry.place(relwidth=0.6, rely=0.1, relheight=0.1,relx = 0.22)
+        self.parameterentry.place(relwidth=0.55, rely=0.1, relheight=0.1,relx = 0.27)
         self.parameterentry.insert(0, "a,b")
         self.parameterentry.focus_set()
         
@@ -687,7 +692,7 @@ class MainWindow(tk.Frame):
         self.functionlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
         self.functionlabel.place(relwidth=0.22, rely=0.2, relheight=0.1)
         self.functionentry = tk.Entry(self.subframeright1, font=40)
-        self.functionentry.place(relwidth=0.6,relx=0.22, rely=0.2, relheight=0.1)
+        self.functionentry.place(relwidth=0.55,relx=0.27, rely=0.2, relheight=0.1)
         self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
         
