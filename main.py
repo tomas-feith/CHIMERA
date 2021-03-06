@@ -413,19 +413,36 @@ class MainWindow(tk.Frame):
             self.title_canvas.delete("all")
             self.logo_canvas.delete("all")
             self.place_item("./img/Name_white.PNG", 0.6, self.title_canvas)
-            self.place_item("./img/Image_white.PNG", 0.25, self.logo_canvas)
+            self.place_item("./img/Image_white.PNG", 0.22, self.logo_canvas)
+            #Define novas posicoes relativas a janela
+            self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
+            self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
+            #define novos tamanhos relativos a janela
+            self.new["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
+            self.old["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
+            self.new.configure(height = 1)
+            self.old.configure(height = 1)
+            
+        #if(count == 1 or count == 2):  talvez faca algo com isto mais tarde    
+            
+            #self.independentlabel["font"] = ("Roboto",int(0.0080*self.master.winfo_width()))
+            #self.independententry.configure()
+            
+
+            
+            
 
     def create_widgets(self):
         # Criar botão para um novo fit
         self.new = tk.Button(self.bottom,
-                             width = 13,
+                             width = int(0.011*self.master.winfo_width()),
                              height=1,
                              fg='white',
                              bg='red',
                              activebackground='white',
                              activeforeground='red')
         self.new["text"] = "NEW FIT"
-        self.new["font"] = ("Roboto",int(35*1000/self.master.winfo_width()),"bold")
+        self.new["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
         self.new["command"] = self.create_new
         self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
         # Alterar as cores quando entra e sai
@@ -434,14 +451,14 @@ class MainWindow(tk.Frame):
 
         # Criar botão para importar um fit
         self.old = tk.Button(self.bottom,
-                             width = 13,
+                             width = int(0.011*self.master.winfo_width()),
                              height=1,
                              fg='white',
                              bg='red',
                              activebackground='white',
                              activeforeground='red')
         self.old["text"] = "IMPORT FIT"
-        self.old["font"] = ("Roboto",int(35*1000/self.master.winfo_width()),"bold")
+        self.old["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
         self.old["command"] = self.create_import
         self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
         self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='red'))
@@ -647,28 +664,28 @@ class MainWindow(tk.Frame):
 
         # Criação da zona para inserir a variável independente
         self.independentlabel = tk.Label(self.subframeright1,text="Independent Variable", bg='#FCF6F5')
-        self.independentlabel["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
-        self.independentlabel.place(relwidth=0.2, rely=0, relheight=0.1)
+        self.independentlabel["font"] = ("Roboto",int(0.0085*self.master.winfo_width()))
+        self.independentlabel.place(relwidth=0.22, rely=0, relheight=0.1)
         self.independententry = tk.Entry(self.subframeright1, font=40)
-        self.independententry.place(relwidth=0.8, rely=0, relheight=0.1, relx = 0.2)
+        self.independententry.place(relwidth=0.78, rely=0, relheight=0.1, relx = 0.22)
         self.independententry.insert(0, 'x')
         self.independententry.focus_set()
 
         # Criação da zona para inserir os parâmetros
         self.parameterlabel = tk.Label(self.subframeright1,text="Parameter", bg='#FCF6F5')
-        self.parameterlabel["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
-        self.parameterlabel.place(relwidth=0.2, rely=0.1, relheight=0.1)
+        self.parameterlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
+        self.parameterlabel.place(relwidth=0.22, rely=0.1, relheight=0.1)
         self.parameterentry = tk.Entry(self.subframeright1, font=40)
-        self.parameterentry.place(relwidth=0.6, rely=0.1, relheight=0.1,relx = 0.2)
+        self.parameterentry.place(relwidth=0.6, rely=0.1, relheight=0.1,relx = 0.22)
         self.parameterentry.insert(0, "a,b")
         self.parameterentry.focus_set()
         
         # Criação da zona onde se insere a função
         self.functionlabel = tk.Label(self.subframeright1,text= "Function", bg='#FCF6F5')
-        self.functionlabel["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
-        self.functionlabel.place(relwidth=0.2, rely=0.2, relheight=0.1)
+        self.functionlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
+        self.functionlabel.place(relwidth=0.22, rely=0.2, relheight=0.1)
         self.functionentry = tk.Entry(self.subframeright1, font=40)
-        self.functionentry.place(relwidth=0.6,relx=0.2, rely=0.2, relheight=0.1)
+        self.functionentry.place(relwidth=0.6,relx=0.22, rely=0.2, relheight=0.1)
         self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
         
