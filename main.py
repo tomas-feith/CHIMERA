@@ -771,15 +771,29 @@ class MainWindow(tk.Frame):
         self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale Y')
         self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, rely = 0.4, relx = 0.7)
         
-        self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, label = 'Line Width')
+       
+        
+        self.linewidth = []
+        self.markersize = []
+        self.errorwidth = []
+       
+        self.linewidth.append(tk.DoubleVar())
+        self.markersize.append(tk.DoubleVar())
+        self.errorwidth.append(tk.DoubleVar())
+        
+        self.linewidth[0].set(2)
+        self.markersize[0].set(2)
+        self.errorwidth[0].set(2)
+        
+        self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, label = 'Line Width', variable = self.linewidth[0])
         self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.6)
         self.linewidthscale['state'] = tk.DISABLED
         
-        self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider, label = 'Marker Size')
+        self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider, label = 'Marker Size', variable = self.markersize[0])
         self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.6)
         self.markersizescale['state'] = tk.DISABLED
         
-        self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, label = 'Errorbar Width')
+        self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, label = 'Errorbar Width', variable = self.errorwidth[0])
         self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.67, rely=0.6)
         self.errorsizescale['state'] = tk.DISABLED
         
@@ -852,23 +866,18 @@ class MainWindow(tk.Frame):
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
         
-        self.linewidth = 2
-        self.markersize = 2
-        self.errorwidth = 1
+        
         
         self.dataset_points = []
         self.update_parameter()
     
     def lineslider(self, a):
-        self.linewidth = a
         self.plot_dataset()
     
     def markerslider(self, a):
-        self.markersize = a
         self.plot_dataset()
     
     def errorslider(self, a):
-        self.errorwidth = a
         self.plot_dataset()
     
     def fit_activate(self):
@@ -982,6 +991,15 @@ class MainWindow(tk.Frame):
         self.linecolorvar.append("black")
         self.errorcolorvar.append("black")
         
+        
+        self.linewidth.append(tk.DoubleVar())
+        self.markersize.append(tk.DoubleVar())
+        self.errorwidth.append(tk.DoubleVar())
+        
+        self.markersize[self.numberdatasets-1].set(2.0)
+        self.linewidth[self.numberdatasets-1].set(2.0)
+        self.errorwidth[self.numberdatasets-1].set(2.0)
+        
         # Definir a preto por default
        
     
@@ -1042,11 +1060,25 @@ class MainWindow(tk.Frame):
         # Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
         # ao dataset selecionado
         
+        self.markersizescale.destroy()
+        self.linewidthscale.destroy()
+        self.errorsizescale.destroy()
+        
+        
         
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
         self.selecteddataset = select-1
         
+        self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider, label = 'Marker Size', variable = self.markersize[self.selecteddataset])
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.6)
         
+        self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, label = 'Line Width', variable = self.linewidth[self.selecteddataset])
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.6)
+
+
+        self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, label = 'Errorbar Width', variable = self.errorwidth[self.selecteddataset])
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.67, rely=0.6)
+
 
     def secondary_window(self, title, message):
 
@@ -1366,16 +1398,16 @@ class MainWindow(tk.Frame):
         
             if(self.wanterror.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x], elinewidth = float(self.errorwidth))
+                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x], elinewidth = float(self.errorwidth[x]))
         
             if(self.wantpoints.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=float(self.markersize)*2)
+                    self.a.plot(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=float(self.markersize[x].get())*2)
         
        
             if(self.wantline.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth)
+                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x])
             
             if(self.wantfunction == 1):
                 self.a.plot(self.xfunc, self.yfunc)
