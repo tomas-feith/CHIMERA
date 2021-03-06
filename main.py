@@ -673,7 +673,7 @@ class MainWindow(tk.Frame):
         self.functionentry.focus_set()
         
         self.xaxislabel = tk.Label(self.subframeright3, text="X Axis", bg='#FCF6F5')
-        self.xaxislabel.place(in_ = self.subframeright3, relwidth = 0.5, relheight=0.1, relx=0, rely=0)
+        self.xaxislabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0)
 
         self.yaxislabel = tk.Label(self.subframeright3, text="Y Axis", bg='#FCF6F5')
         self.yaxislabel.place(in_ = self.subframeright3, relwidth = 0.5, relheight=0.1, relx=0.5, rely=0)
@@ -696,23 +696,23 @@ class MainWindow(tk.Frame):
         self.xaxistitlelabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0, rely=0.25)
         
         self.xaxistitleentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.xaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.4, relheight = 0.1, relx = 0.1, rely=0.25)
+        self.xaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.1, rely=0.25)
         self.xaxistitleentry.insert(0, "Abcissas")
 
         self.xaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
         self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.15, relheight = 0.1, relx=0, rely= 0.4)
 
         self.xaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.15, rely=0.4)
+        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.15, rely=0.4)
         self.xaxistickspentry.insert(0, "1")
         
         self.autoscalex = tk.BooleanVar()
         self.autoscalex.set(0)
         self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale X')
-        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.5, relheight = 0.1, rely = 0.5)
+        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, rely = 0.4, relx = 0.2)
 
         self.yaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#FCF6F5')
-        self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.15, relheight=0.1, relx = 5, rely = 0.1)
+        self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.15, relheight=0.1, relx = 0.5, rely = 0.1)
 
         self.yaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
         self.yaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.65, rely=0.1)
@@ -729,20 +729,41 @@ class MainWindow(tk.Frame):
         self.yaxistitlelabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0.5, rely=0.25)
 
         self.yaxistitleentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.yaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.4, relheight = 0.1, relx = 0.6, rely=0.25)
+        self.yaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.6, rely=0.25)
         self.yaxistitleentry.insert(0, "Ordenadas")
         
         self.yaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
         self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.15, relheight = 0.1, relx=0.5, rely= 0.4)
 
         self.yaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.65, rely=0.4)
+        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.65, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
         
         self.autoscaley = tk.BooleanVar()
         self.autoscaley.set(0)
         self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale Y')
-        self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.5, relheight = 0.1, rely = 0.5, relx = 0.5)
+        self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, rely = 0.4, relx = 0.7)
+        
+        sty = ttk.Style(self.subframeright3)
+        sty.configure("TSeparator", background="red")
+        
+        sep = ttk.Separator(self.subframeright3, orient = tk.VERTICAL )
+        sep.place(in_ = self.subframeright3, relx=0.5, relheight = 0.95, rely=0.05)
+        
+        
+        sep1 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
+        sep1.place(in_ = self.subframeright3, relx=0.3, rely=0.05, relwidth = 0.4)
+        
+        
+        sep2 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
+        sep2.place(in_ = self.subframeright3, relx=0, rely=0.05, relwidth = 0.2)
+        
+        sep2 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
+        sep2.place(in_ = self.subframeright3, relx=0.8, rely=0.05, relwidth = 0.2)
+        
+        
+        
+        
         
         #Criação do texto respetivo ao primeiro dataset
         #A variável datasettext contém os textos presentes em cada dataset
@@ -1343,10 +1364,7 @@ class MainWindow(tk.Frame):
         else:
             clean_split = process[1]
             if (count==2) :
-                for x in range(self.boxnumber):
-                    self.paramboxes[x].grid_forget()
-                    self.paramlabel[x].grid_forget()
-                    self.paramboxes[x].grid_rowconfigure(x, weight=1)
+                
                     
                 self.subframeright2.destroy()
     
@@ -1355,83 +1373,162 @@ class MainWindow(tk.Frame):
     
                 self.boxnumber = len(clean_split)
     
-                self.paramlabel=[]
-                self.paramboxes=[]
-                self.plotparamlabel = []
-                self.plotparamboxes = []
     
                 self.paramscrolly.destroy()
                 self.anotherframe.destroy()
                 self.paramcanvas.destroy()
+                
+                self.paramlabel=[]
+                self.paramboxes=[]
+                self.paramresboxes=[]
+                self.paramreslabel = []
+                self.paramerrlabel = []
+                self.paramerrboxes = []
+                self.plotparamlabel = []
+                self.plotparamboxes = []
     
+                self.boxnumber = len(clean_split)
+                
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#FCF6F5')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
     
+                #self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+    
+                self.anotherframe=tk.Frame(self.paramcanvas, bg='#FCF6F5')
+                #self.anotherframe.pack(expand=True, fill = tk.BOTH)
+                
                 self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
     
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
-                self.paramcanvas.bind('<Configure>', lambda e: self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all")))
+                self.paramcanvas.bind('<Configure>', self.algumacoisa)
     
-                self.anotherframe=tk.Frame(self.paramcanvas,  bg='#FCF6F5')
-    
-                self.anotherframe.grid_columnconfigure(0, weight=1)
-                self.anotherframe.grid_columnconfigure(1, weight=1)
-                self.paramcanvas.create_window((0,0), window = self.anotherframe, anchor = "nw")
-    
-                self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
-    
+                #self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+                
+                self.anotherframe.columnconfigure(0, weight = 1)
+                self.anotherframe.columnconfigure(1, weight = 3)
+                self.anotherframe.columnconfigure(2, weight = 1)
+                self.anotherframe.columnconfigure(3, weight = 3)
+                self.anotherframe.columnconfigure(4, weight = 1)
+                self.anotherframe.columnconfigure(5, weight = 3)
+                self.anotherframe.columnconfigure(6, weight = 1)
+                self.anotherframe.columnconfigure(7, weight = 3)
+                
                 for x in range(self.boxnumber):
+                    self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
+                    self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
+                    self.paramerrboxes.append(tk.Entry(self.anotherframe))
+                    self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
+                    self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
+                    self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
+                    self.paramresboxes.append(tk.Entry(self.anotherframe))
+                    self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramboxes.append(tk.Entry(self.anotherframe))
-                    self.paramboxes[x].grid(column=4, row=x, padx=0, pady=10, sticky='nsew')
+                    self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
-                    self.paramlabel[x].grid(column = 3, row = x, padx=(70,20), pady=10, sticky= tk.E)
+                    self.paramlabel[x].grid(column = 2, row = x, pady=10, sticky= tk.E)
                     self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#FCF6F5'))
-                    self.plotparamlabel[x].grid(column=0, row=x, padx=(30,20), pady=10, sticky = tk.E)
+                    self.plotparamlabel[x].grid(column=0, row=x, pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
-                    self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
+                    self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky=tk.W + tk.E)
+                
+                self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
+           
+               # self.paramcanvas.update()   
 
             if (count == 1):
     
                 self.paramlabel=[]
                 self.paramboxes=[]
+                self.paramresboxes=[]
+                self.paramreslabel = []
+                self.paramerrlabel = []
+                self.paramerrboxes = []
                 self.plotparamlabel = []
                 self.plotparamboxes = []
     
                 self.boxnumber = len(clean_split)
+                
+                self.resultlabel = tk.Label(self.subframeright1, text="Resultados", bg='#FCF6F5')
+                self.resultlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.5)
+                
+                self.errorlabel = tk.Label(self.subframeright1, text="Erros", bg='#FCF6F5')
+                self.errorlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.75)
     
                 self.inicialguesslabel = tk.Label(self.subframeright1, text="Initial Guess", bg='#FCF6F5')
-                self.inicialguesslabel.place(rely=0.4, relwidth=0.3, relheight = 0.1, relx=0.3)
+                self.inicialguesslabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.25)
                 
                 self.funcplotlabel = tk.Label(self.subframeright1, text="Plot Function", bg='#FCF6F5')
-                self.funcplotlabel.place(rely=0.4, relwidth=0.3, relheight = 0.1, relx=0)
+                self.funcplotlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0)
     
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#FCF6F5')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
     
+                #self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
+                #self.paramscrolly.pack(side=tk.RIGHT, fill="y")
+    
+                #self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
+                #self.paramcanvas.bind('<Configure>', lambda e: self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all")))
+    
+                #self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+                
+                
+                self.anotherframe=tk.Frame(self.paramcanvas, bg='#FCF6F5')
+                #self.anotherframe.pack(expand=True, fill = tk.BOTH)
+                
                 self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
     
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
-                self.paramcanvas.bind('<Configure>', lambda e: self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all")))
+                self.paramcanvas.bind('<Configure>', self.algumacoisa)
     
-                self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
-    
-                self.anotherframe=tk.Frame(self.paramcanvas, bg='#FCF6F5')
+                #self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+                
+                self.anotherframe.columnconfigure(0, weight = 1)
+                self.anotherframe.columnconfigure(1, weight = 3)
+                self.anotherframe.columnconfigure(2, weight = 1)
+                self.anotherframe.columnconfigure(3, weight = 3)
+                self.anotherframe.columnconfigure(4, weight = 1)
+                self.anotherframe.columnconfigure(5, weight = 3)
+                self.anotherframe.columnconfigure(6, weight = 1)
+                self.anotherframe.columnconfigure(7, weight = 3)
+          
                 
                 for x in range(self.boxnumber):
+                    self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
+                    self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
+                    self.paramerrboxes.append(tk.Entry(self.anotherframe))
+                    self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
+                    self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
+                    self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
+                    self.paramresboxes.append(tk.Entry(self.anotherframe))
+                    self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramboxes.append(tk.Entry(self.anotherframe))
-                    self.paramboxes[x].grid(column=4, row=x, padx=0, pady=10, sticky='nsew')
+                    self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
-                    self.paramlabel[x].grid(column = 3, row = x, padx=(70,20), pady=10, sticky= tk.E)
+                    self.paramlabel[x].grid(column = 2, row = x, pady=10, sticky= tk.E)
                     self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#FCF6F5'))
-                    self.plotparamlabel[x].grid(column=0, row=x, padx=(30,20), pady=10, sticky = tk.E)
+                    self.plotparamlabel[x].grid(column=0, row=x, pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
-                    self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky='nsew')
+                    self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky=tk.W + tk.E)
             count = 2
             
-            self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw", width=500)
-            
+            self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
+           
+            self.paramcanvas.update()
+    
+    def algumacoisa(self, event):
+        canvas_width = event.width
+        print(event.width)
+        self.paramcanvas.itemconfig(self.windows_item, width = canvas_width)
+        self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all"))
+        
+    
+    def update(self):
+        "Update the canvas and the scrollregion"
+
+        self.update_idletasks()
+        self.paramcanvas.config(scrollregion=self.paramcanvas.bbox(self.windows_item))
             
     def fit_data(self, data, init_params, max_iter):
         """
