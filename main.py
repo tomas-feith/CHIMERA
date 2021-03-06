@@ -17,13 +17,12 @@ matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from tkinter.scrolledtext import ScrolledText
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import pandas as pd
 from io import StringIO
 from scipy import odr
 from tkinter import colorchooser
 
-# Isto serve para quê? 
 count = 0
 
 a = 0
@@ -60,34 +59,34 @@ def process_params(params, indep):
     
     # Ver se foi dado algum parâmetro
     if clean_split == []:
-        return (False, 'Não foi encontrado nenhum parâmetro.')
+        return (False, 'No parameters where found.')
     # Ver se foi dada a variável independente
     # Mas primeiro apagar eventuais espaços na variável
     indep=indep.replace(' ','')
     if indep == '':
-        return (False, 'Não foi encontrada nenhuma variável independente.')
+        return (False, 'No independent variable was found.')
     # Ver se algum dos parâmetros tem carateres proibidos
     for val in clean_split:
         for char in val:
             if char not in allowed:
-                return (False, 'O parâmetro \''+str(val)+'\' contém o carater \''+str(char)+'\'. Apenas são permitidos letras ou números.')
+                return (False, 'Parameter \''+str(val)+'\' contains the character \''+str(char)+'\'. Only letters or numbers allowed.')
 
     # Verificar se nenhum dos nomes das variáveis são funções
     for val in clean_split:
         if val in functions:
-            return (False, 'O nome \''+str(val)+'\' já está associado a uma função. Dê um nome diferente.')
+            return (False, 'Name \''+str(val)+'\' is already binded to a function. Provide a different name.')
     # Verificar se a variável independente não é uma função
     if indep in functions:
-        return (False, 'O nome \''+str(indep)+'\' já está associado a uma função. Dê um nome diferente.')
+        return (False, 'Name \''+str(indep)+'\' is already associated to a function. Provide a different name.')
 
     # Ver se nenhum dos parâmetros é repetido
     for val in clean_split:
         if clean_split.count(val) > 1:
-            return (False, 'O parâmetro \''+str(val)+'\' foi dado mais que uma vez. Dê nomes distintos a cada parâmetro.')
+            return (False, 'Parameter \''+str(val)+'\' was provided more than once. Give different names to each parameter.')
 
     # Verificar se a variável independente não está nos parâmetros
     if indep in clean_split:
-        return (False, 'O nome \''+str(indep)+'\' foi dado à variável independente e a um parâmetro. Altere um deles.')
+        return (False, 'Name \''+str(indep)+'\' was given to the independent variable and to a parameter. Change one of them.')
 
     # Verificar se nenhum dos parâmetros são números
     for val in clean_split:
@@ -97,7 +96,7 @@ def process_params(params, indep):
             pass
         # Se não der nenhum erro é por é um número e não queremos isso
         else:
-            return (False, 'O parâmetro dado \''+str(val)+'\' é um número. Utilize um parâmetro diferente.')
+            return (False, 'Parameter \''+str(val)+'\' given is a number. Use a different name.')
     # E verificar se a variável independente também não é
     try:
         float(indep)
@@ -105,7 +104,7 @@ def process_params(params, indep):
         pass
     # Igual a acima
     else:
-        return (False, 'A variável independente dada \''+str(indep)+'\' é um número. Utilize uma diferente.')
+        return (False, 'Independent variable \''+str(indep)+'\' given is a number. Use a different name.')
     
     return (True, clean_split)
     
@@ -131,7 +130,7 @@ def parser(expr, params, indep):
     # Ver se a função não está vazia
     expr=expr.replace(' ','')
     if expr == '':
-        return (False, 'Não foi encontrada nenhuma função de ajustamento.')
+        return (False, 'No fitting function was found.')
 
     process = process_params(params, indep)
     
@@ -139,6 +138,10 @@ def parser(expr, params, indep):
         clean_split = process[1]
     else:
         return (False, process[1])
+    
+    # Ver se a função contém a variável independente
+    if indep not in expr:
+        return (False, "Independent variable is not present in fit function.")
     
     # Substituir as funções pelo equivalente numpy
     # Primeira substituição temporária para não haver erros de conversão
@@ -164,14 +167,18 @@ def parser(expr, params, indep):
     
     B = [np.pi/2]*len(clean_split)
     _x=-1
+    
+    print(expr)
     try:
         eval(expr)
     except NameError as error:
-        return (False, 'A função \''+str(error).split('\'')[1]+'\' não foi reconhecida.')
+        return (False, 'Function \''+str(error).split('\'')[1]+'\' not recognized.')
+    except AttributeError as error:
+        return (False, 'Function '+str(error).split('attribute ')[1]+' not recognized.')
     except FloatingPointError:
         return (True, expr)
     except SyntaxError:
-        return (False, 'Não foi possível compilar a sua expressão. Verifique se todos os parâmetros estão definidos e a expressão está escrita corretamente.')
+        return (False, 'It was not possible to compile your expression. Verify if all your parameters are defined and the expression is written correctly.')
 
     return (True, expr)
 
@@ -214,6 +221,7 @@ def read_file(src, out, mode, datatype):
     # Se for da classe Excel
     else:
         data = pd.read_excel(src, dtype="object",header=None)
+    
 
     # Fazer a divisão nos datasets fornecidos
     # Se não houver incerteza no x, então o número de colunas é ímpar
@@ -261,7 +269,7 @@ def read_file(src, out, mode, datatype):
                             (out==str and y=='nan' and ey!='nan') or
                             (out==str and y!='nan'and ey=='nan')
                         ):
-                        return -3
+                        return -2
                     # Se a linha estiver vazia não se acrescenta
                     if (
                             not (out==float and np.isnan(x) and np.isnan(ex)) and
@@ -896,35 +904,36 @@ class MainWindow(tk.Frame):
         self.linecolorvar.append("black")
         self.errorcolorvar.append("black")
         
-        # Definir a preto por defualt
+        # Definir a preto por default
        
     
     def check_databox(self):
         for x in range(len(self.datasettext)):   
-            if (self.datasettext[x] == ''):
-                self.secondary_window('ERROR', 'verifique que os seus datasets têm dados corretamente inseridos')
+            if (self.datasettext[x].replace(' ','') == ''):
+                self.secondary_window('ERROR', 'Dataset {} is empty. Insert your data or remove it.'.format(x+1))
                 return False
         
         for x in range(len(self.datasettext)):
-            split=[]
             split = self.datasettext[x].split("\n")
             for i in range(len(split)):
                 ponto = split[i].split(' ')
+                ponto = [p for p in ponto if p]
                 if(len(ponto)!= 3 and len(ponto)!= 4):
-                     self.secondary_window('ERROR', 'verifique que os seus datasets têm 3 ou 4 colunas')
+                     self.secondary_window('ERROR', 'Dataset {} has at least one point with an incorrect number of columns. Correct it.'.format(x+1))
                      return False
-        
+                
         for x in range(len(self.datasettext)):
             split=[]
             split = self.datasettext[x].split("\n")
             for i in range(len(split)):
                 ponto = split[i].split(' ')
-             
+                ponto = [p for p in ponto if p]
+                
                 for k in ponto:
                      try:
                          float(k)
                      except ValueError:
-                             self.secondary_window('ERROR', 'Por favor insira um valor numérico nos datasets')
+                             self.secondary_window('ERROR', 'Dataset {} contains non-numerical input. Only numerical input is allowed.'.format(x+1))
                              return False
         return True
     
@@ -950,14 +959,14 @@ class MainWindow(tk.Frame):
         # Criação da caixa de texto com a informaçao respetiva
         self.dataentry = ( ScrolledText(self.subframeleft2))
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
-        self.dataentry.insert(tk.INSERT,self.datasettext[int(select-1)])
+        self.dataentry.insert(tk.INSERT,self.datasettext[select-1])
         
         # Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
         # ao dataset selecionado
         
         
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
-        self.selecteddataset = int(select-1)
+        self.selecteddataset = select-1
         
         
 
@@ -1112,12 +1121,12 @@ class MainWindow(tk.Frame):
             paramboxes = self.plotparamboxes[x].get()
             paramboxes = paramboxes.replace(' ', '')
             if(paramboxes == ''):
-                self.secondary_window('ERROR', 'Por favor insira os valores para os parâmetros desejados')
+                self.secondary_window('ERROR', 'No parameter values were provided for plot.')
                 return False
             try:
                 float(paramboxes)
             except ValueError:
-                self.secondary_window('ERROR', 'Por favor insira um valor numérico para o parâmetro desejado')
+                self.secondary_window('ERROR', 'A non-numerical parameter value was detected. Only numerical values are allowed.')
                 return False
                 
         for function in enumerate(functions):
@@ -1157,47 +1166,49 @@ class MainWindow(tk.Frame):
         
         #Basicamente a msm coisa
         select = int(self.datalistvariable.get()[-1])
-        self.datasettext[int(select-1)]= self.dataentry.get("1.0", "end-1c")
-        self.datastring = self.datasettext[int(select-1)]
+        self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
+        self.datastring = self.datasettext[select-1]
 
-        if(self.check_databox() == False):
+        if not self.check_databox():
             return False
         
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False,0)
         
+        if data_sets == -2:
+            self.secondary_window('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
+            self.datasettext[select-1] = ""
+            self.datasetring = ""
+            return -1
+        
 
-        self.abcissas[int(select-1)] = []
-        self.erabcissas[int(select-1)] = []
-        self.ordenadas[int(select-1)] = []
-        self.erordenadas[int(select-1)] = []
+        self.abcissas[select-1] = []
+        self.erabcissas[select-1] = []
+        self.ordenadas[select-1] = []
+        self.erordenadas[select-1] = []
 
         #adicionar condiçoes
-        
         for x in range(len(data_sets[0])):
             if(len(data_sets[0][x]) == 4):
-                self.abcissas[int(select-1)].append(data_sets[0][x][0])
-                self.erabcissas[int(select-1)].append(data_sets[0][x][1])
-                self.ordenadas[int(select-1)].append(data_sets[0][x][2])
-                self.erordenadas[int(select-1)].append(data_sets[0][x][3])
+                self.abcissas[select-1].append(data_sets[0][x][0])
+                self.erabcissas[select-1].append(data_sets[0][x][1])
+                self.ordenadas[select-1].append(data_sets[0][x][2])
+                self.erordenadas[select-1].append(data_sets[0][x][3])
             
             if(len(data_sets[0][x]) == 3):
-                self.abcissas[int(select-1)].append(data_sets[0][x][0])
-                self.erabcissas[int(select-1)].append(0)
-                self.ordenadas[int(select-1)].append(data_sets[0][x][1])
-                self.erordenadas[int(select-1)].append(data_sets[0][x][2])
+                self.abcissas[select-1].append(data_sets[0][x][0])
+                self.erabcissas[select-1].append(0)
+                self.ordenadas[select-1].append(data_sets[0][x][1])
+                self.erordenadas[select-1].append(data_sets[0][x][2])
 
         
-        self.abc[int(select-1)] = np.array(self.abcissas[int(select-1)])
-        self.erabc[int(select-1)] = np.array(self.erabcissas[int(select-1)])
-        self.ord[int(select-1)] = np.array(self.ordenadas[int(select-1)])
-        self.erord[int(select-1)] = np.array(self.erordenadas[int(select-1)])
+        self.abc[select-1] = np.array(self.abcissas[select-1])
+        self.erabc[select-1] = np.array(self.erabcissas[select-1])
+        self.ord[select-1] = np.array(self.ordenadas[select-1])
+        self.erord[select-1] = np.array(self.erordenadas[select-1])
 
         fig = Figure(figsize=(10,10))
 
-       
-            
-        
         if(self.autoscalex.get() == 1):
             allabc = []
             for x in range(len(self.abcissas)):
@@ -1283,10 +1294,17 @@ class MainWindow(tk.Frame):
         
         
             if(self.wantfit.get() == 1):
-                print("aaaaaaaaa")
                 init_values = []
                 for x in range(len(self.paramboxes)):
-                    init_values.append(float(self.paramboxes[x].get()))
+                    try:
+                        init_values.append(float(self.paramboxes[x].get()))
+                    except ValueError:
+                        if (self.paramboxes[x].get().replace(' ','')==''):
+                            self.secondary_window('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
+                        else:
+                            self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
+
+                        return -1
                 
                 
                 (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(data_sets, init_values, 1000)
@@ -1310,10 +1328,12 @@ class MainWindow(tk.Frame):
         process = process_params(self.parameterentry.get(), self.independententry.get())
         if not process[0]:
             count = 1
-            for x in range(self.boxnumber):
-                    self.paramboxes[x].grid_forget()
-                    self.paramlabel[x].grid_forget()
-                    self.paramboxes[x].grid_rowconfigure(x, weight=1)
+            self.boxnumber = 0
+        
+            self.paramlabel=[]
+            self.paramboxes=[]
+            self.plotparamlabel = []
+            self.plotparamboxes = []
     
             self.paramscrolly.destroy()
             self.anotherframe.destroy()
@@ -1431,7 +1451,12 @@ class MainWindow(tk.Frame):
 
         """
         func = odr.Model(self.fit_function)
-        print(self.function)
+        try:
+            print(self.function)
+        except AttributeError:
+            self.secondary_window('ERROR','Fitting function not defined. Make sure it is compiled without errors.')
+            return 0
+        
         x_points = []
         y_points = []
         x_err    = []
@@ -1444,9 +1469,14 @@ class MainWindow(tk.Frame):
                 y_err.append(point[-1])
                 if len(point) == 4:
                     x_err.append(point[1])
-        
-        print(x_points)
-        
+                    
+        if (x_err and np.any(np.array(x_err)==0)):
+            self.secondary_window('ERROR','At least one point has a null x uncertainty. It is not possible to fit data with null uncertainty.')
+            return 0
+        if (y_err and np.any(np.array(y_err)==0)):
+            self.secondary_window('ERROR','At least one point has a null y uncertainty. It is not possible to fit data with null uncertainty.')
+            return 0
+            
         if (len(data[0])==3):
             fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0]*len(x_points))
         else:
