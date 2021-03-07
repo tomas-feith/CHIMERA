@@ -804,6 +804,31 @@ class MainWindow(tk.Frame):
         self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.67, rely=0.6)
         self.errorsizescale['state'] = tk.DISABLED
         
+        self.markeroption = tk.StringVar()
+        self.markeroptiontranslater = [] 
+        
+        self.lineoption = tk.StringVar()
+        self.lineoptiontranslater = []
+        
+        self.erroroption = tk.StringVar()
+        self.erroroptiontranslater = []
+        
+        
+        self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
+            'Triangle', 'Square', 'Circle'], textvariable = self.markeroption  )
+        self.markersizecombo.current(2)
+        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.8)
+        self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
+        self.markeroptiontranslater.append('o')
+        
+        self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
+            'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
+        self.linestylecombo.current(0)
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.8)
+        self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
+        self.lineoptiontranslater.append('-')
+        
+
         
         sty = ttk.Style(self.subframeright3)
         sty.configure("TSeparator", background="red")
@@ -877,6 +902,33 @@ class MainWindow(tk.Frame):
         
         self.dataset_points = []
         self.update_parameter()
+    
+    def markerselector(self,event):
+        if(self.markeroption.get() == 'Circle'):
+            self.markeroptiontranslater[self.selecteddataset] = 'o'
+        
+        if(self.markeroption.get() == 'Square'):
+            self.markeroptiontranslater[self.selecteddataset] = 's'
+        
+        if(self.markeroption.get() == 'Triangle'):
+            self.markeroptiontranslater[self.selecteddataset] = '^'
+        
+        self.plot_dataset()
+    
+    def lineselector(self,event):
+        if(self.lineoption.get() == 'Solid'):
+            self.lineoptiontranslater[self.selecteddataset] = '-'
+        
+        if(self.lineoption.get() == 'Dashed'):
+            self.lineoptiontranslater[self.selecteddataset] = '--'
+        
+        if(self.lineoption.get() == 'Dotted'):
+            self.lineoptiontranslater[self.selecteddataset] = ':'
+        
+        self.plot_dataset()
+        
+
+        
     
     def lineslider(self, a):
         self.plot_dataset()
@@ -998,6 +1050,10 @@ class MainWindow(tk.Frame):
         self.linecolorvar.append("black")
         self.errorcolorvar.append("black")
         
+        self.markeroptiontranslater.append('o')
+        self.lineoptiontranslater.append('-')
+
+        
         
         self.linewidth.append(tk.DoubleVar())
         self.markersize.append(tk.DoubleVar())
@@ -1070,10 +1126,53 @@ class MainWindow(tk.Frame):
         self.linewidthscale.destroy()
         self.errorsizescale.destroy()
         
+        self.markersizecombo.destroy()
+        self.linestylecombo.destroy()
+
+        
+        self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
+            'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
+        
+        self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
+            'Triangle', 'Square', 'Circle'], textvariable = self.markeroption  )
+        
+        self.selecteddataset = select-1
+        
+        
+        print(self.markeroptiontranslater[self.selecteddataset])
+        
+        if(self.markeroptiontranslater[self.selecteddataset] == 'o'):
+            self.markersizecombo.current(2)
+            self.markeroption.set('Circle')       
+        if(self.markeroptiontranslater[self.selecteddataset] == 's'):
+            self.markersizecombo.current(1)
+            self.markeroption.set('Square')
+        if(self.markeroptiontranslater[self.selecteddataset] == '^'):
+            self.markersizecombo.current(0)
+            self.markeroption.set('Triangle')
+            
+        if(self.lineoptiontranslater[self.selecteddataset] == '-'):
+            self.linestylecombo.current(0)
+            self.lineoption.set('Solid')
+        if(self.lineoptiontranslater[self.selecteddataset] == '--'):
+            self.linestylecombo.current(1)
+            self.lineoption.set('Dashed')
+        if(self.lineoptiontranslater[self.selecteddataset] == ':'):
+            self.linestylecombo.current(2)
+            self.lineoption.set('Dotted')
+        
+        
+        
+        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.8)
+        self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
+        
+        
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.8)
+        self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
+
         
         
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
-        self.selecteddataset = select-1
         
         self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider, label = 'Marker Size', variable = self.markersize[self.selecteddataset])
         self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.6)
@@ -1443,16 +1542,16 @@ class MainWindow(tk.Frame):
         
             if(self.wanterror.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x], elinewidth = self.errorwidth[x].get())
+                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1,lw=0, ecolor = self.errorcolorvar[x], elinewidth = self.errorwidth[x].get())
         
             if(self.wantpoints.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=self.markersize[x].get()*2)
+                    self.a.plot(self.abc[x], self.ord[x], marker = self.markeroptiontranslater[x], color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=self.markersize[x].get()*2)
         
        
             if(self.wantline.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x])
+                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x].get(), ls = str(self.lineoptiontranslater[x]))
             
             if(self.wantfunction == 1):
                 self.a.plot(self.xfunc, self.yfunc)
