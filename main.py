@@ -442,8 +442,12 @@ class MainWindow(tk.Frame):
                 self.independententry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
                 self.parameterentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
                 self.functionentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
-            
-            
+                
+        
+            if(self.linewidthscale['state'] != tk.ACTIVE and self.errorsizescale['state'] != tk.ACTIVE and self.markersizescale['state'] != tk.ACTIVE):
+                self.linewidthscale['width'] = 0.025*self.master.winfo_height()
+                self.errorsizescale['width'] = 0.025*self.master.winfo_height()
+                self.markersizescale['width'] = 0.025*self.master.winfo_height()
 
             
             
@@ -516,7 +520,7 @@ class MainWindow(tk.Frame):
         
          # Criação das frames para a edição visual do gráfico
         self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
-        self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.3, relx=0, rely=0.25)
+        self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.225, relx=0, rely=0.25)
 
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
@@ -529,7 +533,7 @@ class MainWindow(tk.Frame):
         
         #Criação da zona onde se inserem as informaçoes relativas aos eixos do grafico
         self.subframeright3 = tk.Frame(self.frameright, bg='#FCF6F5')
-        self.subframeright3.place(in_ = self.frameright, relwidth = 1, relheight = 0.40, rely=0.60)
+        self.subframeright3.place(in_ = self.frameright, relwidth = 1, relheight = 0.52, rely=0.48)
 
         #Criação do botão que chama a função que processa a funçao
         self.compilebutton = tk.Button(self.subframeright1,
@@ -786,16 +790,39 @@ class MainWindow(tk.Frame):
         self.markersize[0].set(2)
         self.errorwidth[0].set(2)
         
-        self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, label = 'Line Width', variable = self.linewidth[0])
-        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.6)
+        self.linescalelabel = tk.Label(self.subframeright3, text = 'Line Width', bg = '#FCF6F5')
+        self.linescalelabel['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
+        self.linescalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.58)
+        self.linescalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
+        self.linescalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
+        self.linescalelabelvalue.place(in_ = self.subframeright3, relx = 0.33, rely=0.58)
+        self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, showvalue = False, variable = self.linewidth[0])
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.58)
+        self.linewidthscale['width'] = 0.025*self.master.winfo_width()
         self.linewidthscale['state'] = tk.DISABLED
         
-        self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider, label = 'Marker Size', variable = self.markersize[0])
-        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.6)
+        
+        self.markerscalelabel = tk.Label(self.subframeright3, text = 'Marker Size', bg = '#FCF6F5')
+        self.markerscalelabel['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
+        self.markerscalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.68)
+        self.markerscalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
+        self.markerscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
+        self.markerscalelabelvalue.place(in_ = self.subframeright3, relx = 0.33, rely=0.68)
+        self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider,showvalue =False, variable = self.markersize[0])
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.68)
+        self.markersizescale['width'] = 0.025*self.master.winfo_width()
         self.markersizescale['state'] = tk.DISABLED
         
-        self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, label = 'Errorbar Width', variable = self.errorwidth[0])
-        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.67, rely=0.6)
+        
+        self.errorscalelabel = tk.Label(self.subframeright3, text = 'Errorbar Width', bg = '#FCF6F5')
+        self.errorscalelabel['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
+        self.errorscalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.78)
+        self.errorscalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
+        self.errorscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
+        self.errorscalelabelvalue.place(in_ = self.subframeright3, relx = 0.33, rely=0.78)
+        self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, showvalue = False, variable = self.errorwidth[0])
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.78)
+        self.errorsizescale['width'] = 0.025*self.master.winfo_width()
         self.errorsizescale['state'] = tk.DISABLED
         
         self.markeroption = tk.StringVar()
@@ -811,14 +838,14 @@ class MainWindow(tk.Frame):
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
             'Triangle', 'Square', 'Circle'], textvariable = self.markeroption  )
         self.markersizecombo.current(2)
-        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.8)
+        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.85)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
         self.markeroptiontranslater.append('o')
         
         self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
         self.linestylecombo.current(0)
-        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.8)
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.85)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
         self.lineoptiontranslater.append('-')
         
@@ -874,7 +901,7 @@ class MainWindow(tk.Frame):
         #NÃO MEXER, FUI EU A POR EU RESOLVO
         #Basicamente a lógica é isto começar com alguma coisa pq fode com indices dps, soluçao preguicosa
         #é darlhe os valores do textinho default
-        self.abcissas = [[1, 1, 1, 1]]
+        self.abcissas = [[9, 9, 9, 9]]
         self.erabcissas = [[1, 1, 1, 1]]
         self.ordenadas = [[1,1,1,1]]
         self.erordenadas = [[1,1,1,1]]
@@ -925,12 +952,15 @@ class MainWindow(tk.Frame):
         
     
     def lineslider(self, a):
+        self.linescalelabelvalue['text'] = str(a)
         self.plot_dataset()
     
     def markerslider(self, a):
+        self.markerscalelabelvalue['text'] = str(a)
         self.plot_dataset()
     
     def errorslider(self, a):
+        self.errorscalelabelvalue['text'] = str(a)
         self.plot_dataset()
     
     def fit_activate(self):
@@ -1169,10 +1199,10 @@ class MainWindow(tk.Frame):
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
         
         self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider, label = 'Marker Size', variable = self.markersize[self.selecteddataset])
-        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.6)
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.55)
         
         self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, label = 'Line Width', variable = self.linewidth[self.selecteddataset])
-        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.6)
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.55)
 
 
         self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, label = 'Errorbar Width', variable = self.errorwidth[self.selecteddataset])
@@ -1401,12 +1431,17 @@ class MainWindow(tk.Frame):
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
         self.datastring = self.datasettext[select-1]
-
+        
+        
+        
         if not self.check_databox():
             return False
         
+        
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False,0)
+        
+        print(data_sets)
         
         if data_sets == -2:
             self.secondary_window('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
@@ -1610,7 +1645,7 @@ class MainWindow(tk.Frame):
                 self.subframeright2.destroy()
     
                 self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
-                self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.3, relx=0, rely=0.25)
+                self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.225, relx=0, rely=0.25)
     
                 self.boxnumber = len(clean_split)
     
