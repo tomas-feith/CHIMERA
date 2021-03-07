@@ -1440,7 +1440,7 @@ class MainWindow(tk.Frame):
        
             if(self.wantline.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x])
+                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x].get())
             
             if(self.wantfunction == 1):
                 self.a.plot(self.xfunc, self.yfunc)
