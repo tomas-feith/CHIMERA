@@ -44,6 +44,10 @@ def process_params(params, indep):
                  'sign'
                  ]
     
+    if (len([p for p in indep.split(' ') if p]) != 1):
+        return (False, 'Multiple independent variables found. Only one is allowed.')
+    indep.replace(' ','')
+    
     # Fazer limpeza dos params
     # Assumindo que estão separados por virgulas ou espaços
     # Os parâmetros limpos serão guardados neste array
@@ -59,7 +63,7 @@ def process_params(params, indep):
     
     # Ver se foi dado algum parâmetro
     if clean_split == []:
-        return (False, 'No parameters where found.')
+        return (False, 'No parameters were found.')
     # Ver se foi dada a variável independente
     # Mas primeiro apagar eventuais espaços na variável
     indep=indep.replace(' ','')
@@ -70,6 +74,10 @@ def process_params(params, indep):
         for char in val:
             if char not in allowed:
                 return (False, 'Parameter \''+str(val)+'\' contains the character \''+str(char)+'\'. Only letters or numbers allowed.')
+    # Ver se a variavel indep tem caraters proibidos
+    for char in indep:
+        if char not in allowed:
+            return (False, 'Independent variable \''+str(indep)+'\' contains the character \''+str(char)+'\'. Only letters or numbers allowed.')
 
     # Verificar se nenhum dos nomes das variáveis são funções
     for val in clean_split:
@@ -168,7 +176,6 @@ def parser(expr, params, indep):
     B = [np.pi/2]*len(clean_split)
     _x=-1
     
-    print(expr)
     try:
         eval(expr)
     except NameError as error:
@@ -504,7 +511,7 @@ class MainWindow(tk.Frame):
         self.frameright.place( in_ = self.master, relwidth=0.5, relheight=1,relx=0.5, rely=0)
 
         #Subsecção da mesma onde se inserem as entrys de parametros, variavel independente e funçao
-        self.subframeright1=tk.Frame(self.frameright, bg='#FCF6F5', highlightbackground="black", highlightthickness=1, padx=20, pady=20)
+        self.subframeright1=tk.Frame(self.frameright, bg='#FCF6F5', highlightbackground="black", highlightthickness=0, padx=20, pady=20)
         self.subframeright1.place(in_=self.frameright, relwidth=1, relheight=0.5, relx=0, rely=0)
         
          # Criação das frames para a edição visual do gráfico
@@ -909,7 +916,7 @@ class MainWindow(tk.Frame):
         
     def import_window(self):
         self.import_window = tk.Toplevel(self.master)
-        self.import_window.title('pilinha')
+        self.import_window.title('File Format')
         self.import_window.geometry('400x250')
         self.import_window.configure(background='#FCF6F5')
         self.import_window.resizable(False, False)
@@ -1036,13 +1043,12 @@ class MainWindow(tk.Frame):
     def update_databox(self, event):
 
         #Guardar o atual na cena
-        self.datasettext[int(self.currentselection - 1)] = self.dataentry.get("1.0", "end-1c")
+        self.datasettext[self.currentselection - 1] = self.dataentry.get("1.0", "end-1c")
         
     
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
-
         select = int(self.datalistvariable.get()[-1])
         self.currentselection = select
         
@@ -1053,7 +1059,7 @@ class MainWindow(tk.Frame):
         self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.45, relx=0, rely=0.55)
         
         # Criação da caixa de texto com a informaçao respetiva
-        self.dataentry = ( ScrolledText(self.subframeleft2))
+        self.dataentry = (ScrolledText(self.subframeleft2))
         self.dataentry.pack(expand = 1, fill = tk.BOTH)
         self.dataentry.insert(tk.INSERT,self.datasettext[select-1])
         
@@ -1274,12 +1280,33 @@ class MainWindow(tk.Frame):
         
     def plot_dataset(self):
         
-        if(self.countplots == 0):
-            self.linewidthscale['state'] = tk.NORMAL
-            self.markersizescale['state'] = tk.NORMAL
-            self.errorsizescale['state'] = tk.NORMAL
-            self.countplots = 1
-        #Basicamente a msm coisa
+        # Testar se os limites estão bem definidos. Se não estiverem podemos saltar isto tudo
+        info_x = [(self.xaxismaxentry, 'Max value of x'), (self.xaxisminentry, 'Min value of x'), (self.xaxistickspentry, 'X axis tick spacing')]
+        info_y = [(self.yaxismaxentry, 'Max value of y'), (self.yaxisminentry, 'Min value of y'), (self.yaxistickspentry, 'Y axis tick spacing')]
+        
+        if not self.autoscalex.get():
+            for var in info_x:
+                try:
+                    float(var[0].get().replace(',','.').replace(' ',''))
+                except ValueError:
+                    if var[0].get().replace(' ','')=='':
+                        self.secondary_window('ERROR', var[1]+' contains no input.')
+                    else:
+                        self.secondary_window('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
+                    return False
+        
+        if not self.autoscaley.get():
+            for var in info_y:
+                try:
+                    float(var[0].get().replace(',','.').replace(' ',''))
+                except ValueError:
+                    if var[0].get().replace(' ','')=='':
+                        self.secondary_window('ERROR', var[1]+' contains no input.')
+                    else:
+                        self.secondary_window('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
+                    return False
+        
+        # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo.
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
         self.datastring = self.datasettext[select-1]
@@ -1294,9 +1321,14 @@ class MainWindow(tk.Frame):
             self.secondary_window('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
             self.datasettext[select-1] = ""
             self.datasetring = ""
-            return -1
+            return False
         
-
+        if(self.countplots == 0):
+            self.linewidthscale['state'] = tk.NORMAL
+            self.markersizescale['state'] = tk.NORMAL
+            self.errorsizescale['state'] = tk.NORMAL
+            self.countplots = 1
+        
         self.abcissas[select-1] = []
         self.erabcissas[select-1] = []
         self.ordenadas[select-1] = []
@@ -1339,8 +1371,11 @@ class MainWindow(tk.Frame):
             self.xaxismaxentry.delete(0, 'end')
             self.xaxisminentry.delete(0, 'end')
             
-            self.xaxismaxentry.insert(0, maxabc)
-            self.xaxisminentry.insert(0, minabc)
+            self.xaxismaxentry.insert(0, "{0:.2f}".format(maxabc))
+            self.xaxisminentry.insert(0, "{0:.2f}".format(minabc))
+            
+            self.xaxistickspentry.delete(0,'end')
+            self.xaxistickspentry.insert(0, "{0:.2f}".format(1+int(amp/10)))
             
             
         if(self.autoscaley.get() == 1):
@@ -1358,27 +1393,37 @@ class MainWindow(tk.Frame):
             self.yaxismaxentry.delete(0, 'end')
             self.yaxisminentry.delete(0, 'end')
             
-            self.yaxismaxentry.insert(0, maxord)
-            self.yaxisminentry.insert(0, minord)
+            self.yaxismaxentry.insert(0, "{0:.2f}".format(maxord))
+            self.yaxisminentry.insert(0, "{0:.2f}".format(minord))
+            
+            self.yaxistickspentry.delete(0,'end')
+            self.yaxistickspentry.insert(0, "{0:.2f}".format(1+int(amp/10)))
         
         x_ticks = []
         y_ticks = []
         
+        x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
+        x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
+        x_space = float(self.xaxistickspentry.get().replace(',','.').replace(' ',''))
+        y_max  = float(self.yaxismaxentry.get().replace(',','.').replace(' ',''))
+        y_min  = float(self.yaxisminentry.get().replace(',','.').replace(' ',''))
+        y_space = float(self.yaxistickspentry.get().replace(',','.').replace(' ',''))
+
+
+
+        xticknumber = 1+int((x_max-x_min)/x_space)
+        yticknumber = 1+int((y_max-y_min)/y_space)
         
-
-        xticknumber =1+int((float(self.xaxismaxentry.get())-float(self.xaxisminentry.get()))/float(self.xaxistickspentry.get()))
-        yticknumber =1+int((float(self.yaxismaxentry.get())-float(self.yaxisminentry.get()))/float(self.yaxistickspentry.get()))
-
         for x in range(xticknumber):
-            x_ticks.append(x*float(self.xaxistickspentry.get()) + float(self.xaxisminentry.get()))
+            x_ticks.append(x*x_space + x_min)
 
         for x in range(yticknumber):
-            y_ticks.append(x*float(self.yaxistickspentry.get()) + float(self.yaxisminentry.get()))
+            y_ticks.append(x*y_space + y_min)
         
-        self.a = fig.add_subplot(111,projection = None, xlim = (float(self.xaxisminentry.get()), float(self.xaxismaxentry.get())),
-                     ylim = (float(self.yaxisminentry.get()), float(self.yaxismaxentry.get())),
-                     xticks = x_ticks, yticks = y_ticks, ylabel = self.yaxistitleentry.get(),
-                     xlabel = self.xaxistitleentry.get())
+        self.a = fig.add_subplot(111 ,projection = None,
+                                 xlim = (x_min,x_max), ylim = (y_min, y_max),
+                                 xticks = x_ticks, yticks = y_ticks, 
+                                 ylabel = self.yaxistitleentry.get(), xlabel = self.xaxistitleentry.get())
         
         
 
@@ -1398,11 +1443,11 @@ class MainWindow(tk.Frame):
         
             if(self.wanterror.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x], elinewidth = float(self.errorwidth[x]))
+                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1, ecolor = self.errorcolorvar[x], elinewidth = self.errorwidth[x].get())
         
             if(self.wantpoints.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=float(self.markersize[x].get())*2)
+                    self.a.plot(self.abc[x], self.ord[x], marker = 'o', color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=self.markersize[x].get()*2)
         
        
             if(self.wantline.get() == 1):
@@ -1425,7 +1470,7 @@ class MainWindow(tk.Frame):
                         else:
                             self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
 
-                        return -1
+                        return False
                 
                 
                 (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(data_sets, init_values, 1000)
@@ -1619,7 +1664,6 @@ class MainWindow(tk.Frame):
     
     def algumacoisa(self, event):
         canvas_width = event.width
-        print(event.width)
         self.paramcanvas.itemconfig(self.windows_item, width = canvas_width)
         self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all"))
         
@@ -1647,6 +1691,9 @@ class MainWindow(tk.Frame):
         fit.res_var: chi quadrado reduzido
 
         """
+        
+        # ESTA FUNÇÃO TODA TEM DE SER CORRIGIDA!!
+        
         func = odr.Model(self.fit_function)
         try:
             print(self.function)
@@ -1659,6 +1706,7 @@ class MainWindow(tk.Frame):
         x_err    = []
         y_err    = []
         
+        
         for dataset in data:
             for point in dataset:
                 x_points.append(point[0])
@@ -1667,17 +1715,19 @@ class MainWindow(tk.Frame):
                 if len(point) == 4:
                     x_err.append(point[1])
                     
+        
         if (x_err and np.any(np.array(x_err)==0)):
-            self.secondary_window('ERROR','At least one point has a null x uncertainty. It is not possible to fit data with null uncertainty.')
+            self.secondary_window('ERROR','At least one point in dataset {} has a null x uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
             return 0
         if (y_err and np.any(np.array(y_err)==0)):
-            self.secondary_window('ERROR','At least one point has a null y uncertainty. It is not possible to fit data with null uncertainty.')
+            self.secondary_window('ERROR','At least one point in dataset {} has a null y uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
             return 0
             
         if (len(data[0])==3):
             fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0]*len(x_points))
         else:
             fit_data = odr.RealData(x_points, y_points, sx=x_err, sy=y_err, fix=[0]*len(x_points))
+
 
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
