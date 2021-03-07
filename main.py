@@ -658,8 +658,6 @@ class MainWindow(tk.Frame):
         self.choosecolor = tk.Menu(menubar)
         menubar.add_cascade(label="Choose Colors", menu = self.choosecolor)
         
-        
-
         self.currentselection = 1
         
         self.markercolorvar = []
@@ -670,15 +668,11 @@ class MainWindow(tk.Frame):
         self.linecolorvar.append('black')
         self.errorcolorvar.append('black')
 
-
-       
-        
         # Aqui tou so a meter os checkbuttons nas caixas
         self.choosecolor.add_command(label = 'Marker Color', command = self.markercolorpick)
         self.choosecolor.add_command(label = 'Line Color', command = self.linecolorpick)
         self.choosecolor.add_command(label = 'Errorbar Color', command = self.errorcolorpick)
        
-
         # Criação da zona para inserir a variável independente
         self.independentlabel = tk.Label(self.subframeright1,text="Independent Var", bg='#FCF6F5')
         self.independentlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
@@ -1189,8 +1183,6 @@ class MainWindow(tk.Frame):
             expr = expr.split('['+str(function[0]+len(clean_split))+']')
             expr = ('np.'+str(function[1])).join(expr)
         
-       
-        
         self.xfittedfunc=[]
         self.yfittedfunc=[]
         
@@ -1435,10 +1427,6 @@ class MainWindow(tk.Frame):
         self.fittedparamserror = []
         self.chisq = 0
         
-        
-            
-        
-        
         if(self.check_databox()):
         
             if(self.wanterror.get() == 1):
@@ -1460,6 +1448,9 @@ class MainWindow(tk.Frame):
         
         
             if(self.wantfit.get() == 1):
+                
+                params = process_params(self.parameterentry.get(), self.independententry.get())[1]
+                
                 init_values = []
                 for x in range(len(self.paramboxes)):
                     try:
@@ -1477,6 +1468,13 @@ class MainWindow(tk.Frame):
                 
                 self.plot_fittedfunction()
                 
+                params_text = ""
+                
+                for i in range(len(self.fittedparams)):
+                    params_text+="%s=%f$\pm$%f\n" % (params[i], self.fittedparams[i], self.fittedparamserror[i])
+                params_text+=r"$\chi^2/\nu$=%.2f" % self.chisq
+                print(params_text)    
+                self.a.text(0,0,params_text)
                 self.a.plot(self.xfittedfunc, self.yfittedfunc)
                 
             
@@ -1510,14 +1508,12 @@ class MainWindow(tk.Frame):
             clean_split = process[1]
             if (count==2) :
                 
-                    
                 self.subframeright2.destroy()
     
                 self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
                 self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.3, relx=0, rely=0.25)
     
                 self.boxnumber = len(clean_split)
-    
     
                 self.paramscrolly.destroy()
                 self.anotherframe.destroy()
@@ -1578,7 +1574,7 @@ class MainWindow(tk.Frame):
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky=tk.W + tk.E)
                 
                 self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
-           
+    
                # self.paramcanvas.update()   
 
             if (count == 1):
@@ -1637,7 +1633,6 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(5, weight = 3)
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
-          
                 
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
@@ -1667,10 +1662,8 @@ class MainWindow(tk.Frame):
         self.paramcanvas.itemconfig(self.windows_item, width = canvas_width)
         self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all"))
         
-    
     def update(self):
         "Update the canvas and the scrollregion"
-
         self.update_idletasks()
         self.paramcanvas.config(scrollregion=self.paramcanvas.bbox(self.windows_item))
             
@@ -1755,8 +1748,6 @@ class MainWindow(tk.Frame):
         
         if(self.difxerror.get() == 1):
             new_data = read_file(file,str,True,2)
-        
-        
         
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
