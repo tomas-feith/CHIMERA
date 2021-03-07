@@ -791,7 +791,7 @@ class MainWindow(tk.Frame):
         self.errorwidth[0].set(2)
         
         self.linescalelabel = tk.Label(self.subframeright3, text = 'Line Width', bg = '#FCF6F5')
-        self.linescalelabel['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
+        self.linescalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
         self.linescalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.58)
         self.linescalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
         self.linescalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
@@ -803,25 +803,25 @@ class MainWindow(tk.Frame):
         
         
         self.markerscalelabel = tk.Label(self.subframeright3, text = 'Marker Size', bg = '#FCF6F5')
-        self.markerscalelabel['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.markerscalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.68)
+        self.markerscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
+        self.markerscalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.65)
         self.markerscalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
         self.markerscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.markerscalelabelvalue.place(in_ = self.subframeright3, relx = 0.33, rely=0.68)
+        self.markerscalelabelvalue.place(in_ = self.subframeright3, relx = 0.33, rely=0.65)
         self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider,showvalue =False, variable = self.markersize[0])
-        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.68)
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.65)
         self.markersizescale['width'] = 0.025*self.master.winfo_width()
         self.markersizescale['state'] = tk.DISABLED
         
         
         self.errorscalelabel = tk.Label(self.subframeright3, text = 'Errorbar Width', bg = '#FCF6F5')
-        self.errorscalelabel['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.errorscalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.78)
+        self.errorscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
+        self.errorscalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.72)
         self.errorscalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
         self.errorscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.errorscalelabelvalue.place(in_ = self.subframeright3, relx = 0.33, rely=0.78)
+        self.errorscalelabelvalue.place(in_ = self.subframeright3, relx = 0.33, rely=0.72)
         self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, showvalue = False, variable = self.errorwidth[0])
-        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.78)
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.72)
         self.errorsizescale['width'] = 0.025*self.master.winfo_width()
         self.errorsizescale['state'] = tk.DISABLED
         
@@ -838,14 +838,14 @@ class MainWindow(tk.Frame):
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
             'Triangle', 'Square', 'Circle'], textvariable = self.markeroption  )
         self.markersizecombo.current(2)
-        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.85)
+        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.4, rely=0.585, relheight=0.05)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
         self.markeroptiontranslater.append('o')
         
         self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
         self.linestylecombo.current(0)
-        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.85)
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.4, rely=0.655, relheight=0.05)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
         self.lineoptiontranslater.append('-')
         
@@ -1187,26 +1187,36 @@ class MainWindow(tk.Frame):
         
         
         
-        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.8)
+        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.4, rely=0.585, relheight=0.05)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
-        
-        
-        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.8)
+
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.4, rely=0.655, relheight=0.05)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
+
 
         
         
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
         
-        self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider, label = 'Marker Size', variable = self.markersize[self.selecteddataset])
-        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.37, rely=0.55)
+        self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, showvalue = False, variable = self.linewidth[self.selecteddataset])
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.58)
+        self.linewidthscale['width'] = 0.025*self.master.winfo_width()
+
         
-        self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, label = 'Line Width', variable = self.linewidth[self.selecteddataset])
-        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.07, rely=0.55)
+        
+        self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider,showvalue =False, variable = self.markersize[self.selecteddataset])
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.65)
+        self.markersizescale['width'] = 0.025*self.master.winfo_width()
 
+        
+        
+        self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, showvalue = False, variable = self.errorwidth[self.selecteddataset])
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.72)
+        self.errorsizescale['width'] = 0.025*self.master.winfo_width()
 
-        self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, label = 'Errorbar Width', variable = self.errorwidth[self.selecteddataset])
-        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.25, relx = 0.67, rely=0.6)
+        self.errorscalelabelvalue['text'] = self.errorwidth[self.selecteddataset].get()
+        self.markerscalelabelvalue['text'] = self.markersize[self.selecteddataset].get()
+        self.linescalelabelvalue['text'] = self.linewidth[self.selecteddataset].get()
 
 
     def secondary_window(self, title, message):
