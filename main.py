@@ -451,9 +451,6 @@ class MainWindow(tk.Frame):
                 self.funcfitwidthscale['width'] = 0.025*self.master.winfo_height()
                 self.funcplotwidthscale['width'] = 0.025*self.master.winfo_height()
 
-            
-            
-
     def create_widgets(self):
         # Criar botão para um novo fit
         self.new = tk.Button(self.bottom,
@@ -487,14 +484,18 @@ class MainWindow(tk.Frame):
         self.old.bind("<Leave>", func=lambda e: self.old.config(bg='red',fg='white'))
 
     def create_import(self):
+        
+        self.secondary_window("SORRY", "Feature still in development...")
+        
+        # ISTO AINDA NÃO ESTÁ FUNCIONAL
         # Destruir tudo o que estava na janela
-        self.title_canvas.delete("all")
-        self.logo_canvas.delete("all")
-        self.old.destroy()
-        self.new.destroy()
-        global count
-        count = 1
-        self.master.configure(background='#FCF6F5')
+        # self.title_canvas.delete("all")
+        # self.logo_canvas.delete("all")
+        # self.old.destroy()
+        # self.new.destroy()
+        # global count
+        # count = 1
+        # self.master.configure(background='#FCF6F5')
 
     def create_new(self):
         self.countplots = 0
@@ -530,8 +531,11 @@ class MainWindow(tk.Frame):
         self.plotbuttonframe = tk.Frame(self.frameleft, bg= '#FCF6F5')
         self.plotbuttonframe.place(in_ = self.frameleft, relwidth=1, relheight=0.05, relx=0, rely=0.5)
         
+        self.databuttonframe = tk.Frame(self.frameleft, bg='#FCF6F5')
+        self.databuttonframe.place(in_ = self.frameleft, relwidth=1, relheight=0.05, relx=0, rely=0.93)
+        
         self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
-        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.45, relx=0, rely=0.55)
+        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.38, relx=0, rely=0.55)
         
         #Criação da zona onde se inserem as informaçoes relativas aos eixos do grafico
         self.subframeright3 = tk.Frame(self.frameright, bg='#FCF6F5')
@@ -565,7 +569,7 @@ class MainWindow(tk.Frame):
                                        activebackground='white',
                                        activeforeground='red')
         
-        self.plotbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1)
+        self.plotbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1, relx=0.25)
         self.plotbutton["command"] = self.plot_dataset
         
         #Botão pra plottar a funçao, chama a funçao plot_function
@@ -576,19 +580,29 @@ class MainWindow(tk.Frame):
                                        activebackground='white',
                                        activeforeground='red')
         
-        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.26, relheight=1,relx = 0.63)
+        self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.3, relheight=1,relx = 0.5)
         self.plotfunctionbutton["command"] = self.plot_function
         self.wantfunction = 0
         
         # Botão para importar ficheiros
-        self.import_data = tk.Button(self.plotbuttonframe,
+        self.import_data = tk.Button(self.databuttonframe,
                                      text='IMPORT DATA',
                                      fg='white',
                                      bg='red',
                                      activebackground='white',
                                      activeforeground='red')
-        self.import_data.place(in_  = self.plotbuttonframe, relwidth=0.23, relheight=1,relx = 0.4)
+        self.import_data.place(in_  = self.databuttonframe, relwidth=0.23, relheight=1,relx = 0.2)
         self.import_data["command"] = self.import_window
+        
+        # Botão para exportar como latex
+        self.export_latex = tk.Button(self.databuttonframe,
+                                  text="LaTeX-ify",
+                                  fg='white',
+                                  bg='red',
+                                  activebackground='white',
+                                  activeforeground='red')
+        self.export_latex.place(in_ = self.databuttonframe, relwidth=0.23, relheight=1, relx= 0.57)
+        self.export_latex["command"] = self.latexify
         
         #Criação do botão ligado à funçao que adiciona mais um dataset
         self.adddatasetbutton = tk.Button(self.plotbuttonframe,
@@ -597,7 +611,17 @@ class MainWindow(tk.Frame):
                                        bg='red',
                                        activebackground='white',
                                        activeforeground='red', command = lambda: self.add_dataset(''))
-        self.adddatasetbutton.place(in_ =self.plotbuttonframe, relwidth=0.05, relheight=1, relx = 0.35)
+        self.adddatasetbutton.place(in_ = self.plotbuttonframe, relwidth=0.05, relheight=0.5, relx = 0.15, rely=0)
+        
+        # Botão para remover datasets
+        self.removedatasetbutton = tk.Button(self.plotbuttonframe,
+                                             text="-",
+                                             fg='white',
+                                             bg='red',
+                                             activebackground='white',
+                                             activeforeground='red')
+        self.removedatasetbutton.place(in_ = self.plotbuttonframe, relwidth=0.05, relheight=0.5, relx= 0.15, rely=0.5)
+        self.removedatasetbutton["command"] = self.remove_dataset
         
         self.fitbutton = tk.Button(self.plotbuttonframe,
                                        text="FIT",
@@ -605,7 +629,7 @@ class MainWindow(tk.Frame):
                                        bg='red',
                                        activebackground='white',
                                        activeforeground='red')
-        self.fitbutton.place(in_ =self.plotbuttonframe, relwidth=0.11, relheight=1, relx = 0.89)
+        self.fitbutton.place(in_ =self.plotbuttonframe, relwidth=0.1, relheight=1, relx = 0.85)
         self.fitbutton["command"] = self.fit_activate
         self.wantfit = tk.BooleanVar()
         self.wantfit.set(0)
@@ -617,7 +641,9 @@ class MainWindow(tk.Frame):
                   self.plotfunctionbutton,
                   self.import_data,
                   self.adddatasetbutton,
-                  self.fitbutton
+                  self.fitbutton,
+                  self.export_latex,
+                  self.removedatasetbutton
                   ]
         
         for button in self.buttons:
@@ -877,10 +903,6 @@ class MainWindow(tk.Frame):
         self.funcfitoption = tk.StringVar()
         self.funcfitoptiontranslater = []
         
-    
-        
-        
-        
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
             'Triangle', 'Square', 'Circle'], textvariable = self.markeroption)
         self.markersizecombo.current(2)
@@ -931,9 +953,6 @@ class MainWindow(tk.Frame):
         sep3 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL)
         sep3.place(in_ = self.subframeright3, relx=0, rely=0.55, relwidth=1)
         
-        
-        
-        
         #Criação do texto respetivo ao primeiro dataset
         #A variável datasettext contém os textos presentes em cada dataset
         self.datasettext = []
@@ -949,12 +968,12 @@ class MainWindow(tk.Frame):
         
         #Criação do botão seletor de data-sets, ligalo à função update_databox
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
-        self.datasetselector.place(relx = 0.2, relheight = 1, relwidth=0.15)
+        self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
         
         #Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
         self.dataentry = ( ScrolledText(self.subframeleft2))
-        self.dataentry.pack(expand = 1, fill = tk.BOTH)
+        self.dataentry.pack(expand = 1, fill = tk.X)
         self.dataentry.insert(tk.INSERT,self.datasettext[0])
         
         #Francamente eu so inicio isto assim pq ya, da pouco trabalho e resolveu um bug na altura,
@@ -978,8 +997,6 @@ class MainWindow(tk.Frame):
         self.erabc.append(np.array(self.erabcissas[0]))
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
-        
-        
         
         self.dataset_points = []
         self.update_parameter()
@@ -1032,8 +1049,9 @@ class MainWindow(tk.Frame):
         
         self.plot_dataset()
 
-        
-    
+    def latexify(self):
+        self.secondary_window("SORRY", "Feature still in development...")        
+
     def lineslider(self, a):
         self.linescalelabelvalue['text'] = str(a)
         self.plot_dataset()
@@ -1152,7 +1170,7 @@ class MainWindow(tk.Frame):
         self.datalist.append("dataset " + str(len(self.datalist)+1))
         self.datasetselector.destroy()
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
-        self.datasetselector.place(relx = 0.2, relheight = 1, relwidth=0.15)
+        self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
     
         self.datasettext.append(string)
@@ -1170,7 +1188,6 @@ class MainWindow(tk.Frame):
         self.erord.append(np.array(self.abcissas[-1]))
         
         # Criar as variáveis respetivas à escolha de cores para cada plot
-    
         self.markercolorvar.append("black")
         self.linecolorvar.append("black")
         self.errorcolorvar.append("black")
@@ -1181,8 +1198,6 @@ class MainWindow(tk.Frame):
         self.lineoptiontranslater.append('-')
         self.funcfitoptiontranslater.append('-')
         self.funcplotoptiontranslater.append('-')
-
-        
         
         self.linewidth.append(tk.DoubleVar())
         self.markersize.append(tk.DoubleVar())
@@ -1195,10 +1210,56 @@ class MainWindow(tk.Frame):
         self.errorwidth[self.numberdatasets-1].set(2.0)
         self.funcfitwidth[self.numberdatasets-1].set(2.0)
         self.funcplotwidth[self.numberdatasets-1].set(2.0)
-        
-        # Definir a preto por default
-       
     
+    # Função para remover datasets
+    def remove_dataset(self):
+        
+        if self.numberdatasets == 1:
+            self.secondary_window('ERROR', 'At least one dataset is needed. Add one before removing this one.')
+            return -1
+    
+        self.numberdatasets -= 1   
+        
+        # remover todas as variáveis guardadas
+        self.datalist.pop(self.selecteddataset)
+        self.abcissas.pop(self.selecteddataset)
+        self.erabcissas.pop(self.selecteddataset)
+        self.ordenadas.pop(self.selecteddataset)
+        self.erordenadas.pop(self.selecteddataset)
+
+        
+        self.abc.pop(self.selecteddataset)
+        self.erabc.pop(self.selecteddataset)
+        self.ord.pop(self.selecteddataset)
+        self.erord.pop(self.selecteddataset)
+        
+        # Criar as variáveis respetivas à escolha de cores para cada plot
+        self.markercolorvar.pop(self.selecteddataset)
+        self.linecolorvar.pop(self.selecteddataset)
+        self.errorcolorvar.pop(self.selecteddataset)
+        self.funcfitcolorvar.pop(self.selecteddataset)
+        self.funcplotcolorvar.pop(self.selecteddataset)
+        
+        self.markeroptiontranslater.pop(self.selecteddataset)
+        self.lineoptiontranslater.pop(self.selecteddataset)
+        self.funcfitoptiontranslater.pop(self.selecteddataset)
+        self.funcplotoptiontranslater.pop(self.selecteddataset)
+        
+        self.linewidth.pop(self.selecteddataset)
+        self.markersize.pop(self.selecteddataset)
+        self.errorwidth.pop(self.selecteddataset)
+        self.funcfitwidth.pop(self.selecteddataset)
+        self.funcplotwidth.pop(self.selecteddataset)
+        
+        self.selecteddataset = 0
+        
+        print(self.datalistvariable.get())
+        
+        self.datasetselector.destroy()
+        self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
+        self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
+        self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
+            
     def check_databox(self):
         for x in range(len(self.datasettext)):   
             if (self.datasettext[x].replace(' ','') == ''):
@@ -1231,10 +1292,9 @@ class MainWindow(tk.Frame):
     
     def update_databox(self, event):
 
-        #Guardar o atual na cena
+        # Guardar o atual na cena
         self.datasettext[self.currentselection - 1] = self.dataentry.get("1.0", "end-1c")
         
-    
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
@@ -1254,7 +1314,6 @@ class MainWindow(tk.Frame):
         
         # Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
         # ao dataset selecionado
-        
         self.markersizescale.destroy()
         self.linewidthscale.destroy()
         self.errorsizescale.destroy()
@@ -1280,9 +1339,6 @@ class MainWindow(tk.Frame):
             'Triangle', 'Square', 'Circle'], textvariable = self.markeroption )
         
         self.selecteddataset = select-1
-        
-        
-        print(self.markeroptiontranslater[self.selecteddataset])
         
         if(self.markeroptiontranslater[self.selecteddataset] == 'o'):
             self.markersizecombo.current(2)
@@ -1324,8 +1380,6 @@ class MainWindow(tk.Frame):
             self.funcplotstylecombo.current(2)
             self.funcplotoption.set('Dotted')
         
-        
-        
         self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.4, rely=0.655, relheight=0.05)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
 
@@ -1338,27 +1392,19 @@ class MainWindow(tk.Frame):
         self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.9, rely=0.585, relheight=0.05)
         self.funcfitstylecombo.bind("<<ComboboxSelected>>", self.funcfitselector)
 
-        
-        
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
-        
         self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, showvalue = False, variable = self.linewidth[self.selecteddataset])
         self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.58)
         self.linewidthscale['width'] = 0.025*self.master.winfo_width()
 
-        
-        
         self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider,showvalue =False, variable = self.markersize[self.selecteddataset])
         self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.65)
         self.markersizescale['width'] = 0.025*self.master.winfo_width()
-
 
         self.funcplotwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.funcplotslider, showvalue = False, variable = self.funcplotwidth[self.selecteddataset])
         self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.65, rely=0.58)
         self.funcplotwidthscale['width'] = 0.025*self.master.winfo_width()
 
-        
-        
         self.funcfitwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.funcfitslider,showvalue =False, variable = self.funcfitwidth[self.selecteddataset])
         self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.65, rely=0.65)
         self.funcfitwidthscale['width'] = 0.025*self.master.winfo_width()
@@ -1380,9 +1426,6 @@ class MainWindow(tk.Frame):
             self.funcfitwidthscale['state'] = tk.DISABLED
             self.funcplotwidthscale['state'] = tk.DISABLED
             
-            
-
-
     def secondary_window(self, title, message):
 
         new_window = tk.Toplevel(self.master)
