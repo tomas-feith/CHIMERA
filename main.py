@@ -7,9 +7,6 @@ Created on Tue Feb 16 11:58:13 2021
 
 import tkinter as tk
 from PIL import Image, ImageTk
-# Estes imports só servem para editar o icon (pelo menos por enquanto)
-import tempfile, base64, zlib
-
 from tkinter import ttk
 import numpy as np
 import matplotlib
@@ -24,7 +21,6 @@ from scipy import odr
 from tkinter import colorchooser
 
 count = 0
-
 a = 0
 
 def process_params(params, indep):
@@ -288,59 +284,56 @@ def read_file(src, out, mode, datatype):
                 full_sets.append(points)
     
     if(datatype == 1):
-            for i in range(0,int((data.shape[1])/3)):
-                points = []
-                for j in range(len(data[3*i].to_numpy())):
-                    x = data[3*i].to_numpy(out)[j]
-                    y = data[3*i+1].to_numpy(out)[j]
-                    ey = data[3*i+2].to_numpy(out)[j]
-                    # Procurar incoerências nas linhas
-                    #if (
-                     #       (out==float and np.isnan(y)!=np.isnan(ey)) or
-                      #      (out==str and y=='nan' and ey!='nan') or
-                       #     (out==str and y!='nan'and ey=='nan')
-                        #):
-                        #return -2
-                    # Se a linha estiver vazia não se acrescenta
-                    if (
-                            not (out==float and np.isnan(x)) and
-                            not (out==str and x=='nan') and
-                            not (out==float and np.isnan(y) and np.isnan(ey)) and
-                            not (out==str and y=='nan' and ey=='nan')
-                        ):
-                        points.append([x, y, ey])
-                full_sets.append(points)
-                
-                
+        for i in range(0,int((data.shape[1])/3)):
+            points = []
+            for j in range(len(data[3*i].to_numpy())):
+                x = data[3*i].to_numpy(out)[j]
+                y = data[3*i+1].to_numpy(out)[j]
+                ey = data[3*i+2].to_numpy(out)[j]
+                # Procurar incoerências nas linhas
+                # if (
+                #        (out==float and np.isnan(y)!=np.isnan(ey)) or
+                #        (out==str and y=='nan' and ey!='nan') or
+                #        (out==str and y!='nan'and ey=='nan')
+                #    ):
+                    #return -2
+                # Se a linha estiver vazia não se acrescenta
+                if (
+                        not (out==float and np.isnan(x)) and
+                        not (out==str and x=='nan') and
+                        not (out==float and np.isnan(y) and np.isnan(ey)) and
+                        not (out==str and y=='nan' and ey=='nan')
+                    ):
+                    points.append([x, y, ey])
+            full_sets.append(points)
+            
     # Se houver incerteza no x o tratamento é ligeiramente diferente
     if(datatype == 2):
-            for i in range(0,int((data.shape[1])/4)):
-               
-                points = []
-                for j in range(len(data[4*i].to_numpy())):
-                    x = data[4*i].to_numpy(out)[j]
-                    ex = data[4*i+1].to_numpy(out)[j]
-                    y = data[4*i+2].to_numpy(out)[j]
-                    ey = data[4*i+3].to_numpy(out)[j]
-                    # Procurar incoerências nas linhas
-                    #if (
-                     #       (out==float and np.isnan(x)!=np.isnan(ex)) or
-                      #      (out==str and x!='nan' and ex!='nan') or
-                       #     (out==float and np.isnan(y)!=np.isnan(ey)) or
-                        #    (out==str and y=='nan' and ey!='nan') or
-                          #  (out==str and y!='nan'and ey=='nan')
-                        #):
-                        #return -32
-                    # Se a linha estiver vazia não se acrescenta
-                    if (
-                            not (out==float and np.isnan(x) and np.isnan(ex)) and
-                            not (out==str and x=='nan' and ex=='nan') and
-                            not (out==float and np.isnan(y) and np.isnan(ey)) and
-                            not (out==str and y=='nan' and ey=='nan')
-                        ):
-                        points.append([x, ex, y, ey])
-                full_sets.append(points)
-        
+        for i in range(0,int((data.shape[1])/4)):
+            points = []
+            for j in range(len(data[4*i].to_numpy())):
+                x = data[4*i].to_numpy(out)[j]
+                ex = data[4*i+1].to_numpy(out)[j]
+                y = data[4*i+2].to_numpy(out)[j]
+                ey = data[4*i+3].to_numpy(out)[j]
+                # Procurar incoerências nas linhas
+                #if (
+                #       (out==float and np.isnan(x)!=np.isnan(ex)) or
+                #      (out==str and x!='nan' and ex!='nan') or
+                #     (out==float and np.isnan(y)!=np.isnan(ey)) or
+                #    (out==str and y=='nan' and ey!='nan') or
+                #  (out==str and y!='nan'and ey=='nan')
+                #):
+                    #return -32
+                # Se a linha estiver vazia não se acrescenta
+                if (
+                        not (out==float and np.isnan(x) and np.isnan(ex)) and
+                        not (out==str and x=='nan' and ex=='nan') and
+                        not (out==float and np.isnan(y) and np.isnan(ey)) and
+                        not (out==str and y=='nan' and ey=='nan')
+                    ):
+                    points.append([x, ex, y, ey])
+            full_sets.append(points)
     
     if mode:
         for i in range(len(full_sets)):
@@ -355,18 +348,8 @@ class MainWindow(tk.Frame):
         super().__init__(master)
         # Esta é a janela principal
         self.master = master
-        
-        
-        
         master.state('zoomed')
-
-        # Tirar o icon do tkinter
-        ICON = zlib.decompress(base64.b64decode('eJxjYGAEQgEBBiDJwZDBy'
-        'sAgxsDAoAHEQCEGBQaIOAg4sDIgACMUj4JRMApGwQgF/ykEAFXxQRc='))
-        _, ICON_PATH = tempfile.mkstemp()
-        with open(ICON_PATH, 'wb') as icon_file:
-            icon_file.write(ICON)
-        self.master.iconbitmap(default=ICON_PATH)
+        self.master.tk.call('wm', 'iconphoto', self.master._w, tk.PhotoImage(file='./img/Image.png'))
 
         # Tirar o título
         self.winfo_toplevel().title("")
@@ -810,8 +793,6 @@ class MainWindow(tk.Frame):
         self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale Y')
         self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, rely = 0.4, relx = 0.7)
         
-       
-        
         self.linewidth = []
         self.markersize = []
         self.errorwidth = []
@@ -823,13 +804,13 @@ class MainWindow(tk.Frame):
         self.errorwidth.append(tk.DoubleVar())
         self.funcplotwidth.append(tk.DoubleVar())
         self.funcfitwidth.append(tk.DoubleVar())
-        
+
         self.linewidth[0].set(2)
         self.markersize[0].set(2)
         self.errorwidth[0].set(2)
         self.funcplotwidth[0].set(2)
         self.funcfitwidth[0].set(2)
-        
+
         self.linescalelabel = tk.Label(self.subframeright3, text = 'Line Width', bg = '#FCF6F5')
         self.linescalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
         self.linescalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.58)
@@ -840,8 +821,7 @@ class MainWindow(tk.Frame):
         self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.58)
         self.linewidthscale['width'] = 0.025*self.master.winfo_width()
         self.linewidthscale['state'] = tk.DISABLED
-        
-        
+
         self.markerscalelabel = tk.Label(self.subframeright3, text = 'Marker Size', bg = '#FCF6F5')
         self.markerscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
         self.markerscalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.65)
@@ -852,8 +832,7 @@ class MainWindow(tk.Frame):
         self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.65)
         self.markersizescale['width'] = 0.025*self.master.winfo_width()
         self.markersizescale['state'] = tk.DISABLED
-        
-        
+
         self.errorscalelabel = tk.Label(self.subframeright3, text = 'Errorbar Width', bg = '#FCF6F5')
         self.errorscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
         self.errorscalelabel.place(in_ = self.subframeright3, relx = 0.02, rely=0.72)
@@ -864,7 +843,6 @@ class MainWindow(tk.Frame):
         self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.72)
         self.errorsizescale['width'] = 0.025*self.master.winfo_width()
         self.errorsizescale['state'] = tk.DISABLED
-        
         
         self.funcplotscalelabel = tk.Label(self.subframeright3, text = 'Plot Func. Width', bg = '#FCF6F5')
         self.funcplotscalelabel['font'] = ("Roboto",int(0.007*self.master.winfo_width()))
@@ -931,18 +909,14 @@ class MainWindow(tk.Frame):
         self.funcfitstylecombo.bind("<<ComboboxSelected>>", self.funcfitselector)
         self.funcfitoptiontranslater.append('-')
         
-
-        
         sty = ttk.Style(self.subframeright3)
         sty.configure("TSeparator", background="red")
         
         sep = ttk.Separator(self.subframeright3, orient = tk.VERTICAL )
         sep.place(in_ = self.subframeright3, relx=0.5, relheight = 0.5, rely=0.05)
         
-        
         sep1 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
         sep1.place(in_ = self.subframeright3, relx=0.3, rely=0.05, relwidth = 0.4)
-        
         
         sep2 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
         sep2.place(in_ = self.subframeright3, relx=0, rely=0.05, relwidth = 0.2)
@@ -953,33 +927,33 @@ class MainWindow(tk.Frame):
         sep3 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL)
         sep3.place(in_ = self.subframeright3, relx=0, rely=0.55, relwidth=1)
         
-        #Criação do texto respetivo ao primeiro dataset
-        #A variável datasettext contém os textos presentes em cada dataset
+        # Criação do texto respetivo ao primeiro dataset
+        # A variável datasettext contém os textos presentes em cada dataset
         self.datasettext = []
         self.datasettext.append("1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 4 0.5\n4 0.5 2 0.5\n5 0.5 5 0.5")
         
         self.datalistvariable = tk.StringVar()
         
-        #Variável que mostra qual está selecionada
+        # Variável que mostra qual está selecionada
         self.datalistvariable.set('dataset 1')
         
-        #Variável que contem os datasets e respetivo numero
+        # Variável que contem os datasets e respetivo numero
         self.datalist = ['dataset 1']
         
-        #Criação do botão seletor de data-sets, ligalo à função update_databox
+        # Criação do botão seletor de data-sets, ligalo à função update_databox
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
         
-        #Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
+        # Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
         self.dataentry = ( ScrolledText(self.subframeleft2))
         self.dataentry.pack(expand = 1, fill = tk.X)
         self.dataentry.insert(tk.INSERT,self.datasettext[0])
         
-        #Francamente eu so inicio isto assim pq ya, da pouco trabalho e resolveu um bug na altura,
-        #NÃO MEXER, FUI EU A POR EU RESOLVO
-        #Basicamente a lógica é isto começar com alguma coisa pq fode com indices dps, soluçao preguicosa
-        #é darlhe os valores do textinho default
+        # Francamente eu so inicio isto assim pq ya, da pouco trabalho e resolveu um bug na altura,
+        # NÃO MEXER, FUI EU A POR EU RESOLVO
+        # Basicamente a lógica é isto começar com alguma coisa pq fode com indices dps, soluçao preguicosa
+        # é darlhe os valores do textinho default
         self.abcissas = [[9, 9, 9, 9]]
         self.erabcissas = [[1, 1, 1, 1]]
         self.ordenadas = [[1,1,1,1]]
@@ -1073,7 +1047,6 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
     
     def fit_activate(self):
-        
         if(self.wantfit.get() == 0):
             self.wantfit.set(1)
             self.fitbutton["text"] = 'HIDE'
@@ -1123,7 +1096,6 @@ class MainWindow(tk.Frame):
         self.samex.set(1)
         self.difx.set(0)
         self.difxerror.set(0)
-        
         
         samexbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.samex, text = 'All datasets have same (x,ex)', command = self.samexfunction)
         samexbutton.place(in_ = self.import_window, relwidth = 0.7, relheight = 0.1, rely = 0.05, relx = 0.15)
@@ -1181,7 +1153,6 @@ class MainWindow(tk.Frame):
         self.ordenadas.append([0, 0, 0, 0])
         self.erordenadas.append([0, 0, 0, 0])
 
-        
         self.abc.append(np.array(self.abcissas[-1]))
         self.erabc.append(np.array(self.abcissas[-1]))
         self.ord.append(np.array(self.abcissas[-1]))
@@ -1220,14 +1191,16 @@ class MainWindow(tk.Frame):
     
         self.numberdatasets -= 1   
         
+        # apagar o data_set
+        self.datasettext.pop(self.selecteddataset)        
+                
         # remover todas as variáveis guardadas
-        self.datalist.pop(self.selecteddataset)
+        self.datalist = ["datalist "+str(i+1) for i in range(self.numberdatasets)]
         self.abcissas.pop(self.selecteddataset)
         self.erabcissas.pop(self.selecteddataset)
         self.ordenadas.pop(self.selecteddataset)
         self.erordenadas.pop(self.selecteddataset)
 
-        
         self.abc.pop(self.selecteddataset)
         self.erabc.pop(self.selecteddataset)
         self.ord.pop(self.selecteddataset)
@@ -1252,14 +1225,17 @@ class MainWindow(tk.Frame):
         self.funcplotwidth.pop(self.selecteddataset)
         
         self.selecteddataset = 0
-        
-        print(self.datalistvariable.get())
-        
+        self.currentselection = 1
+                
+        self.datalistvariable.set("dataset 1")
+                
         self.datasetselector.destroy()
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
-            
+        
+        self.update_databox("remove")
+
     def check_databox(self):
         for x in range(len(self.datasettext)):   
             if (self.datasettext[x].replace(' ','') == ''):
@@ -1293,8 +1269,10 @@ class MainWindow(tk.Frame):
     def update_databox(self, event):
 
         # Guardar o atual na cena
-        self.datasettext[self.currentselection - 1] = self.dataentry.get("1.0", "end-1c")
-        
+        print(self.datasettext)
+        if event != "remove":
+            self.datasettext[self.currentselection - 1] = self.dataentry.get("1.0", "end-1c")
+        print(self.datasettext)
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
@@ -1305,11 +1283,11 @@ class MainWindow(tk.Frame):
         self.dataentry.destroy()
         
         self.subframeleft2 = tk.Frame(self.frameleft, bg='#FCF6F5')
-        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.45, relx=0, rely=0.55)
+        self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.38, relx=0, rely=0.55)
         
         # Criação da caixa de texto com a informaçao respetiva
         self.dataentry = (ScrolledText(self.subframeleft2))
-        self.dataentry.pack(expand = 1, fill = tk.BOTH)
+        self.dataentry.pack(expand = 1, fill = tk.X)
         self.dataentry.insert(tk.INSERT,self.datasettext[select-1])
         
         # Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
@@ -1324,7 +1302,6 @@ class MainWindow(tk.Frame):
         self.linestylecombo.destroy()
         self.funcfitstylecombo.destroy()
         self.funcplotstylecombo.destroy()
-
         
         self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
@@ -1470,7 +1447,6 @@ class MainWindow(tk.Frame):
         else:
             self.secondary_window('ERROR', parsed_input[1])
             self.function = ''
-
 
         # Daqui para baixo é fazer o plot em si
 
@@ -1649,17 +1625,12 @@ class MainWindow(tk.Frame):
         self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
         self.datastring = self.datasettext[select-1]
         
-        
-        
         if not self.check_databox():
             return False
         
-        
         data = StringIO(self.datastring)
         data_sets = read_file(data,float,False,0)
-        
-        print(data_sets)
-        
+                        
         if data_sets == -2:
             self.secondary_window('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
             self.datasettext[select-1] = ""
@@ -1754,8 +1725,6 @@ class MainWindow(tk.Frame):
         y_min  = float(self.yaxisminentry.get().replace(',','.').replace(' ',''))
         y_space = float(self.yaxistickspentry.get().replace(',','.').replace(' ',''))
 
-
-
         xticknumber = 1+int((x_max-x_min)/x_space)
         yticknumber = 1+int((y_max-y_min)/y_space)
         
@@ -1770,8 +1739,6 @@ class MainWindow(tk.Frame):
                                  xticks = x_ticks, yticks = y_ticks, 
                                  ylabel = self.yaxistitleentry.get(), xlabel = self.xaxistitleentry.get())
         
-        
-
         self.subframeleft1.destroy()
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
@@ -1790,15 +1757,12 @@ class MainWindow(tk.Frame):
                 for x in range(self.numberdatasets):
                     self.a.plot(self.abc[x], self.ord[x], marker = self.markeroptiontranslater[x], color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=self.markersize[x].get()*2)
         
-       
             if(self.wantline.get() == 1):
                 for x in range(self.numberdatasets):
                     self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x].get(), ls = str(self.lineoptiontranslater[x]))
             
             if(self.wantfunction == 1):
                 self.a.plot(self.xfunc, self.yfunc, lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
-        
-        
         
             if(self.wantfit.get() == 1):
                 
@@ -1815,7 +1779,6 @@ class MainWindow(tk.Frame):
                             self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
 
                         return False
-                
                 
                 (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(data_sets, init_values, 1000)
                 
@@ -2036,9 +1999,6 @@ class MainWindow(tk.Frame):
         fit.res_var: chi quadrado reduzido
 
         """
-        
-        # ESTA FUNÇÃO TODA TEM DE SER CORRIGIDA!!
-        
         func = odr.Model(self.fit_function)
         try:
             print(self.function)
@@ -2051,7 +2011,6 @@ class MainWindow(tk.Frame):
         x_err    = []
         y_err    = []
         
-        
         for dataset in data:
             for point in dataset:
                 x_points.append(point[0])
@@ -2059,7 +2018,6 @@ class MainWindow(tk.Frame):
                 y_err.append(point[-1])
                 if len(point) == 4:
                     x_err.append(point[1])
-                    
         
         if (x_err and np.any(np.array(x_err)==0)):
             self.secondary_window('ERROR','At least one point in dataset {} has a null x uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
@@ -2073,12 +2031,9 @@ class MainWindow(tk.Frame):
         else:
             fit_data = odr.RealData(x_points, y_points, sx=x_err, sy=y_err, fix=[0]*len(x_points))
 
-
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
         fit.pprint()
-        
-        
         
         return (fit.beta, fit.sd_beta, fit.res_var)
         
@@ -2103,7 +2058,6 @@ class MainWindow(tk.Frame):
         
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
-        
         
 root = tk.Tk()
 app = MainWindow(master=root)
