@@ -1148,15 +1148,15 @@ class MainWindow(tk.Frame):
         importbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         
     def samexfunction(self):
-        self.difxerror.set(0)
+        #self.difxerror.set(0)
         self.difx.set(0)
     
     def difxfunction(self):
         self.samex.set(0)
-        self.difxerror.set(0)
+        #self.difxerror.set(0)
     
     def difxerrorfunction(self):
-        self.samex.set(0)
+        #self.samex.set(0)
         self.difx.set(1)
 
     # Função para adicionar um dataset
