@@ -380,8 +380,8 @@ class MainWindow(tk.Frame):
         # Criar a janela per se
         self.pack
         # Colocar as imagens e botoes
-        self.place_item("./img/Name_white.PNG", 0.6, self.title_canvas)
-        self.place_item("./img/Image_white.PNG", 0.25, self.logo_canvas)
+        self.place_item("./img/chimtext.PNG", 0.6, self.title_canvas)
+        self.place_item("./img/Image.PNG", 0.26, self.logo_canvas)
         self.create_widgets()
 
         global count
@@ -404,8 +404,8 @@ class MainWindow(tk.Frame):
         if(count == 0):
             self.title_canvas.delete("all")
             self.logo_canvas.delete("all")
-            self.place_item("./img/Name_white.PNG", 0.6, self.title_canvas)
-            self.place_item("./img/Image_white.PNG", 0.22, self.logo_canvas)
+            self.place_item("./img/chimtext.PNG", 0.6, self.title_canvas)
+            self.place_item("./img/Image.PNG", 0.26, self.logo_canvas)
             #Define novas posicoes relativas a janela
             self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
             self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
@@ -1126,7 +1126,7 @@ class MainWindow(tk.Frame):
         
         samexbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         
-        samextext=tk.Label(self.import_window, bg = '#FCF6F5', text = '2 first columns will be (x,ex).\nSubsequencial columns will be (y1, ey1, y2, ey2, ...)')
+        samextext=tk.Label(self.import_window, bg = '#FCF6F5', text = 'first column(s) will be x (x,ex).\nSubsequencial columns will be (y1, ey1, y2, ey2, ...)')
         samextext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.15, rely = 0.15, relx = 0.05)
         
         difxbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.difx, text = 'All datasets have their own (x, ex)',  command = self.difxfunction)
@@ -2133,7 +2133,7 @@ class MainWindow(tk.Frame):
         if(self.difx.get() == 1 and self.difxerror.get()== 0):
             new_data = read_file(file,str,True,1)
         
-        if(self.difxerror.get() == 1):
+        if(self.difxerror.get() == 1 and self.difx.get() == 1 and self.samex.get() == 0):
             new_data = read_file(file,str,True,2)
         
         for x in range(len(new_data)):
