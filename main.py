@@ -640,19 +640,18 @@ class MainWindow(tk.Frame):
         
         self.datastringcarrier = "1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5"
         # Criar uma menu bar
-        # esta menubar é a mais geral, é a que contem as outras
-        menubar = tk.Menu(self.master)
-        self.master.config(menu=menubar)
+        # esta self.menubar é a mais geral, é a que contem as outras
+        self.menubar = tk.Menu(self.master)
+        self.master.config(menu=self.menubar)
         
-        menubar.add_radiobutton
         
-        # Este é o botão file na menubar
-        self.fileMenu = tk.Menu(menubar)
-        menubar.add_cascade(label="File", menu=self.fileMenu)
+        # Este é o botão file na self.menubar
+        self.fileMenu = tk.Menu(self.menubar)
+        self.menubar.add_cascade(label="File", menu=self.fileMenu)
         
-        # Botao na menubar para escolher as opçoes do plot
-        self.plotoptions = tk.Menu(menubar)
-        menubar.add_cascade(label="Plot options", menu=self.plotoptions)
+        # Botao na self.menubar para escolher as opçoes do plot
+        self.plotoptions = tk.Menu(self.menubar)
+        self.menubar.add_cascade(label="Plot options", menu=self.plotoptions)
         
         # Estas 3 variáveis servem para o utilizador escolher o que quer ver
         self.wantpoints = tk.BooleanVar()
@@ -669,9 +668,9 @@ class MainWindow(tk.Frame):
         self.plotoptions.add_checkbutton( label = "plot line", onvalue = 1, offvalue = 0, variable = self.wantline)
         self.plotoptions.add_checkbutton( label = "error bars", onvalue = 1, offvalue = 0, variable = self.wanterror)
        
-        # Estes 3 menus na menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
-        self.choosecolor = tk.Menu(menubar)
-        menubar.add_cascade(label="Choose Colors", menu = self.choosecolor)
+        # Estes 3 menus na self.menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
+        self.choosecolor = tk.Menu(self.menubar)
+        self.menubar.add_cascade(label="Choose Colors", menu = self.choosecolor)
         
         self.currentselection = 1
         
@@ -693,6 +692,16 @@ class MainWindow(tk.Frame):
         self.choosecolor.add_command(label = 'Errorbar Color', command = self.errorcolorpick)
         self.choosecolor.add_command(label = 'Plot Function Color', command = self.funcplotcolorpick)
         self.choosecolor.add_command(label = 'Fit Function Color', command = self.funcfitcolorpick)
+        
+        
+        self.datasetstoplot = tk.Menu(self.menubar)
+        self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
+        
+        self.datasetstoplotvar = []
+        self.datasetstoplotvar.append(tk.BooleanVar())
+        self.datasetstoplotvar[0].set(1)
+       
+        self.datasetstoplot.add_checkbutton(label = "Plot Dataset 1", onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[0] ) 
        
         # Criação da zona para inserir a variável independente
         self.independentlabel = tk.Label(self.subframeright1,text="Independent Var", bg='#FCF6F5')
@@ -930,7 +939,7 @@ class MainWindow(tk.Frame):
         # Criação do texto respetivo ao primeiro dataset
         # A variável datasettext contém os textos presentes em cada dataset
         self.datasettext = []
-        self.datasettext.append("1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 4 0.5\n4 0.5 2 0.5\n5 0.5 5 0.5")
+        self.datasettext.append("1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 1 0.5\n4 0.5 2 0.5\n5 0.5 1 0.5\n6 0.5 2 0.5\n7 0.5 1 0.5")
         
         self.datalistvariable = tk.StringVar()
         
@@ -1181,6 +1190,13 @@ class MainWindow(tk.Frame):
         self.errorwidth[self.numberdatasets-1].set(2.0)
         self.funcfitwidth[self.numberdatasets-1].set(2.0)
         self.funcplotwidth[self.numberdatasets-1].set(2.0)
+        
+        self.datasetstoplotvar.append(tk.BooleanVar())
+        self.datasetstoplotvar[self.numberdatasets-1].set(0)
+       
+        self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(len(self.datalist)), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[self.numberdatasets-1] ) 
+        
+        
     
     # Função para remover datasets
     def remove_dataset(self):
@@ -1224,6 +1240,16 @@ class MainWindow(tk.Frame):
         self.funcfitwidth.pop(self.selecteddataset)
         self.funcplotwidth.pop(self.selecteddataset)
         
+        self.menubar.delete("Plot Datasets")
+        
+        self.datasetstoplot = tk.Menu(self.menubar)
+        self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
+        
+        print(self.selecteddataset)
+        print(self.datasetstoplotvar)
+        
+        self.datasetstoplotvar.pop(self.selecteddataset)
+        
         self.selecteddataset = 0
         self.currentselection = 1
                 
@@ -1233,6 +1259,13 @@ class MainWindow(tk.Frame):
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
+        
+       
+       
+        print(self.datasetstoplotvar)
+        for x in range(self.numberdatasets):
+            self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(x+1), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[x] ) 
+            self.datasetstoplotvar[x].set(self.datasetstoplotvar[x].get())
         
         self.update_databox("remove")
 
@@ -1277,6 +1310,7 @@ class MainWindow(tk.Frame):
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
         select = int(self.datalistvariable.get()[-1])
+        self.selecteddataset = select-1
         self.currentselection = select
         
         self.subframeleft2.destroy()
@@ -1623,19 +1657,17 @@ class MainWindow(tk.Frame):
         # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo.
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
-        self.datastring = self.datasettext[select-1]
+        #self.datastring = self.datasettext[select-1]
         
         if not self.check_databox():
             return False
         
-        data = StringIO(self.datastring)
-        data_sets = read_file(data,float,False,0)
+        
+
+#        data = StringIO(self.datastring)
+ #       data_sets = read_file(data,float,False,0)
                         
-        if data_sets == -2:
-            self.secondary_window('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
-            self.datasettext[select-1] = ""
-            self.datasetring = ""
-            return False
+        
         
         if(self.countplots == 0):
             self.linewidthscale['state'] = tk.NORMAL
@@ -1645,30 +1677,43 @@ class MainWindow(tk.Frame):
             self.funcplotwidthscale['state'] = tk.NORMAL
             self.countplots = 1
         
-        self.abcissas[select-1] = []
-        self.erabcissas[select-1] = []
-        self.ordenadas[select-1] = []
-        self.erordenadas[select-1] = []
-
-        #adicionar condiçoes
-        for x in range(len(data_sets[0])):
-            if(len(data_sets[0][x]) == 4):
-                self.abcissas[select-1].append(data_sets[0][x][0])
-                self.erabcissas[select-1].append(data_sets[0][x][1])
-                self.ordenadas[select-1].append(data_sets[0][x][2])
-                self.erordenadas[select-1].append(data_sets[0][x][3])
+        for x in range(self.numberdatasets):
+            if(self.datasetstoplotvar[x].get() == 1 ):
+                self.abcissas[x] = []
+                self.erabcissas[x] = []
+                self.ordenadas[x] = []
+                self.erordenadas[x] = []
+                self.datastring = self.datasettext[x]
+                data = StringIO(self.datastring)
+                data_sets = read_file(data, float, False, 0)
+                print(data_sets)
+                if data_sets == -2:
+                    self.secondary_window('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
+                    self.datasettext[select-1] = ""
+                    self.datasetring = ""
+                    return False
+                for i in range(len(data_sets[0])):
+                    if(len(data_sets[0][i]) == 4):
+                        self.abcissas[x].append(data_sets[0][i][0])
+                        self.erabcissas[x].append(data_sets[0][i][1])
+                        self.ordenadas[x].append(data_sets[0][i][2])
+                        self.erordenadas[x].append(data_sets[0][i][3])
             
-            if(len(data_sets[0][x]) == 3):
-                self.abcissas[select-1].append(data_sets[0][x][0])
-                self.erabcissas[select-1].append(0)
-                self.ordenadas[select-1].append(data_sets[0][x][1])
-                self.erordenadas[select-1].append(data_sets[0][x][2])
+                    if(len(data_sets[0][i]) == 3):
+                        self.abcissas[x].append(data_sets[0][i][0])
+                        self.erabcissas[x].append(0)
+                        self.ordenadas[x].append(data_sets[0][i][1])
+                        self.erordenadas[x].append(data_sets[0][i][2])
 
-        
-        self.abc[select-1] = np.array(self.abcissas[select-1])
-        self.erabc[select-1] = np.array(self.erabcissas[select-1])
-        self.ord[select-1] = np.array(self.ordenadas[select-1])
-        self.erord[select-1] = np.array(self.erordenadas[select-1])
+                self.abc[x] =np.array(self.abcissas[x])
+                self.erabc[x] = np.array(self.erabcissas[x])
+                self.ord[x] = np.array(self.ordenadas[x])
+                self.erord[x] = np.array(self.erordenadas[x])
+
+       # self.abc[select-1] = np.array(self.abcissas[select-1])
+        #self.erabc[select-1] = np.array(self.erabcissas[select-1])
+        #self.ord[select-1] = np.array(self.ordenadas[select-1])
+        #self.erord[select-1] = np.array(self.erordenadas[select-1])
 
         fig = Figure(figsize=(10,10))
 
@@ -1755,7 +1800,8 @@ class MainWindow(tk.Frame):
         
             if(self.wantpoints.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], marker = self.markeroptiontranslater[x], color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=self.markersize[x].get()*2)
+                    if(self.datasetstoplotvar[x].get() == 1):
+                        self.a.plot(self.abc[x], self.ord[x], marker = self.markeroptiontranslater[x], color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=self.markersize[x].get()*2)
         
             if(self.wantline.get() == 1):
                 for x in range(self.numberdatasets):
