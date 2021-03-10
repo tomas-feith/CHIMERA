@@ -565,7 +565,8 @@ class MainWindow(tk.Frame):
         
         self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.3, relheight=1,relx = 0.5)
         self.plotfunctionbutton["command"] = self.plot_function
-        self.wantfunction = 0
+        self.wantfunction = tk.BooleanVar()
+        self.wantfunction.set(0)
         
         # Botão para importar ficheiros
         self.import_data = tk.Button(self.databuttonframe,
@@ -667,7 +668,9 @@ class MainWindow(tk.Frame):
         self.plotoptions.add_checkbutton( label = "plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
         self.plotoptions.add_checkbutton( label = "plot line", onvalue = 1, offvalue = 0, variable = self.wantline)
         self.plotoptions.add_checkbutton( label = "error bars", onvalue = 1, offvalue = 0, variable = self.wanterror)
-       
+        self.plotoptions.add_checkbutton( label = "plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit )
+        self.plotoptions.add_checkbutton( label = "plot function", onvalue =1, offvalue = 0, variable=self.wantfunction)
+        
         # Estes 3 menus na self.menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
         self.choosecolor = tk.Menu(self.menubar)
         self.menubar.add_cascade(label="Choose Colors", menu = self.choosecolor)
@@ -1056,13 +1059,9 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
     
     def fit_activate(self):
-        if(self.wantfit.get() == 0):
-            self.wantfit.set(1)
-            self.fitbutton["text"] = 'HIDE'
-        else:
-            self.wantfit.set(0)
-            self.fitbutton["text"] = 'FIT'
-        
+
+        self.wantfit.set(1)
+
         self.plot_dataset()
         
         
@@ -1245,8 +1244,8 @@ class MainWindow(tk.Frame):
         self.datasetstoplot = tk.Menu(self.menubar)
         self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
         
-        print(self.selecteddataset)
-        print(self.datasetstoplotvar)
+       # print(self.selecteddataset)
+        #print(self.datasetstoplotvar)
         
         self.datasetstoplotvar.pop(self.selecteddataset)
         
@@ -1262,7 +1261,7 @@ class MainWindow(tk.Frame):
         
        
        
-        print(self.datasetstoplotvar)
+       # print(self.datasetstoplotvar)
         for x in range(self.numberdatasets):
             self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(x+1), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[x] ) 
             self.datasetstoplotvar[x].set(self.datasetstoplotvar[x].get())
@@ -1302,10 +1301,10 @@ class MainWindow(tk.Frame):
     def update_databox(self, event):
 
         # Guardar o atual na cena
-        print(self.datasettext)
+        #print(self.datasettext)
         if event != "remove":
             self.datasettext[self.currentselection - 1] = self.dataentry.get("1.0", "end-1c")
-        print(self.datasettext)
+        #print(self.datasettext)
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
@@ -1617,12 +1616,9 @@ class MainWindow(tk.Frame):
             self.yfunc.append(eval(expr))
         
         # Se calhar por também uma condição para ver se o utilizador quer grid
-        if(self.wantfunction == 0):
-            self.wantfunction = 1
-            self.plotfunctionbutton['text'] = 'UN-PLOT FUNCTION'
-        else:
-            self.wantfunction = 0
-            self.plotfunctionbutton['text'] = 'PLOT FUNCTION'
+
+        self.wantfunction.set(1)
+  
             
         self.plot_dataset()
         
@@ -1686,7 +1682,6 @@ class MainWindow(tk.Frame):
                 self.datastring = self.datasettext[x]
                 data = StringIO(self.datastring)
                 data_sets = read_file(data, float, False, 0)
-                print(data_sets)
                 if data_sets == -2:
                     self.secondary_window('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
                     self.datasettext[select-1] = ""
@@ -1796,7 +1791,8 @@ class MainWindow(tk.Frame):
         
             if(self.wanterror.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1,lw=0, ecolor = self.errorcolorvar[x], elinewidth = self.errorwidth[x].get())
+                    if(self.datasetstoplotvar[x].get() == 1):
+                        self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1,lw=0, ecolor = self.errorcolorvar[x], elinewidth = self.errorwidth[x].get())
         
             if(self.wantpoints.get() == 1):
                 for x in range(self.numberdatasets):
@@ -1805,9 +1801,10 @@ class MainWindow(tk.Frame):
         
             if(self.wantline.get() == 1):
                 for x in range(self.numberdatasets):
-                    self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x].get(), ls = str(self.lineoptiontranslater[x]))
+                    if(self.datasetstoplotvar[x].get() == 1):
+                        self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x].get(), ls = str(self.lineoptiontranslater[x]))
             
-            if(self.wantfunction == 1):
+            if(self.wantfunction.get() == 1):
                 self.a.plot(self.xfunc, self.yfunc, lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
         
             if(self.wantfit.get() == 1):
@@ -1826,7 +1823,29 @@ class MainWindow(tk.Frame):
 
                         return False
                 
-                (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(data_sets, init_values, 1000)
+                dataforfit = []
+                for x in range(self.numberdatasets):
+                    
+                    if(self.datasetstoplotvar[x].get() == 1):
+                         self.datastring = self.datasettext[x]
+                         data = StringIO(self.datastring)
+                         data_sets = read_file(data, float, False, 0)
+                         
+                         dataforfit.append(data_sets)
+                
+                print(dataforfit)
+                
+                a=[]
+                for h in range(len(dataforfit)):
+                    for i in range(len(dataforfit[h][0])):
+                        a.append(dataforfit[h][0][i])
+                 
+                gaita = []
+                gaita.append(a)
+                
+                print(gaita)
+                
+                (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(gaita, init_values, 1000)
                 
                 self.plot_fittedfunction()
                 
@@ -1834,8 +1853,7 @@ class MainWindow(tk.Frame):
                 
                 for i in range(len(self.fittedparams)):
                     params_text+="%s=%f$\pm$%f\n" % (params[i], self.fittedparams[i], self.fittedparamserror[i])
-                params_text+=r"$\chi^2/\nu$=%.2f" % self.chisq
-                print(params_text)    
+                params_text+=r"$\chi^2/\nu$=%.2f" % self.chisq 
                 self.a.text(0,0,params_text)
                 self.a.plot(self.xfittedfunc, self.yfittedfunc, lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
             
@@ -2079,7 +2097,7 @@ class MainWindow(tk.Frame):
 
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
-        fit.pprint()
+        #fit.pprint()
         
         return (fit.beta, fit.sd_beta, fit.res_var)
         
