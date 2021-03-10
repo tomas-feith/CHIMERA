@@ -425,7 +425,17 @@ class MainWindow(tk.Frame):
                 self.independententry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
                 self.parameterentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
                 self.functionentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
-                
+                #self.funcplotlabel.configure(font = ("Roboto",int(0.012*self.master.winfo_width())))
+                for x in range(self.boxnumber):
+                    self.plotparamboxes[x].configure(width=int(0.014*self.master.winfo_width()))
+                    self.paramerrboxes[x].configure(width=int(0.014*self.master.winfo_width()))
+                    self.paramresboxes[x].configure(width=int(0.014*self.master.winfo_width()))
+                    self.paramboxes[x].configure(width=int(0.014*self.master.winfo_width()))
+                    
+                self.xaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
+                self.xaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
+                self.yaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
+                self.yaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
         
             if(self.linewidthscale['state'] != tk.ACTIVE and self.errorsizescale['state'] != tk.ACTIVE and self.markersizescale['state'] != tk.ACTIVE and self.funcplotwidthscale['state'] != tk.ACTIVE and self.funcfitwidthscale['state'] != tk.ACTIVE):
                 self.linewidthscale['width'] = 0.025*self.master.winfo_height()
@@ -737,17 +747,17 @@ class MainWindow(tk.Frame):
         self.yaxislabel.place(in_ = self.subframeright3, relwidth = 0.5, relheight=0.1, relx=0.5, rely=0)
 
         self.xaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#FCF6F5')
-        self.xaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.15, relheight=0.1, relx = 0, rely = 0.1)
+        self.xaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.2, relheight=0.1, relx = 0, rely = 0.1)
 
         self.xaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.xaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.15, rely=0.1)
+        self.xaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0.1)
         self.xaxisminentry.insert(0, "0")
 
         self.xaxistolabel = tk.Label(self.subframeright3, text = "to", bg='#FCF6F5')
-        self.xaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.25, rely=0.1)
+        self.xaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.3, rely=0.1)
 
         self.xaxismaxentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.xaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.3, rely=0.1)
+        self.xaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.35, rely=0.1)
         self.xaxismaxentry.insert(0, "10")
         
         self.xaxistitlelabel = tk.Label(self.subframeright3, text = "Title", bg='#FCF6F5')
@@ -757,30 +767,37 @@ class MainWindow(tk.Frame):
         self.xaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.1, rely=0.25)
         self.xaxistitleentry.insert(0, "Abcissas")
 
-        self.xaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
-        self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.15, relheight = 0.1, relx=0, rely= 0.4)
-
-        self.xaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.15, rely=0.4)
-        self.xaxistickspentry.insert(0, "1")
-        
         self.autoscalex = tk.BooleanVar()
         self.autoscalex.set(0)
-        self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale X')
-        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, rely = 0.4, relx = 0.2)
+        self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale')
+        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = -0.03)
+
+        self.autoscaley = tk.BooleanVar()
+        self.autoscaley.set(0)
+        self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale')
+        self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = 0.47)
+
+        self.xaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
+        self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx=0.225, rely= 0.4)
+
+        self.xaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
+        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.445, rely=0.4)
+        self.xaxistickspentry.insert(0, "1")
+        
+       
 
         self.yaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#FCF6F5')
-        self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.15, relheight=0.1, relx = 0.5, rely = 0.1)
+        self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.2, relheight=0.1, relx = 0.50, rely = 0.1)
 
         self.yaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.yaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.65, rely=0.1)
+        self.yaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.70, rely=0.1)
         self.yaxisminentry.insert(0, "0")
 
         self.yaxistolabel = tk.Label(self.subframeright3, text = "to", bg='#FCF6F5')
-        self.yaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.75, rely=0.1)
+        self.yaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.80, rely=0.1)
 
         self.yaxismaxentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.yaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.8, rely=0.1)
+        self.yaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.85, rely=0.1)
         self.yaxismaxentry.insert(0, "10")
         
         self.yaxistitlelabel = tk.Label(self.subframeright3, text = "Title", bg='#FCF6F5')
@@ -790,17 +807,16 @@ class MainWindow(tk.Frame):
         self.yaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.6, rely=0.25)
         self.yaxistitleentry.insert(0, "Ordenadas")
         
+        
+        
         self.yaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
-        self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.15, relheight = 0.1, relx=0.5, rely= 0.4)
+        self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx = 0.725, rely= 0.4)
 
         self.yaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.65, rely=0.4)
+        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx=0.945, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
         
-        self.autoscaley = tk.BooleanVar()
-        self.autoscaley.set(0)
-        self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale Y')
-        self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, rely = 0.4, relx = 0.7)
+        
         
         self.linewidth = []
         self.markersize = []
@@ -1961,7 +1977,7 @@ class MainWindow(tk.Frame):
                 self.inicialguesslabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.25)
                 
                 self.funcplotlabel = tk.Label(self.subframeright1, text="Plot Function", bg='#FCF6F5')
-                self.funcplotlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0)
+                self.funcplotlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=-0.03)
     
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#FCF6F5')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
