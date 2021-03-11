@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 # Attempt from py2exe
-setup.py
+main.spec
+output
