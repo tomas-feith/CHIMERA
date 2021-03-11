@@ -19,6 +19,18 @@ import pandas as pd
 from io import StringIO
 from scipy import odr
 from tkinter import colorchooser
+import sys, os
+
+def resource_path(relative_path):
+    """ Get the absolute path to the resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 count = 0
 a = 0
@@ -349,7 +361,7 @@ class MainWindow(tk.Frame):
         # Esta é a janela principal
         self.master = master
         master.state('zoomed')
-        self.master.tk.call('wm', 'iconphoto', self.master._w, tk.PhotoImage(file='./img/Image.png'))
+        self.master.tk.call('wm', 'iconphoto', self.master._w, tk.PhotoImage(file=resource_path('img/Image.png')))
 
         # Tirar o título
         self.winfo_toplevel().title("")
@@ -380,8 +392,8 @@ class MainWindow(tk.Frame):
         # Criar a janela per se
         self.pack
         # Colocar as imagens e botoes
-        self.place_item("./img/chimtext.PNG", 0.6, self.title_canvas)
-        self.place_item("./img/Image.PNG", 0.26, self.logo_canvas)
+        self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
+        self.place_item(resource_path("img/Image.png"), 0.26, self.logo_canvas)
         self.create_widgets()
 
         global count
@@ -404,8 +416,8 @@ class MainWindow(tk.Frame):
         if(count == 0):
             self.title_canvas.delete("all")
             self.logo_canvas.delete("all")
-            self.place_item("./img/chimtext.PNG", 0.6, self.title_canvas)
-            self.place_item("./img/Image.PNG", 0.26, self.logo_canvas)
+            self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
+            self.place_item(resource_path("img/Image.png"), 0.26, self.logo_canvas)
             #Define novas posicoes relativas a janela
             self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
             self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
@@ -436,6 +448,8 @@ class MainWindow(tk.Frame):
                 self.xaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.yaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.yaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
+                self.resultlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
+                self.errorlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
         
             if(self.linewidthscale['state'] != tk.ACTIVE and self.errorsizescale['state'] != tk.ACTIVE and self.markersizescale['state'] != tk.ACTIVE and self.funcplotwidthscale['state'] != tk.ACTIVE and self.funcfitwidthscale['state'] != tk.ACTIVE):
                 self.linewidthscale['width'] = 0.025*self.master.winfo_height()
@@ -1465,7 +1479,7 @@ class MainWindow(tk.Frame):
         
         size = 50
         # Criação da imagem per se
-        img_src = Image.open('./img/Warning.png')
+        img_src = Image.open(resource_path('img/Warning.png'))
         img_src = img_src.resize((size, size))
         # Definir a canvas para pôr tudo na tela
         canvas1.config(width = size, height = size, highlightthickness = 0)
@@ -1874,6 +1888,13 @@ class MainWindow(tk.Frame):
                 self.a.text(0,0,params_text)
                 self.a.plot(self.xfittedfunc, self.yfittedfunc, lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
             
+                for x in range (len(self.paramresboxes)):
+                    self.paramresboxes[x].delete(0, tk.END)
+                    self.paramresboxes[x].insert(0, str(self.fittedparams[x]))
+                    self.paramresboxes[x].config(state = 'readonly')
+                    self.paramerrboxes[x].delete(0, tk.END)
+                    self.paramerrboxes[x].insert(0, str(self.fittedparamserror[x]))
+                    self.paramerrboxes[x].config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
 
