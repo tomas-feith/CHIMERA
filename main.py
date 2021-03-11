@@ -436,6 +436,8 @@ class MainWindow(tk.Frame):
                 self.xaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.yaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.yaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
+                self.resultlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
+                self.errorlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
         
             if(self.linewidthscale['state'] != tk.ACTIVE and self.errorsizescale['state'] != tk.ACTIVE and self.markersizescale['state'] != tk.ACTIVE and self.funcplotwidthscale['state'] != tk.ACTIVE and self.funcfitwidthscale['state'] != tk.ACTIVE):
                 self.linewidthscale['width'] = 0.025*self.master.winfo_height()
@@ -1874,6 +1876,13 @@ class MainWindow(tk.Frame):
                 self.a.text(0,0,params_text)
                 self.a.plot(self.xfittedfunc, self.yfittedfunc, lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
             
+                for x in range (len(self.paramresboxes)):
+                    self.paramresboxes[x].delete(0, tk.END)
+                    self.paramresboxes[x].insert(0, str(self.fittedparams[x]))
+                    self.paramresboxes[x].config(state = 'readonly')
+                    self.paramerrboxes[x].delete(0, tk.END)
+                    self.paramerrboxes[x].insert(0, str(self.fittedparamserror[x]))
+                    self.paramerrboxes[x].config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
 
