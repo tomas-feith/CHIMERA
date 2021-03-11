@@ -657,8 +657,7 @@ class MainWindow(tk.Frame):
         
         
         # Este é o botão file na self.menubar
-        self.fileMenu = tk.Menu(self.menubar)
-        self.menubar.add_cascade(label="File", menu=self.fileMenu)
+
         
         # Botao na self.menubar para escolher as opçoes do plot
         self.plotoptions = tk.Menu(self.menubar)
@@ -1635,7 +1634,7 @@ class MainWindow(tk.Frame):
 
         self.wantfunction.set(1)
   
-            
+        
         self.plot_dataset()
         
     def plot_dataset(self):
@@ -1866,6 +1865,8 @@ class MainWindow(tk.Frame):
                 self.plot_fittedfunction()
                 
                 params_text = ""
+                
+                
                 
                 for i in range(len(self.fittedparams)):
                     params_text+="%s=%f$\pm$%f\n" % (params[i], self.fittedparams[i], self.fittedparamserror[i])
