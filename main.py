@@ -1629,91 +1629,45 @@ class MainWindow(tk.Frame):
             self.xfittedfunc.append(x)
             self.yfittedfunc.append(eval(expr))
         
-    def plot_function(self):        
-        np.seterr(all='raise')
-        functions = ['sin',
-                     'cos',
-                     'tan',
-                     'arcsin',
-                     'arccos',
-                     'arctan',
-                     'exp',
-                     'log',
-                     'sqrt',
-                     'absolute',
-                     'heaviside',
-                     'cbrt',
-                     'sign'
-                     ]
-        forbidden = ['PI', 'E']
+    def plot_function(self):     
         
-        expr = self.functionentry.get()
-        params = self.parameterentry.get()
-        indep = self.independententry.get()
-        
-        # Ver se a função não está vazia
-        expr=expr.replace(' ','')
-        if expr == '':
-            return (False, 'Não foi encontrada nenhuma função de ajustamento.')
-    
-        process = process_params(params, indep)
-        
-        if process[0]:
-            clean_split = process[1]
+        parsed_input = parser(self.functionentry.get(),
+                              self.parameterentry.get(),
+                              self.independententry.get())
+        if parsed_input[0]:
+            expr = parsed_input[1]
         else:
-            return (False, process[1])
+            self.secondary_window('ERROR', parsed_input[1])
+            return parsed_input
         
-        for x in range(len(self.plotparamboxes)):
-            paramboxes = self.plotparamboxes[x].get()
-            paramboxes = paramboxes.replace(' ', '')
-            if(paramboxes == ''):
-                self.secondary_window('ERROR', 'No parameter values were provided for plot.')
-                return False
-            try:
-                float(paramboxes)
-            except ValueError:
-                self.secondary_window('ERROR', 'A non-numerical parameter value was detected. Only numerical values are allowed.')
-                return False
-                
-        for function in enumerate(functions):
-            expr = expr.split(function[1])
-            expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
-        
-        for keyword in forbidden:
-            expr = expr.split(keyword)
-            if keyword == 'PI':
-                expr = '[3.14]'.join(expr)
-            if keyword == 'E':
-                expr = '[2.72]'.join(expr)
-        # Substituir os números dos parâmetros
-        for pair in enumerate(clean_split):
-            expr = expr.split(pair[1])
-            expr = (str(self.plotparamboxes[pair[0]].get())).join(expr)
-    
-        # Por np atras da funçao para tipo, plottar isso
-        for function in enumerate(functions):
-            expr = expr.split('['+str(function[0]+len(clean_split))+']')
-            expr = ('np.'+str(function[1])).join(expr)
-            
-        # Pôr os números associados às palavras reservadas
-        expr = expr.split('[3.14]')
-        expr = 'np.pi'.join(expr)
-        expr = expr.split('[2.72]')
-        expr = 'np.e'.join(expr)
-    
         #Criação da figura que vai segurar o plot, e seguidamente espetada no canvas
         #Criação dos arrays com muitos pontinhos x e y(x)
         self.xfunc=[]
         self.yfunc=[]
         
+        B = []
+        
+        for i in range(len(self.plotparamboxes)):
+             paramboxes = self.plotparamboxes[i].get()
+             paramboxes = paramboxes.replace(' ', '')
+             if(paramboxes == ''):
+                 self.secondary_window('ERROR', 'No parameter values were provided for plot.')
+                 return False
+             try:
+                 float(paramboxes)
+             except ValueError:
+                 self.secondary_window('ERROR', 'A non-numerical parameter value was detected. Only numerical values are allowed.')
+                 return False
+             B.append(float(paramboxes))
+        
         x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
         x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
         amp = x_max - x_min
+                        
+        self.xfunc = _x = [x_min + i*amp/9999 for i in range(10000)]
         
         for i in range(10000):
-            x = x_min + i*amp/9999
-            self.xfunc.append(x)
-            self.yfunc.append(eval(expr))
+            self.yfunc.append(eval(expr.replace('_x','_x[i]')))
         
         self.wantfunction.set(1)
         self.plot_dataset()
