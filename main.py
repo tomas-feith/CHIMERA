@@ -1807,13 +1807,30 @@ class MainWindow(tk.Frame):
         #self.erord[select-1] = np.array(self.erordenadas[select-1])
 
         fig = Figure(figsize=(10,10))
+        
+        dataforfit = []
+        for x in range(self.numberdatasets):
+                    
+            if(self.datasetstoplotvar[x].get() == 1):
+                self.datastring = self.datasettext[x]
+                data = StringIO(self.datastring)
+                data_sets = read_file(data, float, False, 0)
+                
+                dataforfit.append(data_sets)
+                
+            a=[]
+            for h in range(len(dataforfit)):
+                for i in range(len(dataforfit[h][0])):
+                    a.append(dataforfit[h][0][i])
+                 
+
 
         if(self.autoscalex.get() == 1):
             allabc = []
-            for x in range(len(self.abcissas)):
-                allabc.append(max(self.abcissas[x]))
-                allabc.append(min(self.abcissas[x]))
-            
+            for x in range(len(a)):
+                allabc.append(a[x][0])
+        
+            print(allabc)
             minabc = min(allabc)
             maxabc = max(allabc)
             amp = maxabc - minabc
@@ -1832,9 +1849,9 @@ class MainWindow(tk.Frame):
             
         if(self.autoscaley.get() == 1):
             allord = []
-            for x in range(len(self.ordenadas)):
-                allord.append(max(self.ordenadas[x]))
-                allord.append(min(self.ordenadas[x]))
+            for x in range(len(a)):
+                allord.append(a[x][2])
+                allord.append(a[x][2])
             
             minord = min(allord)
             maxord = max(allord)
