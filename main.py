@@ -361,8 +361,7 @@ class MainWindow(tk.Frame):
         # Esta é a janela principal
         self.master = master
         master.state('zoomed')
-        self.master.tk.call('wm', 'iconphoto', self.master._w, tk.PhotoImage(file=resource_path('img/Image.png')))
-
+        self.master.iconphoto(True, tk.PhotoImage(file=resource_path('img/Image.png')))
         # Tirar o título
         self.winfo_toplevel().title("")
 
@@ -425,8 +424,7 @@ class MainWindow(tk.Frame):
             self.new["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
             self.old["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
             self.new.configure(height = 1)
-            self.old.configure(height = 1)
-            
+            self.old.configure(height = 1)            
             
         if(count == 1 or count == 2):    
             for button in self.buttons:
@@ -688,11 +686,11 @@ class MainWindow(tk.Frame):
 
         # Aqui adicionam-se os 3 checkbuttons da dita checklist do que o utilizador quer ler,
         # as variáveis definidas anteriormente servem para registar se o utilizador tem o dito setting selecionado ou nao
-        self.plotoptions.add_checkbutton( label = "plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
-        self.plotoptions.add_checkbutton( label = "plot line", onvalue = 1, offvalue = 0, variable = self.wantline)
-        self.plotoptions.add_checkbutton( label = "error bars", onvalue = 1, offvalue = 0, variable = self.wanterror)
-        self.plotoptions.add_checkbutton( label = "plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit )
-        self.plotoptions.add_checkbutton( label = "plot function", onvalue =1, offvalue = 0, variable=self.wantfunction)
+        self.plotoptions.add_checkbutton( label = "Plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
+        self.plotoptions.add_checkbutton( label = "Connect points", onvalue = 1, offvalue = 0, variable = self.wantline)
+        self.plotoptions.add_checkbutton( label = "Error bars", onvalue = 1, offvalue = 0, variable = self.wanterror)
+        self.plotoptions.add_checkbutton( label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit )
+        self.plotoptions.add_checkbutton( label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction)
         
         # Estes 3 menus na self.menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
         self.choosecolor = tk.Menu(self.menubar)
@@ -832,8 +830,6 @@ class MainWindow(tk.Frame):
         self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx=0.945, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
         
-        
-        
         self.linewidth = []
         self.markersize = []
         self.errorwidth = []
@@ -852,7 +848,7 @@ class MainWindow(tk.Frame):
         self.funcplotwidth[0].set(2)
         self.funcfitwidth[0].set(2)
 
-        self.linescalelabel = tk.Label(self.subframeright3, text = 'Line Width', bg = '#FCF6F5')
+        self.linescalelabel = tk.Label(self.subframeright3, text = 'Connection Width', bg = '#FCF6F5')
         self.linescalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
         self.linescalelabel.place(in_ = self.subframeright3, relwidth = 0.3, relx = 0.02, rely=0.57)
         self.linescalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
@@ -1972,15 +1968,20 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
                 
+                sep_plot = ttk.Separator(self.anotherframe,orient=tk.VERTICAL)
+                sep_plot.grid(in_ = self.anotherframe, column=1)
+                
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
-                    self.paramerrboxes.append(tk.Entry(self.anotherframe))
+                    self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
                     self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
+                    self.paramerrboxes[x].config(state = 'readonly')
                     self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
                     self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
-                    self.paramresboxes.append(tk.Entry(self.anotherframe))
+                    self.paramresboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
+                    self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
@@ -2051,15 +2052,20 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
                 
+                sep_plot = ttk.Separator(self.anotherframe,orient=tk.VERTICAL)
+                sep_plot.grid(in_ = self.anotherframe, column = 1)
+                
                 for x in range(self.boxnumber):
-                    self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
+                    self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#FCF6F5'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
-                    self.paramerrboxes.append(tk.Entry(self.anotherframe))
+                    self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
                     self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
+                    self.paramerrboxes[x].config(state = 'readonly')
                     self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
                     self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
-                    self.paramresboxes.append(tk.Entry(self.anotherframe))
+                    self.paramresboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
+                    self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#FCF6F5'))
