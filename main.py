@@ -451,6 +451,7 @@ class MainWindow(tk.Frame):
             self.new.configure(height = 1)
             self.old.configure(height = 1)
             
+            
         if(count == 1 or count == 2):    
             for button in self.buttons:
                 button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
@@ -553,7 +554,7 @@ class MainWindow(tk.Frame):
         
          # Criação das frames para a edição visual do gráfico
         self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
-        self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.225, relx=0, rely=0.25)
+        self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.2, relx=0, rely=0.25)
 
         self.subframeleft1=tk.Frame(self.frameleft, bg='#FCF6F5')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
@@ -779,6 +780,8 @@ class MainWindow(tk.Frame):
         self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
         
+   
+        
         self.xaxislabel = tk.Label(self.subframeright3, text="X Axis", bg='#FCF6F5')
         self.xaxislabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0)
 
@@ -974,6 +977,13 @@ class MainWindow(tk.Frame):
         sty = ttk.Style(self.subframeright3)
         sty.configure("TSeparator", background="red")
         
+        
+        self.chisqlabel = tk.Label(self.frameright, text = "Chisq", bg= '#FCF6F5')
+        self.chisqlabel.place(in_ = self.frameright, rely=0.46, relx = 0.35)
+        self.chisqentry = tk.Entry(self.frameright)
+        self.chisqentry.place( in_ = self.frameright, rely = 0.46, relx=0.4, relwidth = 0.25)
+        self.chisqentry.config(state = 'readonly')
+        
         sep = ttk.Separator(self.subframeright3, orient = tk.VERTICAL )
         sep.place(in_ = self.subframeright3, relx=0.5, relheight = 0.5, rely=0.05)
         
@@ -988,6 +998,8 @@ class MainWindow(tk.Frame):
         
         sep3 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL)
         sep3.place(in_ = self.subframeright3, relx=0, rely=0.55, relwidth=1)
+        
+        
         
         # Criação do texto respetivo ao primeiro dataset
         # A variável datasettext contém os textos presentes em cada dataset
@@ -1033,6 +1045,9 @@ class MainWindow(tk.Frame):
         self.erabc.append(np.array(self.erabcissas[0]))
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
+        
+        
+        
         
         self.dataset_points = []
         self.update_parameter()
@@ -1190,8 +1205,9 @@ class MainWindow(tk.Frame):
         #self.difxerror.set(0)
     
     def difxerrorfunction(self):
+        self.difxerror.get()
         #self.samex.set(0)
-        self.difx.set(1)
+        #self.difx.set(1)
 
     # Função para adicionar um dataset
     def add_dataset(self, string):
@@ -1937,6 +1953,11 @@ class MainWindow(tk.Frame):
                     self.paramerrboxes[x].delete(0, tk.END)
                     self.paramerrboxes[x].insert(0, str(self.fittedparamserror[x]))
                     self.paramerrboxes[x].config(state = 'readonly')
+                
+                self.chisqentry.config(state = 'normal')
+                self.chisqentry.delete(0, tk.END)
+                self.chisqentry.insert(0, str(self.chisq))
+                self.chisqentry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
 
@@ -1970,7 +1991,7 @@ class MainWindow(tk.Frame):
                 self.subframeright2.destroy()
     
                 self.subframeright2=tk.Frame(self.frameright, bg='#FCF6F5')
-                self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.225, relx=0, rely=0.25)
+                self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.2, relx=0, rely=0.25)
     
                 self.boxnumber = len(clean_split)
     
@@ -2014,8 +2035,8 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
                 
-                sep_plot = ttk.Separator(self.anotherframe,orient=tk.VERTICAL)
-                sep_plot.place(in_ = self.anotherframe)
+                
+                
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
@@ -2097,8 +2118,7 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
                 
-                sep_plot = ttk.Separator(self.anotherframe,orient=tk.VERTICAL)
-                sep_plot.grid(in_ = self.anotherframe, column = 1)
+                
                 
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#FCF6F5'))
@@ -2123,6 +2143,24 @@ class MainWindow(tk.Frame):
             
             self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
            
+            
+            #sep_plot = ttk.Separator(self.subframeright2,orient=tk.VERTICAL)
+            #sep_plot.place(in_ = self.subframeright2, relx = 0.24, relheight = 1)
+            
+            #sep2_plot = ttk.Separator(self.subframeright1, orient = tk.VERTICAL)
+            #sep2_plot.place(in_ = self.subframeright1, relx = 0.24, relheight = 1)
+            
+            sep2_plot = ttk.Separator(self.frameright, orient = tk.VERTICAL)
+            sep2_plot.place(in_ = self.frameright, relx = 0.24, relheight = 0.245, rely = 0.20)
+            sep3_plot = ttk.Separator(self.frameright, orient = tk.HORIZONTAL)
+            sep3_plot.place(in_ = self.frameright, relwidth = 1, rely = 0.2 )
+            sep4_plot = ttk.Separator(self.frameright, orient = tk.HORIZONTAL)
+            sep4_plot.place(in_ = self.frameright, relwidth = 1, rely = 0.445 )
+            sep5_plot = ttk.Separator(self.frameright, orient = tk.VERTICAL)
+            sep5_plot.place(in_ = self.frameright, relx = 0, relheight = 1, rely = 0)
+            
+            
+            
             self.paramcanvas.update()
     
     def algumacoisa(self, event):
