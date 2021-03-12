@@ -449,7 +449,7 @@ class MainWindow(tk.Frame):
             self.new["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
             self.old["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
             self.new.configure(height = 1)
-            self.old.configure(height = 1)            
+            self.old.configure(height = 1)
             
         if(count == 1 or count == 2):    
             for button in self.buttons:
@@ -1929,9 +1929,11 @@ class MainWindow(tk.Frame):
                 self.a.plot(self.xfittedfunc, self.yfittedfunc, lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
             
                 for x in range (len(self.paramresboxes)):
+                    self.paramresboxes[x].config(state = 'normal')
                     self.paramresboxes[x].delete(0, tk.END)
                     self.paramresboxes[x].insert(0, str(self.fittedparams[x]))
                     self.paramresboxes[x].config(state = 'readonly')
+                    self.paramerrboxes[x].config(state = 'normal')
                     self.paramerrboxes[x].delete(0, tk.END)
                     self.paramerrboxes[x].insert(0, str(self.fittedparamserror[x]))
                     self.paramerrboxes[x].config(state = 'readonly')
@@ -2013,8 +2015,7 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(7, weight = 3)
                 
                 sep_plot = ttk.Separator(self.anotherframe,orient=tk.VERTICAL)
-                sep_plot.grid(in_ = self.anotherframe, column=1)
-                
+                sep_plot.place(in_ = self.anotherframe)
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#FCF6F5'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
