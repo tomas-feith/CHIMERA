@@ -985,7 +985,7 @@ class MainWindow(tk.Frame):
         sty.configure("TSeparator", background="red")
         
         
-        self.chisqlabel = tk.Label(self.frameright, text = "Chisq", bg= '#FCF6F5')
+        self.chisqlabel = tk.Label(self.frameright, text = u'\u03C7'+'\N{SUPERSCRIPT TWO}'+'/'+'\u03BD', bg= '#FCF6F5')
         self.chisqlabel.place(in_ = self.frameright, rely=0.46, relx = 0.35)
         self.chisqentry = tk.Entry(self.frameright)
         self.chisqentry.place( in_ = self.frameright, rely = 0.46, relx=0.4, relwidth = 0.25)
@@ -1620,13 +1620,16 @@ class MainWindow(tk.Frame):
         self.xfittedfunc=[]
         self.yfittedfunc=[]
         
-        for i in range(100):
-            x=0.2*i
-            self.xfittedfunc.append(x)
-            self.yfittedfunc.append(eval(expr))
+        x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
+        x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
+        amp = x_max - x_min
         
+        for i in range(10000):
+            x = x_min + i*amp/9999
+            self.xfunc.append(x)
+            self.yfunc.append(eval(expr))
         
-    def plot_function(self):
+    def plot_function(self):        
         np.seterr(all='raise')
         functions = ['sin',
                      'cos',
@@ -1703,19 +1706,16 @@ class MainWindow(tk.Frame):
         self.xfunc=[]
         self.yfunc=[]
         
+        x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
+        x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
+        amp = x_max - x_min
         
-        
-        
-        for i in range(100):
-            x=0.2*i
+        for i in range(10000):
+            x = x_min + i*amp/9999
             self.xfunc.append(x)
             self.yfunc.append(eval(expr))
         
-        # Se calhar por também uma condição para ver se o utilizador quer grid
-
         self.wantfunction.set(1)
-  
-        
         self.plot_dataset()
         
     def plot_dataset(self):
@@ -1753,8 +1753,6 @@ class MainWindow(tk.Frame):
         
         if not self.check_databox():
             return False
-        
-        
 
 #        data = StringIO(self.datastring)
  #       data_sets = read_file(data,float,False,0)
@@ -1801,11 +1799,6 @@ class MainWindow(tk.Frame):
                 self.ord[x] = np.array(self.ordenadas[x])
                 self.erord[x] = np.array(self.erordenadas[x])
 
-       # self.abc[select-1] = np.array(self.abcissas[select-1])
-        #self.erabc[select-1] = np.array(self.erabcissas[select-1])
-        #self.ord[select-1] = np.array(self.ordenadas[select-1])
-        #self.erord[select-1] = np.array(self.erordenadas[select-1])
-
         fig = Figure(figsize=(10,10))
         
         dataforfit = []
@@ -1822,8 +1815,6 @@ class MainWindow(tk.Frame):
             for h in range(len(dataforfit)):
                 for i in range(len(dataforfit[h][0])):
                     a.append(dataforfit[h][0][i])
-                 
-
 
         if(self.autoscalex.get() == 1):
             allabc = []
@@ -1938,12 +1929,10 @@ class MainWindow(tk.Frame):
                 
                 dataforfit = []
                 for x in range(self.numberdatasets):
-                    
                     if(self.datasetstoplotvar[x].get() == 1):
                          self.datastring = self.datasettext[x]
                          data = StringIO(self.datastring)
                          data_sets = read_file(data, float, False, 0)
-                         
                          dataforfit.append(data_sets)
                                 
                 a=[]
@@ -1959,8 +1948,6 @@ class MainWindow(tk.Frame):
                 self.plot_fittedfunction()
                 
                 params_text = ""
-                
-                
                 
                 for i in range(len(self.fittedparams)):
                     params_text+="%s=%f$\pm$%f\n" % (params[i], self.fittedparams[i], self.fittedparamserror[i])
