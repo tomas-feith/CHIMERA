@@ -473,6 +473,13 @@ class MainWindow(tk.Frame):
                 self.yaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.resultlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
                 self.errorlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
+                
+                self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
+                self.errorscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
+                self.markerscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
+                self.linescalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
+                self.funcplotscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
+                self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
         
             if(self.linewidthscale['state'] != tk.ACTIVE and self.errorsizescale['state'] != tk.ACTIVE and self.markersizescale['state'] != tk.ACTIVE and self.funcplotwidthscale['state'] != tk.ACTIVE and self.funcfitwidthscale['state'] != tk.ACTIVE):
                 self.linewidthscale['width'] = 0.025*self.master.winfo_height()
@@ -875,56 +882,56 @@ class MainWindow(tk.Frame):
 
         self.linescalelabel = tk.Label(self.subframeright3, text = 'Connection Width', bg = '#FCF6F5')
         self.linescalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
-        self.linescalelabel.place(in_ = self.subframeright3, relwidth = 0.3, relx = 0.02, rely=0.57)
+        self.linescalelabel.place(in_ = self.subframeright3, relwidth = 0.3, relx = 0.02, rely=0.56)
         self.linescalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
         self.linescalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.linescalelabelvalue.place(in_ = self.subframeright3, relx = 0.52, rely=0.57)
+        self.linescalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.56)
         self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.lineslider, showvalue = False, variable = self.linewidth[0])
-        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.3, rely=0.57)
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.575)
         self.linewidthscale['width'] = 0.025*self.master.winfo_width()
         self.linewidthscale['state'] = tk.DISABLED
 
         self.markerscalelabel = tk.Label(self.subframeright3, text = 'Marker Size', bg = '#FCF6F5')
         self.markerscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
-        self.markerscalelabel.place(in_ = self.subframeright3, relwidth = 0.3, relx = 0.02, rely=0.65)
+        self.markerscalelabel.place(in_ = self.subframeright3, relwidth = 0.3, relx = 0.02, rely=0.64)
         self.markerscalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
         self.markerscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.markerscalelabelvalue.place(in_ = self.subframeright3, relx = 0.52, rely=0.65)
+        self.markerscalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.64)
         self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.markerslider,showvalue =False, variable = self.markersize[0])
-        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.3, rely=0.65)
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.655)
         self.markersizescale['width'] = 0.025*self.master.winfo_width()
         self.markersizescale['state'] = tk.DISABLED
 
         self.errorscalelabel = tk.Label(self.subframeright3, text = 'Errorbar Width', bg = '#FCF6F5')
         self.errorscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
-        self.errorscalelabel.place(in_ = self.subframeright3,relwidth = 0.3, relx = 0.02, rely=0.86)
+        self.errorscalelabel.place(in_ = self.subframeright3,relwidth = 0.3, relx = 0.02, rely=0.88)
         self.errorscalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
         self.errorscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.errorscalelabelvalue.place(in_ = self.subframeright3, relx = 0.52, rely=0.86)
+        self.errorscalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.88)
         self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.errorslider, showvalue = False, variable = self.errorwidth[0])
-        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.3, rely=0.86)
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.895)
         self.errorsizescale['width'] = 0.025*self.master.winfo_width()
         self.errorsizescale['state'] = tk.DISABLED
         
         self.funcplotscalelabel = tk.Label(self.subframeright3, text = 'Plot Func. Width', bg = '#FCF6F5')
-        self.funcplotscalelabel['font'] = ("Roboto",int(0.007*self.master.winfo_width()))
+        self.funcplotscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
         self.funcplotscalelabel.place(in_ = self.subframeright3,relwidth = 0.3, relx = 0.02, rely=0.72)
         self.funcplotscalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
         self.funcplotscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.funcplotscalelabelvalue.place(in_ = self.subframeright3, relx = 0.52, rely=0.72)
+        self.funcplotscalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.72)
         self.funcplotwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.funcplotslider, showvalue = False, variable = self.funcplotwidth[0])
-        self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.3, rely=0.72)
+        self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.735)
         self.funcplotwidthscale['width'] = 0.025*self.master.winfo_width()
         self.funcplotwidthscale['state'] = tk.DISABLED
         
         self.funcfitscalelabel = tk.Label(self.subframeright3, text = 'Fit Func. Width', bg = '#FCF6F5')
-        self.funcfitscalelabel['font'] = ("Roboto",int(0.007*self.master.winfo_width()))
-        self.funcfitscalelabel.place(in_ = self.subframeright3,relwidth = 0.3, relx = 0.022, rely=0.79)
+        self.funcfitscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
+        self.funcfitscalelabel.place(in_ = self.subframeright3,relwidth = 0.3, relx = 0.022, rely=0.80)
         self.funcfitscalelabelvalue = tk.Label(self.subframeright3, text = '2.0', bg = '#FCF6F5')
         self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
-        self.funcfitscalelabelvalue.place(in_ = self.subframeright3, relx = 0.52, rely=0.79)
+        self.funcfitscalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.80)
         self.funcfitwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = 'red', bg = '#FCF6F5', highlightthickness=0, command = self.funcfitslider, showvalue = False, variable = self.funcfitwidth[0])
-        self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.3, rely=0.79)
+        self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.815)
         self.funcfitwidthscale['width'] = 0.025*self.master.winfo_width()
         self.funcfitwidthscale['state'] = tk.DISABLED
         
@@ -946,28 +953,28 @@ class MainWindow(tk.Frame):
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
             'Triangle', 'Square', 'Circle'], textvariable = self.markeroption)
         self.markersizecombo.current(2)
-        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.6, rely=0.655, relheight=0.05)
+        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.64, relheight=0.065)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
         self.markeroptiontranslater.append('o')
         
         self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
         self.linestylecombo.current(0)
-        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.6, rely=0.575, relheight=0.05)
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.57, relheight=0.065)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
         self.lineoptiontranslater.append('-')
         
         self.funcplotstylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.funcplotoption)
         self.funcplotstylecombo.current(0)
-        self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.6, rely=0.725, relheight=0.05)
+        self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.71, relheight=0.065)
         self.funcplotstylecombo.bind("<<ComboboxSelected>>", self.funcplotselector)
         self.funcplotoptiontranslater.append('-')
         
         self.funcfitstylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.funcfitoption)
         self.funcfitstylecombo.current(0)
-        self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.6, rely=0.795, relheight=0.05)
+        self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.79, relheight=0.065)
         self.funcfitstylecombo.bind("<<ComboboxSelected>>", self.funcfitselector)
         self.funcfitoptiontranslater.append('-')
         
