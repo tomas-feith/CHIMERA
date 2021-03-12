@@ -1626,8 +1626,8 @@ class MainWindow(tk.Frame):
         
         for i in range(10000):
             x = x_min + i*amp/9999
-            self.xfunc.append(x)
-            self.yfunc.append(eval(expr))
+            self.xfittedfunc.append(x)
+            self.yfittedfunc.append(eval(expr))
         
     def plot_function(self):        
         np.seterr(all='raise')
@@ -1967,7 +1967,7 @@ class MainWindow(tk.Frame):
                 
                 self.chisqentry.config(state = 'normal')
                 self.chisqentry.delete(0, tk.END)
-                self.chisqentry.insert(0, str(self.chisq))
+                self.chisqentry.insert(0, "%.2f" % self.chisq)
                 self.chisqentry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
