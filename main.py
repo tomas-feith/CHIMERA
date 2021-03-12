@@ -51,6 +51,7 @@ def process_params(params, indep):
                  'cbrt',
                  'sign'
                  ]
+    forbidden = ['PI', 'E']
     
     if (len([p for p in indep.split(' ') if p]) != 1):
         return (False, 'Multiple independent variables found. Only one is allowed.')
@@ -95,6 +96,14 @@ def process_params(params, indep):
     if indep in functions:
         return (False, 'Name \''+str(indep)+'\' is already associated to a function. Provide a different name.')
 
+    # Verificar se nenhum dos nomes das variáveis está reservado
+    for val in clean_split:
+        if val in forbidden:
+            return (False, 'Name \''+str(val)+'\' is a reserved keyword. Provide a different name.')
+    # Verificar se a variável independente não é uma palavra reservada
+    if indep in forbidden:
+        return (False, 'Name \''+str(indep)+'\' is a reserved keyword. Provide a different name.')
+        
     # Ver se nenhum dos parâmetros é repetido
     for val in clean_split:
         if clean_split.count(val) > 1:
@@ -142,6 +151,8 @@ def parser(expr, params, indep):
                  'cbrt',
                  'sign'
                  ]
+    forbidden = ['PI', 'E']
+
     
     # Ver se a função não está vazia
     expr=expr.replace(' ','')
@@ -164,6 +175,14 @@ def parser(expr, params, indep):
     for function in enumerate(functions):
         expr = expr.split(function[1])
         expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
+    # Substituir as palavras reservadas
+    for keyword in forbidden:
+        expr = expr.split(keyword)
+        if keyword == 'PI':
+            expr = '[3.14]'.join(expr)
+        if keyword == 'E':
+            expr = '[2.72]'.join(expr)
+    
     # Substituir os nomes dos parâmetros
     for pair in enumerate(clean_split):
         expr = expr.split(pair[1])
@@ -177,13 +196,19 @@ def parser(expr, params, indep):
     for function in enumerate(functions):
         expr = expr.split('['+str(function[0]+len(clean_split))+']')
         expr = ('np.'+str(function[1])).join(expr)
+        
+    # Pôr os números associados às palavras reservadas
+    expr = expr.split('[3.14]')
+    expr = 'np.pi'.join(expr)
+    expr = expr.split('[2.72]')
+    expr = 'np.e'.join(expr)
 
     # Vamos finalmente testar se a função funciona
     # Valores de teste só porque sim
     
     B = [np.pi/2]*len(clean_split)
     _x=-1
-    
+        
     try:
         eval(expr)
     except NameError as error:
@@ -1269,9 +1294,6 @@ class MainWindow(tk.Frame):
         self.datasetstoplot = tk.Menu(self.menubar)
         self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
         
-       # print(self.selecteddataset)
-        #print(self.datasetstoplotvar)
-        
         self.datasetstoplotvar.pop(self.selecteddataset)
         
         self.selecteddataset = 0
@@ -1283,10 +1305,7 @@ class MainWindow(tk.Frame):
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
-        
-       
-       
-       # print(self.datasetstoplotvar)
+               
         for x in range(self.numberdatasets):
             self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(x+1), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[x] ) 
             self.datasetstoplotvar[x].set(self.datasetstoplotvar[x].get())
@@ -1326,10 +1345,8 @@ class MainWindow(tk.Frame):
     def update_databox(self, event):
 
         # Guardar o atual na cena
-        #print(self.datasettext)
         if event != "remove":
             self.datasettext[self.currentselection - 1] = self.dataentry.get("1.0", "end-1c")
-        #print(self.datasettext)
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
@@ -1533,6 +1550,7 @@ class MainWindow(tk.Frame):
                      'cbrt',
                      'sign'
                      ]
+        forbidden = ['PI', 'E']
         
         expr = self.functionentry.get()
         params = self.parameterentry.get()
@@ -1553,6 +1571,13 @@ class MainWindow(tk.Frame):
         for function in enumerate(functions):
             expr = expr.split(function[1])
             expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
+        # Substituir as palavras reservadas
+        for keyword in forbidden:
+            expr = expr.split(keyword)
+            if keyword == 'PI':
+                expr = '[3.14]'.join(expr)
+            if keyword == 'E':
+                expr = '[2.72]'.join(expr)
         # Substituir os números dos parâmetros
         for pair in enumerate(clean_split):
             expr = expr.split(pair[1])
@@ -1562,7 +1587,13 @@ class MainWindow(tk.Frame):
         for function in enumerate(functions):
             expr = expr.split('['+str(function[0]+len(clean_split))+']')
             expr = ('np.'+str(function[1])).join(expr)
-        
+            
+        # Pôr os números associados às palavras reservadas
+        expr = expr.split('[3.14]')
+        expr = 'np.pi'.join(expr)
+        expr = expr.split('[2.72]')
+        expr = 'np.e'.join(expr)
+
         self.xfittedfunc=[]
         self.yfittedfunc=[]
         
@@ -1588,6 +1619,7 @@ class MainWindow(tk.Frame):
                      'cbrt',
                      'sign'
                      ]
+        forbidden = ['PI', 'E']
         
         expr = self.functionentry.get()
         params = self.parameterentry.get()
@@ -1620,6 +1652,13 @@ class MainWindow(tk.Frame):
         for function in enumerate(functions):
             expr = expr.split(function[1])
             expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
+        
+        for keyword in forbidden:
+            expr = expr.split(keyword)
+            if keyword == 'PI':
+                expr = '[3.14]'.join(expr)
+            if keyword == 'E':
+                expr = '[2.72]'.join(expr)
         # Substituir os números dos parâmetros
         for pair in enumerate(clean_split):
             expr = expr.split(pair[1])
@@ -1629,11 +1668,20 @@ class MainWindow(tk.Frame):
         for function in enumerate(functions):
             expr = expr.split('['+str(function[0]+len(clean_split))+']')
             expr = ('np.'+str(function[1])).join(expr)
+            
+        # Pôr os números associados às palavras reservadas
+        expr = expr.split('[3.14]')
+        expr = 'np.pi'.join(expr)
+        expr = expr.split('[2.72]')
+        expr = 'np.e'.join(expr)
     
         #Criação da figura que vai segurar o plot, e seguidamente espetada no canvas
         #Criação dos arrays com muitos pontinhos x e y(x)
         self.xfunc=[]
         self.yfunc=[]
+        
+        
+        
         
         for i in range(100):
             x=0.2*i
@@ -1857,9 +1905,7 @@ class MainWindow(tk.Frame):
                          data_sets = read_file(data, float, False, 0)
                          
                          dataforfit.append(data_sets)
-                
-                print(dataforfit)
-                
+                                
                 a=[]
                 for h in range(len(dataforfit)):
                     for i in range(len(dataforfit[h][0])):
@@ -1867,9 +1913,7 @@ class MainWindow(tk.Frame):
                  
                 gaita = []
                 gaita.append(a)
-                
-                print(gaita)
-                
+                                
                 (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(gaita, init_values, 1000)
                 
                 self.plot_fittedfunction()
