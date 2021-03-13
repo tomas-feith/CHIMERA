@@ -1200,7 +1200,21 @@ class MainWindow(tk.Frame):
     
     def difxfunction(self):
         self.samex.set(0)
-
+        
+    def difxerrorfunction(self):
+        # Esta função não faz nada??
+        self.difxerror.get()
+        
+        if self.difxerror.get():
+            self.samextext['text'] = 'First columns will be (x, ex).\nSubsequencial columns will be (y1, ey1, y2, ey2,...)'
+            self.samexbutton['text'] = 'All datasets have same (x, ex)'
+            self.difxbutton['text'] = 'All datasets have their own (x, ex)'
+            self.difxtext['text'] = 'Columns will be (x1, ex1, y1, ey1, x2, ex2, y2, ey2,...)'
+        else:
+            self.samextext['text'] = 'First column will be x.\nSubsequencial columns will be (y1, ey1, y2, ey2,...)'
+            self.samexbutton['text'] = 'All datasets have same x'
+            self.difxbutton['text'] = 'All datasets have their own x'
+            self.difxtext['text'] = 'Columns will be (x1, y1, ey1, x2, y2, ey2,...)'
 
     # Função para adicionar um dataset
     def add_dataset(self, string):
