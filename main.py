@@ -745,7 +745,7 @@ class MainWindow(tk.Frame):
         
         # Aqui tou so a meter os checkbuttons nas caixas
         self.choosecolor.add_command(label = 'Marker Color', command = self.markercolorpick)
-        self.choosecolor.add_command(label = 'Line Color', command = self.linecolorpick)
+        self.choosecolor.add_command(label = 'Connection Color', command = self.linecolorpick)
         self.choosecolor.add_command(label = 'Errorbar Color', command = self.errorcolorpick)
         self.choosecolor.add_command(label = 'Plot Function Color', command = self.funcplotcolorpick)
         self.choosecolor.add_command(label = 'Fit Function Color', command = self.funcfitcolorpick)
@@ -788,7 +788,12 @@ class MainWindow(tk.Frame):
         self.functionentry.focus_set()
         
    
-        
+        self.autoscalex = tk.BooleanVar()
+        self.autoscalex.set(0)
+        self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale')
+        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = -0.03)
+     
+   
         self.xaxislabel = tk.Label(self.subframeright3, text="X Axis", bg='#FCF6F5')
         self.xaxislabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0)
 
@@ -798,14 +803,14 @@ class MainWindow(tk.Frame):
         self.xaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#FCF6F5')
         self.xaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.2, relheight=0.1, relx = 0, rely = 0.1)
 
-        self.xaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
+        self.xaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5', justify='center')
         self.xaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0.1)
         self.xaxisminentry.insert(0, "0")
 
         self.xaxistolabel = tk.Label(self.subframeright3, text = "to", bg='#FCF6F5')
         self.xaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.3, rely=0.1)
 
-        self.xaxismaxentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
+        self.xaxismaxentry = tk.Entry(self.subframeright3, bg='#FCF6F5', justify='center')
         self.xaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.35, rely=0.1)
         self.xaxismaxentry.insert(0, "10")
         
@@ -816,36 +821,30 @@ class MainWindow(tk.Frame):
         self.xaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.1, rely=0.25)
         self.xaxistitleentry.insert(0, "Abcissas")
 
-        self.autoscalex = tk.BooleanVar()
-        self.autoscalex.set(0)
-        self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale')
-        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = -0.03)
+        self.xaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
+        self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx=0.225, rely= 0.4)
 
+        self.xaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5', justify='center')
+        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.4, rely=0.4)
+        self.xaxistickspentry.insert(0, "1")
+        
+        
         self.autoscaley = tk.BooleanVar()
         self.autoscaley.set(0)
         self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale')
         self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = 0.47)
 
-        self.xaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
-        self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx=0.225, rely= 0.4)
-
-        self.xaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.445, rely=0.4)
-        self.xaxistickspentry.insert(0, "1")
-        
-       
-
         self.yaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#FCF6F5')
         self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.2, relheight=0.1, relx = 0.50, rely = 0.1)
 
-        self.yaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
+        self.yaxisminentry = tk.Entry(self.subframeright3, bg='#FCF6F5', justify='center')
         self.yaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.70, rely=0.1)
         self.yaxisminentry.insert(0, "0")
 
         self.yaxistolabel = tk.Label(self.subframeright3, text = "to", bg='#FCF6F5')
         self.yaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.80, rely=0.1)
 
-        self.yaxismaxentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
+        self.yaxismaxentry = tk.Entry(self.subframeright3, bg='#FCF6F5', justify='center')
         self.yaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.85, rely=0.1)
         self.yaxismaxentry.insert(0, "10")
         
@@ -856,13 +855,11 @@ class MainWindow(tk.Frame):
         self.yaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.6, rely=0.25)
         self.yaxistitleentry.insert(0, "Ordenadas")
         
-        
-        
         self.yaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#FCF6F5')
         self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx = 0.725, rely= 0.4)
 
-        self.yaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5')
-        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx=0.945, rely=0.4)
+        self.yaxistickspentry = tk.Entry(self.subframeright3, bg='#FCF6F5', justify='center')
+        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx=0.9, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
         
         self.linewidth = []
@@ -986,12 +983,12 @@ class MainWindow(tk.Frame):
         
         
         self.chisqlabel = tk.Label(self.frameright, text = u'\u03C7'+'\N{SUPERSCRIPT TWO}'+'/'+'\u03BD', bg= '#FCF6F5')
-        self.chisqlabel.place(in_ = self.frameright, rely=0.46, relx = 0.35)
-        self.chisqentry = tk.Entry(self.frameright)
-        self.chisqentry.place( in_ = self.frameright, rely = 0.46, relx=0.4, relwidth = 0.25)
+        self.chisqlabel.place(in_ = self.frameright, rely=0.46, relx = 0.425)
+        self.chisqentry = tk.Entry(self.frameright, justify='center')
+        self.chisqentry.place( in_ = self.frameright, rely = 0.46, relx=0.475, relwidth = 0.1)
         self.chisqentry.config(state = 'readonly')
         
-        sep = ttk.Separator(self.subframeright3, orient = tk.VERTICAL )
+        sep = ttk.Separator(self.subframeright3, orient = tk.VERTICAL)
         sep.place(in_ = self.subframeright3, relx=0.5, relheight = 0.5, rely=0.05)
         
         sep1 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
@@ -1005,8 +1002,6 @@ class MainWindow(tk.Frame):
         
         sep3 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL)
         sep3.place(in_ = self.subframeright3, relx=0, rely=0.55, relwidth=1)
-        
-        
         
         # Criação do texto respetivo ao primeiro dataset
         # A variável datasettext contém os textos presentes em cada dataset
@@ -1052,9 +1047,6 @@ class MainWindow(tk.Frame):
         self.erabc.append(np.array(self.erabcissas[0]))
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
-        
-        
-        
         
         self.dataset_points = []
         self.update_parameter()
@@ -1106,7 +1098,7 @@ class MainWindow(tk.Frame):
             self.funcfitoptiontranslater[0] = ':'
         
         self.plot_dataset()
-
+        
     def latexify(self):
         self.secondary_window("SORRY", "Feature still in development...")        
 
@@ -1177,21 +1169,21 @@ class MainWindow(tk.Frame):
         self.difx.set(0)
         self.difxerror.set(0)
         
-        samexbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.samex, text = 'All datasets have same (x,ex)', command = self.samexfunction)
-        samexbutton.place(in_ = self.import_window, relwidth = 0.7, relheight = 0.1, rely = 0.05, relx = 0.15)
+        self.samexbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.samex, text = 'All datasets have same x', command = self.samexfunction)
+        self.samexbutton.place(in_ = self.import_window, relwidth = 0.7, relheight = 0.1, rely = 0.05, relx = 0.15)
         
-        samexbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        self.samexbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         
-        samextext=tk.Label(self.import_window, bg = '#FCF6F5', text = 'first column(s) will be x (x,ex).\nSubsequencial columns will be (y1, ey1, y2, ey2, ...)')
-        samextext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.15, rely = 0.15, relx = 0.05)
+        self.samextext=tk.Label(self.import_window, bg = '#FCF6F5', text = 'First column will be x.\nSubsequencial columns will be (y1, ey1, y2, ey2,...)')
+        self.samextext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.15, rely = 0.15, relx = 0.05)
         
-        difxbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.difx, text = 'All datasets have their own (x, ex)',  command = self.difxfunction)
-        difxbutton.place(in_ = self.import_window, relwidth = 0.8, relheight = 0.15, rely = 0.35, relx = 0.1)
+        self.difxbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.difx, text = 'All datasets have their own x',  command = self.difxfunction)
+        self.difxbutton.place(in_ = self.import_window, relwidth = 0.8, relheight = 0.15, rely = 0.35, relx = 0.1)
         
-        difxbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        self.difxbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         
-        difxtext=tk.Label(self.import_window, bg = '#FCF6F5', text = 'Columns will be (x1, ex1, y1, ey1, ...)')
-        difxtext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.1, rely = 0.45, relx = 0.05)
+        self.difxtext=tk.Label(self.import_window, bg = '#FCF6F5', text = 'Columns will be (x1, y1, ey1, x2, y2, ey2,...)')
+        self.difxtext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.1, rely = 0.46, relx = 0.05)
         
         difxerrorbutton = tk.Checkbutton(self.import_window, bg = '#FCF6F5', offvalue = 0, onvalue = 1, variable = self.difxerror, text = 'Include ex',  command = self.difxerrorfunction)
         difxerrorbutton.place(in_ = self.import_window, relwidth = 0.5, relheight = 0.1, rely = 0.6, relx = 0.25)
@@ -1204,17 +1196,11 @@ class MainWindow(tk.Frame):
         importbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         
     def samexfunction(self):
-        #self.difxerror.set(0)
         self.difx.set(0)
     
     def difxfunction(self):
         self.samex.set(0)
-        #self.difxerror.set(0)
-    
-    def difxerrorfunction(self):
-        self.difxerror.get()
-        #self.samex.set(0)
-        #self.difx.set(1)
+
 
     # Função para adicionar um dataset
     def add_dataset(self, string):
@@ -1268,8 +1254,6 @@ class MainWindow(tk.Frame):
        
         self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(len(self.datalist)), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[self.numberdatasets-1] ) 
         
-        
-    
     # Função para remover datasets
     def remove_dataset(self):
         
@@ -1677,7 +1661,7 @@ class MainWindow(tk.Frame):
         # Testar se os limites estão bem definidos. Se não estiverem podemos saltar isto tudo
         info_x = [(self.xaxismaxentry, 'Max value of x'), (self.xaxisminentry, 'Min value of x'), (self.xaxistickspentry, 'X axis tick spacing')]
         info_y = [(self.yaxismaxentry, 'Max value of y'), (self.yaxisminentry, 'Min value of y'), (self.yaxistickspentry, 'Y axis tick spacing')]
-        
+                
         if not self.autoscalex.get():
             for var in info_x:
                 try:
@@ -1791,6 +1775,8 @@ class MainWindow(tk.Frame):
             self.xaxistickspentry.delete(0,'end')
             self.xaxistickspentry.insert(0, "{0:.2f}".format(1+int(amp/10)))
             
+            self.autoscalex.set(1)
+            
             
         if(self.autoscaley.get() == 1):
             allord = []
@@ -1812,6 +1798,8 @@ class MainWindow(tk.Frame):
             
             self.yaxistickspentry.delete(0,'end')
             self.yaxistickspentry.insert(0, "{0:.2f}".format(1+int(amp/10)))
+            
+            self.autoscaley.set(1)
         
         x_ticks = []
         y_ticks = []
@@ -1906,7 +1894,10 @@ class MainWindow(tk.Frame):
                 for i in range(len(self.fittedparams)):
                     params_text+="%s=%f$\pm$%f\n" % (params[i], self.fittedparams[i], self.fittedparamserror[i])
                 params_text+=r"$\chi^2/\nu$=%.2f" % self.chisq 
-                self.a.text(0,0,params_text)
+                
+                # O texto ainda não está pronto para ser colocado, só vamos pôr no próximo update
+                
+                #self.a.text(0,0,params_text)
                 self.a.plot(self.xfittedfunc, self.yfittedfunc, lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
             
                 for x in range (len(self.paramresboxes)):
