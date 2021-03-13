@@ -1698,6 +1698,19 @@ class MainWindow(tk.Frame):
                         self.secondary_window('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
                     return False
         
+        # Ver ainda se não temos os max menores que os min
+        if float(self.xaxismaxentry.get().replace(',','.').replace(' ','')) <= float(self.xaxisminentry.get().replace(',','.').replace(' ','')):
+            self.secondary_window('ERROR', 'Upper limit for X axis is not greater that lower limit.')
+            return False
+        if float(self.yaxismaxentr.get().replace(',','.').replace(' ','')) <= float(self.yaxisminentry.get().replace(',','.').replace(' ','')):
+            self.secondary_window('ERROR', 'Upper limit for Y axis is not greater that lower limit.')
+            return False
+            
+        # E se os espaçamentos dos ticks são positivos
+        if float(self.xaxistickspentry.get().replace(',','.').replace(' ','')) <= 0:
+            self.secondary_window('ERROR', 'Tick spacing must be a positive non-zero number.')
+            return False
+        
         # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo.
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
