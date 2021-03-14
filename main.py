@@ -1892,7 +1892,7 @@ class MainWindow(tk.Frame):
                             self.secondary_window('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
                         else:
                             self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
-
+                        self.wantfit.set(0)
                         return False
                 
                 dataforfit = []
@@ -2056,10 +2056,10 @@ class MainWindow(tk.Frame):
     
                 self.boxnumber = len(clean_split)
                 
-                self.resultlabel = tk.Label(self.subframeright1, text="Resultados", bg='#E4E4E4')
+                self.resultlabel = tk.Label(self.subframeright1, text="Results", bg='#E4E4E4')
                 self.resultlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.5)
                 
-                self.errorlabel = tk.Label(self.subframeright1, text="Erros", bg='#E4E4E4')
+                self.errorlabel = tk.Label(self.subframeright1, text="Errors", bg='#E4E4E4')
                 self.errorlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.75)
     
                 self.initialguesslabel = tk.Label(self.subframeright1, text="Initial Guess", bg='#E4E4E4')
