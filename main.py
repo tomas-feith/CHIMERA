@@ -460,7 +460,8 @@ class MainWindow(tk.Frame):
                 self.independententry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
                 self.parameterentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
                 self.functionentry.configure(font=("Roboto", int(0.028*self.master.winfo_height())))
-                #self.funcplotlabel.configure(font = ("Roboto",int(0.012*self.master.winfo_width())))
+                self.funcplotlabel.configure(font = ("Roboto",int(0.012*self.master.winfo_width())))
+                self.initialguesslabel.configure(font = ("Roboto",int(0.012*self.master.winfo_width())))
                 for x in range(self.boxnumber):
                     self.plotparamboxes[x].configure(width=int(0.014*self.master.winfo_width()))
                     self.paramerrboxes[x].configure(width=int(0.014*self.master.winfo_width()))
@@ -1785,7 +1786,6 @@ class MainWindow(tk.Frame):
             for x in range(len(a)):
                 allabc.append(a[x][0])
         
-            print(allabc)
             minabc = min(allabc)
             maxabc = max(allabc)
             amp = maxabc - minabc
@@ -1964,7 +1964,7 @@ class MainWindow(tk.Frame):
             self.paramscrolly.destroy()
             self.anotherframe.destroy()
             self.paramcanvas.destroy()
-            self.inicialguesslabel.destroy()
+            self.initialguesslabel.destroy()
             self.secondary_window('ERROR', process[1])
         else:
             clean_split = process[1]
@@ -2062,11 +2062,13 @@ class MainWindow(tk.Frame):
                 self.errorlabel = tk.Label(self.subframeright1, text="Erros", bg='#E4E4E4')
                 self.errorlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.75)
     
-                self.inicialguesslabel = tk.Label(self.subframeright1, text="Initial Guess", bg='#E4E4E4')
-                self.inicialguesslabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.25)
+                self.initialguesslabel = tk.Label(self.subframeright1, text="Initial Guess", bg='#E4E4E4')
+                self.initialguesslabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.25)
+                # self.initialguesslabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
                 
                 self.funcplotlabel = tk.Label(self.subframeright1, text="Plot Function", bg='#E4E4E4')
                 self.funcplotlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=-0.03)
+                # self.funcplotlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
     
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#E4E4E4')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
