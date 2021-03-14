@@ -472,8 +472,8 @@ class MainWindow(tk.Frame):
                 self.xaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.yaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.yaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
-                #self.resultlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
-                #self.errorlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
+                self.resultlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
+                self.errorlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
                 
                 self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
                 self.errorscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
