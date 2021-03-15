@@ -384,7 +384,10 @@ class MainWindow(tk.Frame):
         super().__init__(master)
         # Esta é a janela principal
         self.master = master
-        master.state('zoomed')
+        if os.name == 'posix':
+            self.master.attributes('-zoomed',True)
+        if os.name == 'nt':
+            self.master.state('zoomed')
         self.master.iconphoto(True, tk.PhotoImage(file=resource_path('img/Image.png')))
         # Tirar o título
         self.winfo_toplevel().title("")
