@@ -14,7 +14,7 @@ matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from tkinter.scrolledtext import ScrolledText
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 from io import StringIO
 from scipy import odr

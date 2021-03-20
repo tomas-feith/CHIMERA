@@ -6,8 +6,8 @@ MUITO IMPORTANTE: Por favor!! não ponham nenhum dos ficheiros já convertidos n
 
 **SINGLE FILE**
 
-pyinstaller --noconfirm --onefile --windowed --icon "C:/Users/tsfei/OneDrive/Documentos/MEFT/3ºAno/2ºSemestre/LID/Branding/Option_3b/Icons/favicon.ico" --name "CHIMERA" --add-data "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img;img/"  "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/main.py"
+pyinstaller --noconfirm --onefile --windowed --hidden-import altgraph --icon "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img;img/"  "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/main.py"
 
 **SINGLE FOLDER**
 
-pyinstaller --noconfirm --onedir --windowed --icon "C:/Users/tsfei/OneDrive/Documentos/MEFT/3ºAno/2ºSemestre/LID/Branding/Option_3b/Icons/favicon.ico" --name "CHIMERA" --add-data "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img;img/"  "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/main.py"
+pyinstaller --noconfirm --onedir --windowed --hidden-import altgraph --icon "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img;img/"  "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/main.py"
