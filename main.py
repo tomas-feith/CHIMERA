@@ -34,6 +34,176 @@ def resource_path(relative_path):
 count = 0
 a = 0
 
+def math_2_latex(expr, params, indep):
+
+    params = process_params(params,indep)[1]
+
+    # agrupar todas as variáveis relevantes
+    variables = params
+    variables.append(indep)
+
+    latex = expr
+
+    operations = ['*','/','+','-','**','^']
+
+    greek_letters = [
+                    'alpha',
+                    'beta',
+                    'gamma',
+                    'Gamma',
+                    'delta',
+                    'Delta',
+                    'epsilon',
+                    'varepsilon',
+                    'zeta',
+                    'eta',
+                    'theta',
+                    'vartheta',
+                    'Theta',
+                    'iota',
+                    'kappa',
+                    'lambda',
+                    'Lambda',
+                    'mu',
+                    'nu',
+                    'xi',
+                    'Xi',
+                    'pi',
+                    'Pi',
+                    'rho',
+                    'varrho',
+                    'sigma',
+                    'Sigma',
+                    'tau',
+                    'upsilon',
+                    'Upsilon',
+                    'phi',
+                    'varphi',
+                    'Phi',
+                    'chi',
+                    'psi',
+                    'Psi',
+                    'omega',
+                    'Omega'
+                    ]
+
+    # substituir todas as letras gregas nos parametros
+    for var in variables:
+        # se a variavel tiver um numero, só nos interessa a parte sem numero
+        if ''.join([i for i in var if not i.isdigit()]) in greek_letters:
+            latex = latex.replace(var,'\\'+var)
+
+    # baixar todos os indices
+    for var in variables:
+        pos=0
+        # temos de verificar até onde é que há números para baixar
+        while pos<len(var):
+            try:
+                int(var[len(var)-pos-1])
+            except ValueError:
+                break
+            pos+=1
+        # se houver algum número, então fazemos replace
+        if pos != 0:
+            latex = latex.replace(var, var[:(len(var)-pos)]+'_{'+var[(len(var)-pos):]+'}')
+
+    # tratar das potências
+    latex = latex.replace('**','^')
+    i=0
+    while i<len(latex):
+        if latex[i]=='^':
+            if latex[i+1]!='(':
+                latex = latex[:i+1]+'{'+latex[i+1:]
+                for j in range(i+1,len(latex)):
+                    if latex[j] in operations or latex[j]==')':
+                        break
+                latex = latex[:j-1]+'}'+latex[j-1:]
+            else:
+                latex = latex[:i+1]+'{'+latex[i+2:]
+                deep = 1
+                for j in range(i+1,len(latex)):
+                    if latex[j] == ')':
+                        deep -= 1
+                    if latex[j] == '(':
+                        deep += 1
+                    if deep == 0:
+                        break
+                latex = latex[:j]+'}'+latex[j+1:]
+        i+=1
+
+    # tratar das frações
+    i=0
+    while i<len(latex):
+        correction_after = 0
+        correction_pre = 0
+        if latex[i]=='/':
+            # procurar para trás
+            if latex[i-1]!=')':
+                for k in range(i-1,-1,-1):
+                    if latex[k] in operations:
+                        break
+            else:
+                deep = 1
+                latex = latex[:i-1]+latex[i:]
+                for k in range(i-1,-1,-1):
+                    if latex[k] == ')':
+                        deep += 1
+                    if latex[k] == '(':
+                        deep -= 1
+                    if deep == 0:
+                        break
+                k-=1
+                latex = latex[:k+1]+latex[k+2:]
+                i-=2
+
+            # procurar para a frente
+            if latex[i+1]!='(':
+                for j in range(i+1,len(latex)):
+                    if latex[j] in operations or latex[j]==')':
+                        break
+            else:
+                deep = 1
+                latex = latex[:i+1]+latex[i+2:]
+                for j in range(i+1,len(latex)):
+                    if latex[j] == ')':
+                        deep -= 1
+                    if latex[j] == '(':
+                        deep += 1
+                    if deep == 0:
+                        break
+                latex = latex[:j]+latex[j+1:]
+            if j == len(latex) - 1:
+                correction_after = 1
+            if k == 0:
+                correction_pre = 1
+            latex = latex[:k+1-correction_pre]+'\\frac{'+latex[k+1-correction_pre:i]+'}{'+latex[i+1:j+correction_after]+'}'+latex[j+correction_after:]
+        i+=1
+
+    # Por fim tratar das funções
+    i = 0
+    functions = []
+    while i < len(latex):
+        if latex[i].isalpha():
+            for j in range(i+1,len(latex)):
+                if not latex[j].isalpha():
+                    break
+            if latex[i:j] != 'frac' and latex[i:j] not in [''.join([i for i in var if not i.isdigit()]) for var in variables]:
+                functions.append(latex[i:j])
+            i=j
+        else:
+            i+=1
+    for function in functions:
+        latex = latex.replace(function,'\\text{'+function+'}')
+
+    # remover os * porque ninguém usa isso em LaTeX
+    latex = latex.replace('*','')
+    
+    # e pôr os parentesis com os tamanhos corretos
+    latex = latex.replace('(','\\left(')
+    latex = latex.replace(')','\\right)')
+
+    return latex
+
 def process_params(params, indep):
     allowed = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
     functions = ['sin',
