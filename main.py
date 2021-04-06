@@ -1357,6 +1357,9 @@ class MainWindow(tk.Frame):
                                   activeforeground='#F21112')
         importbutton.place(in_ = self.import_window, relwidth =0.5, relheight = 0.15, relx=0.25, rely=0.8)
         importbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        # Alterar as cores quando entra e sai
+        importbutton.bind("<Enter>", func=lambda e: importbutton.config(bg='white',fg='#F21112'))
+        importbutton.bind("<Leave>", func=lambda e: importbutton.config(bg='#F21112',fg='white'))
         
     def samexfunction(self):
         self.difx.set(0)
@@ -1427,7 +1430,7 @@ class MainWindow(tk.Frame):
         self.funcplotwidth[self.numberdatasets-1].set(2.0)
         
         self.datasetstoplotvar.append(tk.BooleanVar())
-        self.datasetstoplotvar[self.numberdatasets-1].set(0)
+        self.datasetstoplotvar[self.numberdatasets-1].set(1)
        
         self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(len(self.datalist)), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[self.numberdatasets-1] ) 
         
@@ -1872,6 +1875,9 @@ class MainWindow(tk.Frame):
         if not self.check_databox():
             return False
         
+        # pôr os dados em plot=true
+        self.datasetstoplotvar[select-1].set(1)
+                
         if(self.countplots == 0):
             self.linewidthscale['state'] = tk.NORMAL
             self.markersizescale['state'] = tk.NORMAL
@@ -1880,6 +1886,7 @@ class MainWindow(tk.Frame):
             self.funcplotwidthscale['state'] = tk.NORMAL
             self.countplots = 1
         
+        print(self.datasettext)
         for x in range(self.numberdatasets):
             if(self.datasetstoplotvar[x].get() == 1 ):
                 self.abcissas[x] = []
@@ -1928,7 +1935,7 @@ class MainWindow(tk.Frame):
                 for i in range(len(dataforfit[h][0])):
                     a.append(dataforfit[h][0][i])
 
-        if(self.autoscalex.get() == 1):
+        if self.autoscalex.get() == 1:
             allabc = []
             for x in range(len(a)):
                 allabc.append(a[x][0])
@@ -1946,7 +1953,7 @@ class MainWindow(tk.Frame):
             self.xaxisminentry.insert(0, "{0:.2f}".format(minabc))
             
             self.xaxistickspentry.delete(0,'end')
-            self.xaxistickspentry.insert(0, "{0:.2f}".format(1+int(amp/10)))
+            self.xaxistickspentry.insert(0, "{0:.2f}".format(amp/10))
             
             self.autoscalex.set(1)
             
@@ -1970,7 +1977,7 @@ class MainWindow(tk.Frame):
             self.yaxisminentry.insert(0, "{0:.2f}".format(minord))
             
             self.yaxistickspentry.delete(0,'end')
-            self.yaxistickspentry.insert(0, "{0:.2f}".format(1+int(amp/10)))
+            self.yaxistickspentry.insert(0, "{0:.2f}".format(amp/10))
             
             self.autoscaley.set(1)
         
@@ -2185,8 +2192,6 @@ class MainWindow(tk.Frame):
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky=tk.W + tk.E)
                 
                 self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
-    
-               # self.paramcanvas.update()   
 
             if (count == 1):
     
@@ -2325,6 +2330,8 @@ class MainWindow(tk.Frame):
             fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0]*len(x_points))
         else:
             fit_data = odr.RealData(x_points, y_points, sx=x_err, sy=y_err, fix=[0]*len(x_points))
+
+        print(data)
 
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
