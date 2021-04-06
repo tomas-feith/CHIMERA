@@ -4,7 +4,6 @@ Created on Tue Feb 16 11:58:13 2021
 
 @author:
 """
-
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import ttk
@@ -622,8 +621,7 @@ class MainWindow(tk.Frame):
             self.old["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
             self.new.configure(height = 1)
             self.old.configure(height = 1)
-            
-            
+
         if(count == 1 or count == 2):    
             for button in self.buttons:
                 button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
@@ -872,11 +870,10 @@ class MainWindow(tk.Frame):
         # esta self.menubar é a mais geral, é a que contem as outras
         self.menubar = tk.Menu(self.master)
         self.master.config(menu=self.menubar)
-        
-        
+                
         # Este é o botão file na self.menubar
-
-        
+        # FALTA FAZER 
+          
         # Botao na self.menubar para escolher as opçoes do plot
         self.plotoptions = tk.Menu(self.menubar)
         self.menubar.add_cascade(label="Plot options", menu=self.plotoptions)
@@ -923,7 +920,6 @@ class MainWindow(tk.Frame):
         self.choosecolor.add_command(label = 'Plot Function Color', command = self.funcplotcolorpick)
         self.choosecolor.add_command(label = 'Fit Function Color', command = self.funcfitcolorpick)
         
-        
         self.datasetstoplot = tk.Menu(self.menubar)
         self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
         
@@ -960,13 +956,11 @@ class MainWindow(tk.Frame):
         self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
         
-   
         self.autoscalex = tk.BooleanVar()
         self.autoscalex.set(0)
         self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale')
         self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = -0.03)
      
-   
         self.xaxislabel = tk.Label(self.subframeright3, text="X Axis", bg='#E4E4E4')
         self.xaxislabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0)
 
@@ -1000,7 +994,6 @@ class MainWindow(tk.Frame):
         self.xaxistickspentry = tk.Entry(self.subframeright3, justify='center')
         self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.4, rely=0.4)
         self.xaxistickspentry.insert(0, "1")
-        
         
         self.autoscaley = tk.BooleanVar()
         self.autoscaley.set(0)
@@ -1154,7 +1147,6 @@ class MainWindow(tk.Frame):
         sty = ttk.Style(self.subframeright3)
         sty.configure("TSeparator", background="#F21112")
         
-        
         self.chisqlabel = tk.Label(self.frameright, text = u'\u03C7'+'\N{SUPERSCRIPT TWO}'+'/'+'\u03BD', bg= '#E4E4E4')
         self.chisqlabel.place(in_ = self.frameright, rely=0.46, relx = 0.425)
         self.chisqentry = tk.Entry(self.frameright, justify='center')
@@ -1298,9 +1290,7 @@ class MainWindow(tk.Frame):
     def fit_activate(self):
 
         self.wantfit.set(1)
-
         self.plot_dataset()
-        
         
     def markercolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
@@ -1717,16 +1707,6 @@ class MainWindow(tk.Frame):
             self.secondary_window('ERROR', parsed_input[1])
             self.function = ''
 
-        # Daqui para baixo é fazer o plot em si
-
-        # Estas duas linhas extraem todos o dataset
-        # E armazenam-nas num array de array de array
-        # Nível 0: O data set
-        # Nível 1: O ponto
-        # Nível 2: A coordenada/incerteza
-        #data = StringIO(self.dataentry.get("1.0", "end-1c"))
-        #self.data_sets = read_file(data,float,False)
-
     # Função para plottar a funçao com parametros numericos dados pelo utilizador
     def plot_fittedfunction(self):
         np.seterr(all='raise')
@@ -1891,11 +1871,6 @@ class MainWindow(tk.Frame):
         
         if not self.check_databox():
             return False
-
-#        data = StringIO(self.datastring)
- #       data_sets = read_file(data,float,False,0)
-                        
-        
         
         if(self.countplots == 0):
             self.linewidthscale['state'] = tk.NORMAL
@@ -1920,13 +1895,13 @@ class MainWindow(tk.Frame):
                     self.datasetring = ""
                     return False
                 for i in range(len(data_sets[0])):
-                    if(len(data_sets[0][i]) == 4):
+                    if len(data_sets[0][i]) == 4:
                         self.abcissas[x].append(data_sets[0][i][0])
                         self.erabcissas[x].append(data_sets[0][i][1])
                         self.ordenadas[x].append(data_sets[0][i][2])
                         self.erordenadas[x].append(data_sets[0][i][3])
             
-                    if(len(data_sets[0][i]) == 3):
+                    if len(data_sets[0][i]) == 3:
                         self.abcissas[x].append(data_sets[0][i][0])
                         self.erabcissas[x].append(0)
                         self.ordenadas[x].append(data_sets[0][i][1])
@@ -1941,7 +1916,6 @@ class MainWindow(tk.Frame):
         
         dataforfit = []
         for x in range(self.numberdatasets):
-                    
             if(self.datasetstoplotvar[x].get() == 1):
                 self.datastring = self.datasettext[x]
                 data = StringIO(self.datastring)
@@ -1980,8 +1954,8 @@ class MainWindow(tk.Frame):
         if(self.autoscaley.get() == 1):
             allord = []
             for x in range(len(a)):
-                allord.append(a[x][2])
-                allord.append(a[x][2])
+                allord.append(a[x][-2])
+                allord.append(a[x][-2])
             
             minord = min(allord)
             maxord = max(allord)
@@ -2189,9 +2163,7 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(5, weight = 3)
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
-                
-                
-                
+
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
@@ -2237,26 +2209,14 @@ class MainWindow(tk.Frame):
     
                 self.initialguesslabel = tk.Label(self.subframeright1, text="Initial Guess", bg='#E4E4E4')
                 self.initialguesslabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.25)
-                # self.initialguesslabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
                 
                 self.funcplotlabel = tk.Label(self.subframeright1, text="Plot Function", bg='#E4E4E4')
                 self.funcplotlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=-0.03)
-                # self.funcplotlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
     
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#E4E4E4')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
-    
-                #self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
-                #self.paramscrolly.pack(side=tk.RIGHT, fill="y")
-    
-                #self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
-                #self.paramcanvas.bind('<Configure>', lambda e: self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all")))
-    
-                #self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
-                
                 
                 self.anotherframe=tk.Frame(self.paramcanvas, bg='#E4E4E4')
-                #self.anotherframe.pack(expand=True, fill = tk.BOTH)
                 
                 self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
@@ -2264,8 +2224,6 @@ class MainWindow(tk.Frame):
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
                 self.paramcanvas.bind('<Configure>', self.algumacoisa)
     
-                #self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
-                
                 self.anotherframe.columnconfigure(0, weight = 1)
                 self.anotherframe.columnconfigure(1, weight = 3)
                 self.anotherframe.columnconfigure(2, weight = 1)
@@ -2274,8 +2232,6 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(5, weight = 3)
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
-                
-                
                 
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
@@ -2299,13 +2255,6 @@ class MainWindow(tk.Frame):
             count = 2
             
             self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
-           
-            
-            #sep_plot = ttk.Separator(self.subframeright2,orient=tk.VERTICAL)
-            #sep_plot.place(in_ = self.subframeright2, relx = 0.24, relheight = 1)
-            
-            #sep2_plot = ttk.Separator(self.subframeright1, orient = tk.VERTICAL)
-            #sep2_plot.place(in_ = self.subframeright1, relx = 0.24, relheight = 1)
             
             sep2_plot = ttk.Separator(self.frameright, orient = tk.VERTICAL)
             sep2_plot.place(in_ = self.frameright, relx = 0.24, relheight = 0.245, rely = 0.20)
@@ -2315,9 +2264,7 @@ class MainWindow(tk.Frame):
             sep4_plot.place(in_ = self.frameright, relwidth = 1, rely = 0.445 )
             sep5_plot = ttk.Separator(self.frameright, orient = tk.VERTICAL)
             sep5_plot.place(in_ = self.frameright, relx = 0, relheight = 1, rely = 0)
-            
-            
-            
+
             self.paramcanvas.update()
     
     def algumacoisa(self, event):
@@ -2381,7 +2328,7 @@ class MainWindow(tk.Frame):
 
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
-        #fit.pprint()
+        fit.pprint()
         
         return (fit.beta, fit.sd_beta, fit.res_var)
         

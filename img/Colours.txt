@@ -1,3 +1,0 @@
-Red: #FF0000
-Pearl White: #FCF6F5
-Black: #000000
