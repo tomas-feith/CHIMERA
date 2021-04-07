@@ -33,6 +33,100 @@ def resource_path(relative_path):
 count = 0
 a = 0
 
+def take_first(elem):
+    return float(elem.split('&')[0].split('$\\pm$')[0])
+
+def latexify_data(data,mode):
+    """
+    Função para, recebendo um batch de datasets, gerar o texto LaTeX para uma
+    tabela.
+
+    Parameters
+    ----------
+    data : array
+        Conjunto dos datasets para gerar a tabela latex.
+    mode : int
+        0: Usar a mesma coluna de x para todos os sets.
+        1: Usar uma coluna nova de x para cada um dos sets.
+
+    Returns
+    -------
+    None.
+
+    """    
+    datasets = [[[i for i in point.split(' ')] for point in dataset.split('\n')] for dataset in data]
+        
+    latex_table = r"""% Add the following required packages to your document preamble:
+% \usepackage{graphicx}
+\begin{table}[H]
+\centering
+% Use line below to set table size in terms of text width
+\resizebox{\textwidth}{!}{
+% Line below adds space between lines, to make table easier to read
+{\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{"""
+    if mode == 0:
+        latex_table +=r'c|'
+        for i in range(len(datasets)):
+            latex_table += 'c'
+        latex_table+='}\n\\hline\n X & '
+        for i in range(len(datasets)):
+            latex_table += 'Y%d & ' % (i+1)
+        latex_table = latex_table[:-2] + '\\\\ \\hline \n'
+        used_x = []
+        data_text = []
+        for dataset in datasets:
+            for point in dataset:
+                x = float(point[0])
+                if x not in used_x:
+                    if len(point) == 3:
+                        data_text.append('%s & %s$\\pm$%s ' % (point[0], point[1], point[2]))
+                    if len(point) == 4:
+                        data_text.append('%s$\\pm$%s & %s$\\pm$%s' % (point[0], point[1], point[2], point[3]))
+                    used_x.append(x)
+                    for inner_dataset in datasets:
+                        if inner_dataset != dataset:
+                            found = 0
+                            for inner_point in inner_dataset:
+                                if float(inner_point[0]) == x:
+                                    found = 1
+                                    data_text[-1] += '& %s$\\pm$%s ' % (inner_point[-2], inner_point[-1])
+                                    break
+                            if found == 0:
+                                data_text[-1] += '& $-$ '
+                    data_text[-1] += ' \\\\'
+        data_text.sort(key=take_first)
+                        
+    if mode == 1:
+        for i in range(len(datasets)):
+            latex_table += 'cc|'
+        latex_table = latex_table[:-1] + '}\n\\hline\n'
+        for i in range(len(datasets)):
+            latex_table += 'X%d & Y%d & ' % (i+1,i+1)
+        latex_table = latex_table[:-2] + '\\\\ \\hline \n'
+        max_size = max([len(dataset) for dataset in datasets])
+        data_text = ['' for i in range(max_size)]
+        for i in range(max_size):
+            for dataset in datasets:
+                if i >= len(dataset):
+                    data_text[i] += ('$-$ & $-$ & ')
+                else:
+                    point = dataset[i]
+                    if len(point) == 3:
+                        data_text[i] += '%s & %s$\\pm$%s & ' % (point[0], point[1], point[2])
+                    if len(point) == 4:
+                        data_text[i] += '%s$\\pm$%s & %s$\\pm$%s & ' % (point[0], point[1], point[2], point[3])
+        for i in range(len(data_text)):
+            data_text[i] = data_text[i][:-2] + '\\\\'
+    
+    for line in data_text:
+        latex_table += line + '\n'
+    latex_table = latex_table[:-1] + ' '
+    latex_table+='\\hline\n\\end{tabular}\n}\n}\n\\caption{<WRITE CAPTION HERE>}\n\\label{tab:my-table}\n\\end{table}'
+    print(latex_table)
+    
+    return latex_table
+
 def math_2_latex(expr, params, indep):
 
     params = process_params(params,indep)[1]
