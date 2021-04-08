@@ -18,6 +18,7 @@ import pandas as pd
 from io import StringIO
 from scipy import odr
 from tkinter import colorchooser
+import pyperclip
 import sys, os
 
 def resource_path(relative_path):
@@ -1444,7 +1445,7 @@ class MainWindow(tk.Frame):
             self.data_diffx_button.bind("<Leave>", func=lambda e: self.data_diffx_button.config(bg='#F21112',fg='white'))
             
             text = math_2_latex(self.functionentry.get(),self.parameterentry.get(),self.independententry.get())
-            print(text)
+            pyperclip.copy(text)
         else:
             self.secondary_window('ERROR','The function was compiled with errors! Make sure it compiles correctly before exporting.')
             self.export_window.destroy()
@@ -1461,6 +1462,8 @@ class MainWindow(tk.Frame):
         self.data_samex_button.bind("<Leave>", func=lambda e: '')
         self.data_diffx_button.bind("<Enter>", func=lambda e: self.data_diffx_button.config(bg='white',fg='#F21112'))
         self.data_diffx_button.bind("<Leave>", func=lambda e: self.data_diffx_button.config(bg='#F21112',fg='white'))
+        text = latexify_data(self.datasettext,0)
+        pyperclip.copy(text)
         
     def export_data_diffx(self):
         # Algumas operações de estética
@@ -1474,6 +1477,8 @@ class MainWindow(tk.Frame):
         self.data_samex_button.bind("<Leave>", func=lambda e: self.data_samex_button.config(bg='#F21112',fg='white'))
         self.data_diffx_button.bind("<Enter>", func=lambda e: '')
         self.data_diffx_button.bind("<Leave>", func=lambda e: '')
+        text = latexify_data(self.datasettext,0)
+        pyperclip.copy(text)
 
     def lineslider(self, a):
         self.linescalelabelvalue['text'] = str(a)
