@@ -123,7 +123,6 @@ def latexify_data(data,mode):
         latex_table += line + '\n'
     latex_table = latex_table[:-1] + ' '
     latex_table+='\\hline\n\\end{tabular}\n}\n}\n\\caption{<WRITE CAPTION HERE>}\n\\label{tab:my-table}\n\\end{table}'
-    print(latex_table)
     
     return latex_table
 
@@ -135,7 +134,7 @@ def math_2_latex(expr, params, indep):
     variables = params
     variables.append(indep)
 
-    latex = expr
+    latex = expr.replace(' ','')
 
     operations = ['*','/','+','-','**','^']
 
@@ -276,7 +275,7 @@ def math_2_latex(expr, params, indep):
     i = 0
     functions = []
     while i < len(latex):
-        if latex[i].isalpha():
+        if latex[i].isalpha() and i<len(latex) - 1:
             for j in range(i+1,len(latex)):
                 if not latex[j].isalpha():
                     break
@@ -1359,7 +1358,122 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
         
     def latexify(self):
-        self.secondary_window("SORRY", "Feature still in development...")        
+        self.export_window = tk.Toplevel(self.master)
+        self.export_window.title('LaTeX-ify')
+        self.export_window.geometry('400x200')
+        self.export_window.configure(background='#E4E4E4')
+        self.export_window.resizable(False, False)
+        
+        # Colocação das várias opções de exportação
+        function = tk.Label(self.export_window, text='Fitting Function')
+        function["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        function.configure(background='#E4E4E4')
+        
+        data_samex = tk.Label(self.export_window, text='Datasets (share x)')
+        data_samex["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        data_samex.configure(background='#E4E4E4')
+        
+        data_diffx = tk.Label(self.export_window, text='Datasets (split x)')
+        data_diffx["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        data_diffx.configure(background='#E4E4E4')
+        
+        # Colocação dos botões para copiar o texto
+        self.function_button = tk.Button(self.export_window,
+                                    text="COPY",
+                                    fg='white',
+                                    bg='#F21112',
+                                    activebackground='white',
+                                    activeforeground='#F21112')
+        self.function_button["command"] = self.export_function
+        self.function_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        # Alterar as cores quando entra e sai
+        self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
+        self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
+        
+        self.data_samex_button = tk.Button(self.export_window,
+                                           text="COPY",
+                                           fg='white',
+                                           bg='#F21112',
+                                           activebackground='white',
+                                           activeforeground='#F21112')
+        self.data_samex_button["command"] = self.export_data_samex
+        self.data_samex_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        # Alterar as cores quando entra e sai
+        self.data_samex_button.bind("<Enter>", func=lambda e: self.data_samex_button.config(bg='white',fg='#F21112'))
+        self.data_samex_button.bind("<Leave>", func=lambda e: self.data_samex_button.config(bg='#F21112',fg='white'))
+        
+        self.data_diffx_button = tk.Button(self.export_window,
+                                           text="COPY",
+                                           fg='white',
+                                           bg='#F21112',
+                                           activebackground='white',
+                                           activeforeground='#F21112')
+        self.data_diffx_button["command"] = self.export_data_diffx
+        self.data_diffx_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        # Alterar as cores quando entra e sai
+        self.data_diffx_button.bind("<Enter>", func=lambda e: self.data_diffx_button.config(bg='white',fg='#F21112'))
+        self.data_diffx_button.bind("<Leave>", func=lambda e: self.data_diffx_button.config(bg='#F21112',fg='white'))
+
+        # Dizer as posições dos vários elementos na tela
+        function.place(relx=.05, rely=.15, anchor='w')
+        data_samex.place(relx=.05,rely=.5,anchor='w')
+        data_diffx.place(relx=.05,rely=.85,anchor='w')
+        self.function_button.place(relx=.85, rely=.15, anchor='c')
+        self.data_samex_button.place(relx=.85,rely=.5, anchor='c')
+        self.data_diffx_button.place(relx=.85,rely=.85,anchor='c')
+    
+    def export_function(self):
+        # Se a função já tiver sido compilada
+        try:
+            print(self.function)
+        except:
+            self.secondary_window('ERROR','The function has not been compiled yet! Compile before exporting.')
+            self.export_window.destroy()
+            return 0
+        if self.function:
+            # Algumas operações de estética
+            self.function_button.configure(text='COPIED!',fg='#F21112',bg='white')
+            self.data_samex_button.configure(text='COPY',fg='white',bg='#F21112')
+            self.data_diffx_button.configure(text='COPY',fg='white',bg='#F21112')
+            
+            self.function_button.bind("<Enter>", func=lambda e: '')
+            self.function_button.bind("<Leave>", func=lambda e: '')
+            self.data_samex_button.bind("<Enter>", func=lambda e: self.data_samex_button.config(bg='white',fg='#F21112'))
+            self.data_samex_button.bind("<Leave>", func=lambda e: self.data_samex_button.config(bg='#F21112',fg='white'))
+            self.data_diffx_button.bind("<Enter>", func=lambda e: self.data_diffx_button.config(bg='white',fg='#F21112'))
+            self.data_diffx_button.bind("<Leave>", func=lambda e: self.data_diffx_button.config(bg='#F21112',fg='white'))
+            
+            text = math_2_latex(self.functionentry.get(),self.parameterentry.get(),self.independententry.get())
+            print(text)
+        else:
+            self.secondary_window('ERROR','The function was compiled with errors! Make sure it compiles correctly before exporting.')
+            self.export_window.destroy()
+
+    def export_data_samex(self):
+        # Algumas operações de estética
+        self.function_button.configure(text='COPY',fg='white',bg='#F21112')
+        self.data_samex_button.configure(text='COPIED!',fg='#F21112',bg='white')
+        self.data_diffx_button.configure(text='COPY',fg='white',bg='#F21112')
+        
+        self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
+        self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
+        self.data_samex_button.bind("<Enter>", func=lambda e: '')
+        self.data_samex_button.bind("<Leave>", func=lambda e: '')
+        self.data_diffx_button.bind("<Enter>", func=lambda e: self.data_diffx_button.config(bg='white',fg='#F21112'))
+        self.data_diffx_button.bind("<Leave>", func=lambda e: self.data_diffx_button.config(bg='#F21112',fg='white'))
+        
+    def export_data_diffx(self):
+        # Algumas operações de estética
+        self.function_button.configure(text='COPY',fg='white',bg='#F21112')
+        self.data_samex_button.configure(text='COPY',fg='white',bg='#F21112')
+        self.data_diffx_button.configure(text='COPIED!',fg='#F21112',bg='white')
+        
+        self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
+        self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
+        self.data_samex_button.bind("<Enter>", func=lambda e: self.data_samex_button.config(bg='white',fg='#F21112'))
+        self.data_samex_button.bind("<Leave>", func=lambda e: self.data_samex_button.config(bg='#F21112',fg='white'))
+        self.data_diffx_button.bind("<Enter>", func=lambda e: '')
+        self.data_diffx_button.bind("<Leave>", func=lambda e: '')
 
     def lineslider(self, a):
         self.linescalelabelvalue['text'] = str(a)
@@ -1980,7 +2094,6 @@ class MainWindow(tk.Frame):
             self.funcplotwidthscale['state'] = tk.NORMAL
             self.countplots = 1
         
-        print(self.datasettext)
         for x in range(self.numberdatasets):
             if(self.datasetstoplotvar[x].get() == 1 ):
                 self.abcissas[x] = []
@@ -2424,8 +2537,6 @@ class MainWindow(tk.Frame):
             fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0]*len(x_points))
         else:
             fit_data = odr.RealData(x_points, y_points, sx=x_err, sy=y_err, fix=[0]*len(x_points))
-
-        print(data)
 
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
