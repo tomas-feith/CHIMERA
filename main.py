@@ -1086,7 +1086,7 @@ class MainWindow(tk.Frame):
         self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx=0.225, rely= 0.4)
 
         self.xaxistickspentry = tk.Entry(self.subframeright3, justify='center')
-        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx = 0.4, rely=0.4)
+        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0.4, rely=0.4)
         self.xaxistickspentry.insert(0, "1")
         
         self.autoscaley = tk.BooleanVar()
@@ -1119,7 +1119,7 @@ class MainWindow(tk.Frame):
         self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx = 0.725, rely= 0.4)
 
         self.yaxistickspentry = tk.Entry(self.subframeright3, justify='center')
-        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.05, relheight = 0.1, relx=0.9, rely=0.4)
+        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx=0.9, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
         
         self.linewidth = []
@@ -2055,6 +2055,22 @@ class MainWindow(tk.Frame):
                     else:
                         self.secondary_window('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
                     return False
+            # Ver ainda se não temos os max menores que os min
+            if float(self.xaxismaxentry.get().replace(',','.').replace(' ','')) <= float(self.xaxisminentry.get().replace(',','.').replace(' ','')):
+                self.secondary_window('ERROR', 'Upper limit for X axis is not greater that lower limit.')
+                return False
+            # E se os espaçamentos dos ticks são positivos
+            if float(self.xaxistickspentry.get().replace(',','.').replace(' ','')) <= 0:
+                self.secondary_window('ERROR', 'Tick spacing must be a positive non-zero number.')
+                return False
+            # E se não estamos com demasiados ticks
+            x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
+            x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
+            amp = x_max - x_min
+            n_ticks = int(amp/float(self.xaxistickspentry.get().replace(',','.').replace(' ','')))
+            if n_ticks > 100:
+                self.secondary_window('ERROR','Having {} ticks will make your plot unreabable. Adjust X tick spacing.'.format(n_ticks))
+                return False
         
         if not self.autoscaley.get():
             for var in info_y:
@@ -2066,24 +2082,26 @@ class MainWindow(tk.Frame):
                     else:
                         self.secondary_window('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
                     return False
+            # Ver ainda se não temos os max menores que os min
+            if float(self.yaxismaxentry.get().replace(',','.').replace(' ','')) <= float(self.yaxisminentry.get().replace(',','.').replace(' ','')):
+                self.secondary_window('ERROR', 'Upper limit for Y axis is not greater that lower limit.')
+                return False
+            # E se os espaçamentos dos ticks são positivos
+            if float(self.yaxistickspentry.get().replace(',','.').replace(' ','')) <= 0:
+                self.secondary_window('ERROR', 'Tick spacing must be a positive non-zero number.')
+                return False
+            y_max  = float(self.yaxismaxentry.get().replace(',','.').replace(' ',''))
+            y_min  = float(self.yaxisminentry.get().replace(',','.').replace(' ',''))
+            amp = y_max - y_min
+            n_ticks = int(amp/float(self.yaxistickspentry.get().replace(',','.').replace(' ','')))
+            if n_ticks > 100:
+                self.secondary_window('ERROR','Having {} ticks will make your plot unreabable. Adjust Y tick spacing.'.format(n_ticks))
+                return False
         
-        # Ver ainda se não temos os max menores que os min
-        if float(self.xaxismaxentry.get().replace(',','.').replace(' ','')) <= float(self.xaxisminentry.get().replace(',','.').replace(' ','')):
-            self.secondary_window('ERROR', 'Upper limit for X axis is not greater that lower limit.')
-            return False
-        if float(self.yaxismaxentry.get().replace(',','.').replace(' ','')) <= float(self.yaxisminentry.get().replace(',','.').replace(' ','')):
-            self.secondary_window('ERROR', 'Upper limit for Y axis is not greater that lower limit.')
-            return False
-            
-        # E se os espaçamentos dos ticks são positivos
-        if float(self.xaxistickspentry.get().replace(',','.').replace(' ','')) <= 0:
-            self.secondary_window('ERROR', 'Tick spacing must be a positive non-zero number.')
-            return False
         
         # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo.
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
-        #self.datastring = self.datasettext[select-1]
         
         if not self.check_databox():
             return False
@@ -2161,11 +2179,11 @@ class MainWindow(tk.Frame):
             self.xaxismaxentry.delete(0, 'end')
             self.xaxisminentry.delete(0, 'end')
             
-            self.xaxismaxentry.insert(0, "{0:.2f}".format(maxabc))
-            self.xaxisminentry.insert(0, "{0:.2f}".format(minabc))
+            self.xaxismaxentry.insert(0, "{0:.2e}".format(maxabc))
+            self.xaxisminentry.insert(0, "{0:.2e}".format(minabc))
             
             self.xaxistickspentry.delete(0,'end')
-            self.xaxistickspentry.insert(0, "{0:.2f}".format(amp/10))
+            self.xaxistickspentry.insert(0, "{0:.2e}".format(amp/10))
             
             self.autoscalex.set(1)
             
@@ -2185,11 +2203,11 @@ class MainWindow(tk.Frame):
             self.yaxismaxentry.delete(0, 'end')
             self.yaxisminentry.delete(0, 'end')
             
-            self.yaxismaxentry.insert(0, "{0:.2f}".format(maxord))
-            self.yaxisminentry.insert(0, "{0:.2f}".format(minord))
+            self.yaxismaxentry.insert(0, "{0:.2e}".format(maxord))
+            self.yaxisminentry.insert(0, "{0:.2e}".format(minord))
             
             self.yaxistickspentry.delete(0,'end')
-            self.yaxistickspentry.insert(0, "{0:.2f}".format(amp/10))
+            self.yaxistickspentry.insert(0, "{0:.2e}".format(amp/10))
             
             self.autoscaley.set(1)
         
