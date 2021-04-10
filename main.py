@@ -2541,8 +2541,16 @@ class MainWindow(tk.Frame):
         x_err    = []
         y_err    = []
         
+        # vamos começar por testar se todos os pontos têm as mesmas dimensões, e se não há pontos repetidos
+        dims = len(data[0][0])
         for dataset in data:
             for point in dataset:
+                if len(point)!=dims:
+                    self.secondary_window('ERROR','There are points with with x uncertainty and point without. All points need to match before a fit can be done.')
+                    return False
+                if point[0] in x_points:
+                    self.secondary_window('ERROR','There are repeated points. Remove them before fitting.')
+                    return False
                 x_points.append(point[0])
                 y_points.append(point[-2])
                 y_err.append(point[-1])
