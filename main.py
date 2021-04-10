@@ -1713,8 +1713,8 @@ class MainWindow(tk.Frame):
         self.update_databox("remove")
 
     def check_databox(self):
-        for x in range(len(self.datasettext)):   
-            if (self.datasettext[x].replace(' ','') == ''):
+        for x in range(len(self.datasettext)):
+            if (self.datasettext[x].replace(' ','') == '' and self.datasetstoplotvar[x].get()):
                 self.secondary_window('ERROR', 'Dataset {} is empty. Insert your data or remove it.'.format(x+1))
                 return False
         
@@ -1723,7 +1723,7 @@ class MainWindow(tk.Frame):
             for i in range(len(split)):
                 ponto = split[i].split(' ')
                 ponto = [p for p in ponto if p]
-                if(len(ponto)!= 3 and len(ponto)!= 4):
+                if(len(ponto)!= 3 and len(ponto)!= 4 and self.datasetstoplotvar[x].get()):
                      self.secondary_window('ERROR', 'Dataset {} has at least one point with an incorrect number of columns. Correct it.'.format(x+1))
                      return False
                 
