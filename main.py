@@ -1832,37 +1832,37 @@ class MainWindow(tk.Frame):
             self.funcplotstylecombo.current(2)
             self.funcplotoption.set('Dotted')
         
-        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.4, rely=0.655, relheight=0.05)
+        self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.64, relheight=0.05)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
 
-        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.4, rely=0.585, relheight=0.05)
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.57, relheight=0.05)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
         
-        self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.9, rely=0.655, relheight=0.05)
+        self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.71, relheight=0.05)
         self.funcplotstylecombo.bind("<<ComboboxSelected>>", self.funcplotselector)
 
-        self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.1, relx = 0.9, rely=0.585, relheight=0.05)
+        self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.79, relheight=0.05)
         self.funcfitstylecombo.bind("<<ComboboxSelected>>", self.funcfitselector)
 
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
         self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.lineslider, showvalue = False, variable = self.linewidth[self.selecteddataset])
-        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.58)
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.575)
         self.linewidthscale['width'] = 0.025*self.master.winfo_width()
 
         self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.markerslider,showvalue =False, variable = self.markersize[self.selecteddataset])
-        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.65)
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.655)
         self.markersizescale['width'] = 0.025*self.master.winfo_width()
 
         self.funcplotwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.funcplotslider, showvalue = False, variable = self.funcplotwidth[self.selecteddataset])
-        self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.65, rely=0.58)
+        self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.735)
         self.funcplotwidthscale['width'] = 0.025*self.master.winfo_width()
 
         self.funcfitwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.funcfitslider,showvalue =False, variable = self.funcfitwidth[self.selecteddataset])
-        self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.65, rely=0.65)
+        self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.815)
         self.funcfitwidthscale['width'] = 0.025*self.master.winfo_width()
         
         self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.errorslider, showvalue = False, variable = self.errorwidth[self.selecteddataset])
-        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.15, rely=0.72)
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.895)
         self.errorsizescale['width'] = 0.025*self.master.winfo_width()
 
         self.errorscalelabelvalue['text'] = self.errorwidth[self.selecteddataset].get()
