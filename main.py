@@ -895,8 +895,17 @@ class MainWindow(tk.Frame):
                                      bg='#F21112',
                                      activebackground='white',
                                      activeforeground='#F21112')
-        self.import_data.place(in_  = self.databuttonframe, relwidth=0.23, relheight=1,relx = 0.2)
+        self.import_data.place(relwidth=0.23, relheight=1,relx = 0.1)
         self.import_data["command"] = self.import_window
+        
+        self.add_labels = tk.Button(self.databuttonframe,
+                                    text='ADD LABELS',
+                                    fg='white',
+                                    bg='#F21112',
+                                    activebackground='white',
+                                    activeforeground='#F21112')
+        self.add_labels.place(relwidth=0.2, relheight=1, relx=0.4)
+        self.add_labels["command"] = self.labels
         
         # Botão para exportar como latex
         self.export_latex = tk.Button(self.databuttonframe,
@@ -905,7 +914,7 @@ class MainWindow(tk.Frame):
                                   bg='#F21112',
                                   activebackground='white',
                                   activeforeground='#F21112')
-        self.export_latex.place(in_ = self.databuttonframe, relwidth=0.23, relheight=1, relx= 0.57)
+        self.export_latex.place(relwidth=0.23, relheight=1, relx= 0.67)
         self.export_latex["command"] = self.latexify
         
         #Criação do botão ligado à funçao que adiciona mais um dataset
@@ -947,7 +956,8 @@ class MainWindow(tk.Frame):
                   self.adddatasetbutton,
                   self.fitbutton,
                   self.export_latex,
-                  self.removedatasetbutton
+                  self.removedatasetbutton,
+                  self.add_labels
                   ]
         
         for button in self.buttons:
@@ -967,6 +977,8 @@ class MainWindow(tk.Frame):
                 
         # Este é o botão file na self.menubar
         # FALTA FAZER 
+        self.file_options = tk.Menu(self.menubar)
+        self.menubar.add_cascade(label="File", menu=self.file_options)
           
         # Botao na self.menubar para escolher as opçoes do plot
         self.plotoptions = tk.Menu(self.menubar)
@@ -1358,7 +1370,49 @@ class MainWindow(tk.Frame):
         
         self.plot_dataset()
         
+    def labels(self):
+        
+        try:
+            self.labels_window.destroy()
+        except:
+            pass
+        self.labels_window = tk.Toplevel(self.master)
+        self.labels_window.title('Add Labels')
+        self.labels_window.geometry('500x400')
+        self.labels_window.configure(background='#E4E4E4')
+        self.labels_window.resizable(False,False)
+        
+        canvas = tk.Canvas(master=self.labels_window,bg='#E4E4E4',highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self.labels_window, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas,bg='#E4E4E4')
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left")
+        scrollbar.pack(side="right",fill='y')
+        
+        for i in range(len(self.datasettext)):
+            frame = tk.Frame(scrollable_frame,bg='#E4E4E4')
+            label = tk.Label(frame, text='Label for Dataset %d' % (i+1),bg='#E4E4E4')
+            label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            entry = tk.Entry(frame, width=35)
+            frame.pack(side='top',pady=10)
+            label.pack(side='left')
+            entry.pack(side='right')
+            
+        # save_button
+        
+        # canvas.configure(scrollregion = canvas.bbox("all"))
+
     def latexify(self):
+        try:
+            self.export_window.destroy()
+        except:
+            pass
         self.export_window = tk.Toplevel(self.master)
         self.export_window.title('LaTeX-ify')
         self.export_window.geometry('400x200')
