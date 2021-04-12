@@ -810,6 +810,17 @@ class MainWindow(tk.Frame):
         global count
         count = 1
         
+        # Definimos já o array para as labels
+        self.data_labels = ['']
+        self.plot_labels = ['']
+        self.fit_labels = ['']
+        
+        # Definimos as funções, variáveis e afins
+        self.indeps = ['']
+        self.params = ['']
+        self.functions = ['']
+        
+        
         self.master.configure(background='#E4E4E4')
 
         # Criação da estrutura de frames da janela
@@ -1371,14 +1382,14 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
         
     def labels(self):
-        
+    
         try:
             self.labels_window.destroy()
         except:
             pass
         self.labels_window = tk.Toplevel(self.master)
         self.labels_window.title('Add Labels')
-        self.labels_window.geometry('500x400')
+        self.labels_window.geometry('400x400')
         self.labels_window.configure(background='#E4E4E4')
         self.labels_window.resizable(False,False)
         
@@ -1395,18 +1406,59 @@ class MainWindow(tk.Frame):
         canvas.pack(side="left")
         scrollbar.pack(side="right",fill='y')
         
-        for i in range(len(self.datasettext)):
-            frame = tk.Frame(scrollable_frame,bg='#E4E4E4')
-            label = tk.Label(frame, text='Label for Dataset %d' % (i+1),bg='#E4E4E4')
-            label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
-            entry = tk.Entry(frame, width=35)
-            frame.pack(side='top',pady=10)
-            label.pack(side='left')
-            entry.pack(side='right')
-            
-        # save_button
+        self.label_entries = []
         
-        # canvas.configure(scrollregion = canvas.bbox("all"))
+        for i in range(len(self.datasettext)):
+            frame1 = tk.Frame(scrollable_frame,bg='#E4E4E4')
+            frame2 = tk.Frame(scrollable_frame,bg='#E4E4E4')
+            frame3 = tk.Frame(scrollable_frame,bg='#E4E4E4')
+            
+            self.label_entries.append([tk.Entry(frame1,width=35),
+                                       tk.Entry(frame2,width=35),
+                                       tk.Entry(frame3,width=35)])
+            
+            label1 = tk.Label(frame1, text='Label for Dataset %d' % (i+1),bg='#E4E4E4')
+            label1["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            self.label_entries[i][0].insert(0,self.data_labels[i])
+            label1.pack(side='left')
+            self.label_entries[i][0].pack(side='right')
+            frame1.pack(side='top',pady=10)
+            
+            label2 = tk.Label(frame2, text='Label for Plotted Function %d' % (i+1),bg='#E4E4E4')
+            label2["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            self.label_entries[i][1].insert(0,self.plot_labels[i])
+            label2.pack(side='left')
+            self.label_entries[i][1].pack(side='right')
+            frame2.pack(side='top',pady=10)
+            
+            label3 = tk.Label(frame3, text='Label for Fitted Function %d' % (i+1),bg='#E4E4E4')
+            label3["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            self.label_entries[i][2].insert(0,self.fit_labels[i])
+            label3.pack(side='left')
+            self.label_entries[i][2].pack(side='right')
+            frame3.pack(side='top',pady=10)
+            
+        # Colocação do botão para salvar as legendas
+        save_button = tk.Button(scrollable_frame,
+                                text="SAVE",
+                                fg='white',
+                                bg='#F21112',
+                                activebackground='white',
+                                activeforeground='#F21112')
+        save_button["command"] = self.save_labels
+        save_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        # Alterar as cores quando entra e sai
+        save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
+        save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
+        save_button.pack(side='bottom')
+        
+    def save_labels(self):
+        for i in range(len(self.label_entries)):
+            self.data_labels[i] = self.label_entries[i][0].get()
+            self.plot_labels[i] = self.label_entries[i][1].get()
+            self.fit_labels[i]  = self.label_entries[i][2].get()
+        self.labels_window.destroy()
+        
 
     def latexify(self):
         try:
@@ -1660,6 +1712,14 @@ class MainWindow(tk.Frame):
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
     
         self.datasettext.append(string)
+        
+        self.data_labels.append('')
+        self.plot_labels.append('')
+        self.fit_labels.append('')
+        
+        self.indeps.append('')
+        self.params.append('')
+        self.functions.append('')
     
         # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
@@ -1719,6 +1779,14 @@ class MainWindow(tk.Frame):
         self.erabcissas.pop(self.selecteddataset)
         self.ordenadas.pop(self.selecteddataset)
         self.erordenadas.pop(self.selecteddataset)
+        
+        self.data_labels.pop(self.selecteddataset)
+        self.plot_labels.pop(self.selecteddataset)
+        self.fit_labels.pop(self.selecteddataset)
+        
+        self.indeps.pop(self.selecteddataset)
+        self.params.pop(self.selecteddataset)
+        self.functions.pop(self.selecteddataset)
 
         self.abc.pop(self.selecteddataset)
         self.erabc.pop(self.selecteddataset)
@@ -1972,10 +2040,10 @@ class MainWindow(tk.Frame):
                               self.parameterentry.get(),
                               self.independententry.get())
         if parsed_input[0]:
-            self.function = parsed_input[1]
+            self.functions[self.selecteddataset] = parsed_input[1]
         else:
             self.secondary_window('ERROR', parsed_input[1])
-            self.function = ''
+            self.functions[self.selecteddataset] = ''
 
     # Função para plottar a funçao com parametros numericos dados pelo utilizador
     def plot_fittedfunction(self):
@@ -2349,7 +2417,7 @@ class MainWindow(tk.Frame):
                 gaita = []
                 gaita.append(a)
                                 
-                (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(gaita, init_values, 1000)
+                (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(gaita, init_values, 1000, 0)
                 
                 self.plot_fittedfunction()
                 
@@ -2566,7 +2634,7 @@ class MainWindow(tk.Frame):
         self.update_idletasks()
         self.paramcanvas.config(scrollregion=self.paramcanvas.bbox(self.windows_item))
             
-    def fit_data(self, data, init_params, max_iter):
+    def fit_data(self, data, init_params, max_iter, dataset_number):
         """
         Parameters
         ----------
@@ -2583,13 +2651,14 @@ class MainWindow(tk.Frame):
         fit.res_var: chi quadrado reduzido
 
         """
+        self.dataset_to_fit = dataset_number
         func = odr.Model(self.fit_function)
-        try:
-            print(self.function)
-        except AttributeError:
-            self.secondary_window('ERROR','Fitting function not defined. Make sure it is compiled without errors.')
-            return 0
         
+        for i in range(len(self.functions)):
+            if self.functions[i] == '':
+                self.secondary_window('ERROR','Fitting function for dataset {} is not defined. Make sure it is compiled without errors.'.format(i+1))
+                return 0
+
         x_points = []
         y_points = []
         x_err    = []
@@ -2630,7 +2699,7 @@ class MainWindow(tk.Frame):
         return (fit.beta, fit.sd_beta, fit.res_var)
         
     def fit_function(self, B, _x):
-        return eval(self.function)
+        return eval(self.functions[self.dataset_to_fit])
 
     def open_file(self):
         
