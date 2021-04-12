@@ -315,7 +315,7 @@ def process_params(params, indep):
                  ]
     forbidden = ['PI', 'E']
     
-    if (len([p for p in indep.split(' ') if p]) != 1):
+    if (len([p for p in indep.split(' ') if p]) > 1):
         return (False, 'Multiple independent variables found. Only one is allowed.')
     indep.replace(' ','')
     
@@ -687,7 +687,7 @@ class MainWindow(tk.Frame):
 
         global count
         # Para garantir que os widgets e imagens mudam de tamanho
-        self.master.bind('<Configure>', self._resize_window)
+        self.master.bind('<Configure>', self.resize_window)
 
     def place_item(self, src, ratio, canvas):
         img_src = Image.open(src)
@@ -700,7 +700,7 @@ class MainWindow(tk.Frame):
         # Guardar a imagem só porque às vezes o tkinter é chato
         canvas.image = img
 
-    def _resize_window(self, event):
+    def resize_window(self, event):
         # Isto serve para quê? Pra so chamar estas cenas quando ainda tas no ecra inicial
         if(count == 0):
             self.title_canvas.delete("all")
@@ -816,9 +816,10 @@ class MainWindow(tk.Frame):
         self.fit_labels = ['']
         
         # Definimos as funções, variáveis e afins
-        self.indeps = ['']
-        self.params = ['']
-        self.functions = ['']
+        self.indeps = ['x']
+        self.params = ['a,b']
+        self.functions = ['sin(x) + a*x + b']
+        self.clean_functions = ['sin(_x)+B[0]*_x+B[1]']
         
         
         self.master.configure(background='#E4E4E4')
@@ -1720,6 +1721,7 @@ class MainWindow(tk.Frame):
         self.indeps.append('')
         self.params.append('')
         self.functions.append('')
+        self.clean_functions.append('')
     
         # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
@@ -1787,6 +1789,7 @@ class MainWindow(tk.Frame):
         self.indeps.pop(self.selecteddataset)
         self.params.pop(self.selecteddataset)
         self.functions.pop(self.selecteddataset)
+        self.clean_functions.pop(self.selecteddataset)
 
         self.abc.pop(self.selecteddataset)
         self.erabc.pop(self.selecteddataset)
@@ -1872,9 +1875,18 @@ class MainWindow(tk.Frame):
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
-        select = int(self.datalistvariable.get()[-1])
+        select = int(self.datalistvariable.get()[8:])
         self.selecteddataset = select-1
         self.currentselection = select
+        
+        self.functionentry.delete(0,tk.END)
+        self.functionentry.insert(0,self.functions[self.selecteddataset])
+        self.parameterentry.delete(0,tk.END)
+        self.parameterentry.insert(0,self.params[self.selecteddataset])
+        self.independententry.delete(0,tk.END)
+        self.independententry.insert(0,self.indeps[self.selecteddataset])
+        
+        self.update_parameter()
         
         self.subframeleft2.destroy()
         self.dataentry.destroy()
@@ -2039,11 +2051,12 @@ class MainWindow(tk.Frame):
         parsed_input = parser(self.functionentry.get(),
                               self.parameterentry.get(),
                               self.independententry.get())
+        self.functions[self.selecteddataset] = self.functionentry.get()
         if parsed_input[0]:
-            self.functions[self.selecteddataset] = parsed_input[1]
+            self.clean_functions[self.selecteddataset] = parsed_input[1]
         else:
             self.secondary_window('ERROR', parsed_input[1])
-            self.functions[self.selecteddataset] = ''
+            self.clean_functions[self.selecteddataset] = ''
 
     # Função para plottar a funçao com parametros numericos dados pelo utilizador
     def plot_fittedfunction(self):
@@ -2456,7 +2469,8 @@ class MainWindow(tk.Frame):
     def update_parameter(self):
         #Mesmo raciocinio de destruir a caixa onde se poem os parametros e inicial guesses para por as novas
         global count
-        self.parameter = self.parameterentry.get()
+        self.params[self.selecteddataset] = self.parameterentry.get()
+        self.indeps[self.selecteddataset] = self.independententry.get()
         process = process_params(self.parameterentry.get(), self.independententry.get())
         if not process[0]:
             count = 1
@@ -2654,8 +2668,8 @@ class MainWindow(tk.Frame):
         self.dataset_to_fit = dataset_number
         func = odr.Model(self.fit_function)
         
-        for i in range(len(self.functions)):
-            if self.functions[i] == '':
+        for i in range(len(self.clean_functions)):
+            if self.clean_functions[i] == '':
                 self.secondary_window('ERROR','Fitting function for dataset {} is not defined. Make sure it is compiled without errors.'.format(i+1))
                 return 0
 
@@ -2699,7 +2713,7 @@ class MainWindow(tk.Frame):
         return (fit.beta, fit.sd_beta, fit.res_var)
         
     def fit_function(self, B, _x):
-        return eval(self.functions[self.dataset_to_fit])
+        return eval(self.clean_functions[self.dataset_to_fit])
 
     def open_file(self):
         
