@@ -819,7 +819,11 @@ class MainWindow(tk.Frame):
         self.indeps = ['x']
         self.params = ['a,b']
         self.functions = ['sin(x) + a*x + b']
-        self.clean_functions = ['sin(_x)+B[0]*_x+B[1]']
+        self.clean_functions = ['np.sin(_x)+B[0]*_x+B[1]']
+        
+        self.fit_params = [[]]
+        self.fit_uncert = [[]]
+        self.fit_chi = ['']
         
         
         self.master.configure(background='#E4E4E4')
@@ -1718,10 +1722,14 @@ class MainWindow(tk.Frame):
         self.plot_labels.append('')
         self.fit_labels.append('')
         
-        self.indeps.append('')
-        self.params.append('')
-        self.functions.append('')
-        self.clean_functions.append('')
+        self.indeps.append(self.indeps[self.selecteddataset])
+        self.params.append(self.params[self.selecteddataset])
+        self.functions.append(self.functions[self.selecteddataset])
+        self.clean_functions.append(self.clean_functions[self.selecteddataset])
+        
+        self.fit_params.append(self.fit_params[self.selecteddataset])
+        self.fit_uncert.append(self.fit_uncert[self.selecteddataset])
+        self.fit_chi.append(self.fit_chi[self.selecteddataset])
     
         # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
@@ -1790,6 +1798,10 @@ class MainWindow(tk.Frame):
         self.params.pop(self.selecteddataset)
         self.functions.pop(self.selecteddataset)
         self.clean_functions.pop(self.selecteddataset)
+        
+        self.fit_params.pop(self.selecteddataset)
+        self.fit_uncert.pop(self.selecteddataset)
+        self.fit_chi.pop(self.selecteddataset)
 
         self.abc.pop(self.selecteddataset)
         self.erabc.pop(self.selecteddataset)
@@ -2426,7 +2438,7 @@ class MainWindow(tk.Frame):
                 for h in range(len(dataforfit)):
                     for i in range(len(dataforfit[h][0])):
                         a.append(dataforfit[h][0][i])
-                 
+                print(a)
                 gaita = []
                 gaita.append(a)
                                 
@@ -2448,16 +2460,16 @@ class MainWindow(tk.Frame):
                 for x in range (len(self.paramresboxes)):
                     self.paramresboxes[x].config(state = 'normal')
                     self.paramresboxes[x].delete(0, tk.END)
-                    self.paramresboxes[x].insert(0, str(self.fittedparams[x]))
+                    self.paramresboxes[x].insert(0, '{0:.7e}'.format(self.fittedparams[x]))
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramerrboxes[x].config(state = 'normal')
                     self.paramerrboxes[x].delete(0, tk.END)
-                    self.paramerrboxes[x].insert(0, str(self.fittedparamserror[x]))
+                    self.paramerrboxes[x].insert(0, '{0:.7e}'.format(self.fittedparamserror[x]))
                     self.paramerrboxes[x].config(state = 'readonly')
                 
                 self.chisqentry.config(state = 'normal')
                 self.chisqentry.delete(0, tk.END)
-                self.chisqentry.insert(0, "%.2f" % self.chisq)
+                self.chisqentry.insert(0, "{0:.3e}".format(self.chisq))
                 self.chisqentry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
