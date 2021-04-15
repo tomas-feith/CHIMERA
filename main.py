@@ -820,8 +820,8 @@ class MainWindow(tk.Frame):
         self.functions = ['sin(x) + a*x + b']
         self.clean_functions = ['np.sin(_x)+B[0]*_x+B[1]']
         
-        self.fit_params = [[]]
-        self.fit_uncert = [[]]
+        self.fit_params = [['']]
+        self.fit_uncert = [['']]
         self.fit_chi = ['']
         self.init_values = [[]]
         
@@ -992,12 +992,12 @@ class MainWindow(tk.Frame):
         self.master.config(menu=self.menubar)
                 
         # Este é o botão file na self.menubar
-        # FALTA FAZER 
-        self.file_options = tk.Menu(self.menubar)
+        self.file_options = tk.Menu(self.menubar, tearoff=0)
+        self.file_options.add_command(label='Export Image', command=self.export_image)
         self.menubar.add_cascade(label="File", menu=self.file_options)
           
         # Botao na self.menubar para escolher as opçoes do plot
-        self.plotoptions = tk.Menu(self.menubar)
+        self.plotoptions = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Plot options", menu=self.plotoptions)
         
         # Estas 3 variáveis servem para o utilizador escolher o que quer ver
@@ -1018,7 +1018,7 @@ class MainWindow(tk.Frame):
         self.plotoptions.add_checkbutton( label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction)
         
         # Estes 3 menus na self.menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
-        self.choosecolor = tk.Menu(self.menubar)
+        self.choosecolor = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Choose Colors", menu = self.choosecolor)
         
         self.currentselection = 1
@@ -1042,7 +1042,7 @@ class MainWindow(tk.Frame):
         self.choosecolor.add_command(label = 'Plot Function Color', command = self.funcplotcolorpick)
         self.choosecolor.add_command(label = 'Fit Function Color', command = self.funcfitcolorpick)
         
-        self.datasetstoplot = tk.Menu(self.menubar)
+        self.datasetstoplot = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
         
         self.datasetstoplotvar = []
@@ -1272,6 +1272,8 @@ class MainWindow(tk.Frame):
         self.chisqlabel = tk.Label(self.frameright, text = u'\u03C7'+'\N{SUPERSCRIPT TWO}'+'/'+'\u03BD', bg= '#E4E4E4')
         self.chisqlabel.place(in_ = self.frameright, rely=0.46, relx = 0.425)
         self.chisqentry = tk.Entry(self.frameright, justify='center')
+        try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
+        except: pass
         self.chisqentry.place( in_ = self.frameright, rely = 0.46, relx=0.475, relwidth = 0.1)
         self.chisqentry.config(state = 'readonly')
         
@@ -1463,7 +1465,18 @@ class MainWindow(tk.Frame):
             self.plot_labels[i] = self.label_entries[i][1].get()
             self.fit_labels[i]  = self.label_entries[i][2].get()
         self.labels_window.destroy()
+    
         
+    def export_image(self):
+        try:
+            print(self.fig)
+        except:
+            self.secondary_window('ERROR', 'The plot does not yet exist.')
+        else:
+            file = tk.filedialog.asksaveasfilename(filetypes=(("PNG Image", "*.png"),("All Files", "*.*")),defaultextension='.png')
+            if file:
+                self.fig.tight_layout()
+                self.fig.savefig(file)
 
     def latexify(self):
         try:
@@ -1727,10 +1740,10 @@ class MainWindow(tk.Frame):
         self.functions.append(self.functions[self.selecteddataset])
         self.clean_functions.append(self.clean_functions[self.selecteddataset])
         
-        self.fit_params.append(self.fit_params[self.selecteddataset])
-        self.fit_uncert.append(self.fit_uncert[self.selecteddataset])
-        self.fit_chi.append(self.fit_chi[self.selecteddataset])
-        self.init_values.append(self.init_values[self.selecteddataset])
+        self.fit_params.append([])
+        self.fit_uncert.append([])
+        self.fit_chi.append('')
+        self.init_values.append([1]*len(self.params[self.selecteddataset]))
     
         # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
@@ -1875,12 +1888,12 @@ class MainWindow(tk.Frame):
                 ponto = [p for p in ponto if p]
                 
                 for k in ponto:
-                     try:
-                         float(k)
-                     except ValueError:
-                             self.secondary_window('ERROR', 'Dataset {} contains non-numerical input. Only numerical input is allowed.'.format(x+1))
-                             self.wantfit.set(0)
-                             return False
+                    try:
+                        float(k)
+                    except ValueError:
+                        self.secondary_window('ERROR', 'Dataset {} contains non-numerical input. Only numerical input is allowed.'.format(x+1))
+                        self.wantfit.set(0)
+                        return False
         return True
     
     def update_databox(self, event):
@@ -1894,16 +1907,19 @@ class MainWindow(tk.Frame):
         select = int(self.datalistvariable.get()[8:])
         self.selecteddataset = select-1
         self.currentselection = select
-        
+
         self.functionentry.delete(0,tk.END)
         self.functionentry.insert(0,self.functions[self.selecteddataset])
         self.parameterentry.delete(0,tk.END)
         self.parameterentry.insert(0,self.params[self.selecteddataset])
         self.independententry.delete(0,tk.END)
         self.independententry.insert(0,self.indeps[self.selecteddataset])
-        
+        self.chisqentry.delete(0,tk.END)
+
+        self.selecteddataset = select-1
         self.update_parameter()
-        
+
+
         self.subframeleft2.destroy()
         self.dataentry.destroy()
         
@@ -1939,9 +1955,7 @@ class MainWindow(tk.Frame):
         
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
             'Triangle', 'Square', 'Circle'], textvariable = self.markeroption )
-        
-        self.selecteddataset = select-1
-        
+
         if(self.markeroptiontranslater[self.selecteddataset] == 'o'):
             self.markersizecombo.current(2)
             self.markeroption.set('Circle')       
@@ -2247,7 +2261,7 @@ class MainWindow(tk.Frame):
                 self.ord[x] = np.array(self.ordenadas[x])
                 self.erord[x] = np.array(self.erordenadas[x])
 
-        fig = Figure(figsize=(10,10))
+        self.fig = Figure(figsize=(10,10))
         
         # dataforfit = []
         # for x in range(self.numberdatasets):
@@ -2341,7 +2355,7 @@ class MainWindow(tk.Frame):
         for x in range(yticknumber):
             y_ticks.append(x*y_space + y_min)
         
-        self.a = fig.add_subplot(111 ,projection = None,
+        self.a = self.fig.add_subplot(111 ,projection = None,
                                  xlim = (x_min,x_max), ylim = (y_min, y_max),
                                  xticks = x_ticks, yticks = y_ticks, 
                                  ylabel = self.yaxistitleentry.get(), xlabel = self.xaxistitleentry.get())
@@ -2386,14 +2400,7 @@ class MainWindow(tk.Frame):
                             self.wantfit.set(0)
                         self.wantfit.set(0)
                         return False
-                
-                # dataforfit = []
-                # for x in range(self.numberdatasets):
-                #     if(self.datasetstoplotvar[x].get() == 1):
-                #          self.datastring = self.datasettext[x]
-                #          data = StringIO(self.datastring)
-                #          data_sets = read_file(data, float, False, 0)
-                #          dataforfit.append(data_sets[0])
+
                 for i in range(len(dataforfit)):
                     (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i]) = self.fit_data(dataforfit[i], self.init_values[i], 2000, i)
                 
@@ -2418,8 +2425,8 @@ class MainWindow(tk.Frame):
                 self.chisqentry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
-
-        self.canvas = FigureCanvasTkAgg(fig, master=self.subframeleft1)
+        
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.subframeleft1)
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
 
@@ -2472,20 +2479,15 @@ class MainWindow(tk.Frame):
                 
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#E4E4E4')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
-    
-                #self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
-    
+        
                 self.anotherframe=tk.Frame(self.paramcanvas, bg='#E4E4E4')
-                #self.anotherframe.pack(expand=True, fill = tk.BOTH)
                 
                 self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
     
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
                 self.paramcanvas.bind('<Configure>', self.algumacoisa)
-    
-                #self.paramcanvas.bind_all('<MouseWheel>', lambda event: self.paramcanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
-                
+                    
                 self.anotherframe.columnconfigure(0, weight = 1)
                 self.anotherframe.columnconfigure(1, weight = 3)
                 self.anotherframe.columnconfigure(2, weight = 1)
@@ -2494,19 +2496,30 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(5, weight = 3)
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
-
+                
+                self.chisqentry.delete(0, tk.END)
+                try:
+                    self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
+                except Exception as error:
+                    print(error)
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
                     self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
+                    try: self.paramerrboxes[x].insert(0,self.fit_uncert[self.selecteddataset][x])
+                    except: pass
                     self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
                     self.paramerrboxes[x].config(state = 'readonly')
                     self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
                     self.paramresboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
+                    try: self.paramresboxes[x].insert(0,self.fit_params[self.selecteddataset][x])
+                    except: pass
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
+                    try: self.paramboxes[x].insert(0,self.init_values[self.selecteddataset][x])
+                    except Exception as error: print(error)
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
                     self.paramlabel[x].grid(column = 2, row = x, pady=10, sticky= tk.E)
@@ -2519,9 +2532,9 @@ class MainWindow(tk.Frame):
 
             if (count == 1):
     
-                self.paramlabel=[]
-                self.paramboxes=[]
-                self.paramresboxes=[]
+                self.paramlabel = []
+                self.paramboxes = []
+                self.paramresboxes = []
                 self.paramreslabel = []
                 self.paramerrlabel = []
                 self.paramerrboxes = []
@@ -2562,18 +2575,29 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
                 
+                self.chisqentry.delete(0, tk.END)
+                try: 
+                    self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
+                except:
+                    pass
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
                     self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
+                    try: self.paramerrboxes[x].insert(0,self.fit_uncert[self.selecteddataset][x])
+                    except: pass
                     self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
                     self.paramerrboxes[x].config(state = 'readonly')
                     self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
                     self.paramresboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
+                    try: self.paramresboxes[x].insert(0,self.fit_params[self.selecteddataset][x])
+                    except: pass
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
+                    try: self.paramboxes[x].insert(0,self.init_values[self.selecteddataset][x])
+                    except: pass
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
                     self.paramlabel[x].grid(column = 2, row = x, pady=10, sticky= tk.E)
