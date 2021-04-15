@@ -566,7 +566,6 @@ def read_file(src, out, mode, datatype):
                     # Procurar incoerências nas linhas
                     if (
                             (out==float and np.isnan(x)!=np.isnan(ex)) or
-                            (out==str and x!='nan' and ex!='nan') or
                             (out==float and np.isnan(y)!=np.isnan(ey)) or
                             (out==str and y=='nan' and ey!='nan') or
                             (out==str and y!='nan'and ey=='nan')
@@ -824,6 +823,7 @@ class MainWindow(tk.Frame):
         self.fit_params = [[]]
         self.fit_uncert = [[]]
         self.fit_chi = ['']
+        self.init_values = [[]]
         
         
         self.master.configure(background='#E4E4E4')
@@ -1730,6 +1730,7 @@ class MainWindow(tk.Frame):
         self.fit_params.append(self.fit_params[self.selecteddataset])
         self.fit_uncert.append(self.fit_uncert[self.selecteddataset])
         self.fit_chi.append(self.fit_chi[self.selecteddataset])
+        self.init_values.append(self.init_values[self.selecteddataset])
     
         # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
@@ -1802,6 +1803,7 @@ class MainWindow(tk.Frame):
         self.fit_params.pop(self.selecteddataset)
         self.fit_uncert.pop(self.selecteddataset)
         self.fit_chi.pop(self.selecteddataset)
+        self.init_values.pop(self.selecteddataset)
 
         self.abc.pop(self.selecteddataset)
         self.erabc.pop(self.selecteddataset)
@@ -1862,6 +1864,7 @@ class MainWindow(tk.Frame):
                 ponto = [p for p in ponto if p]
                 if(len(ponto)!= 3 and len(ponto)!= 4 and self.datasetstoplotvar[x].get()):
                      self.secondary_window('ERROR', 'Dataset {} has at least one point with an incorrect number of columns. Correct it.'.format(x+1))
+                     self.wantfit.set(0)
                      return False
                 
         for x in range(len(self.datasettext)):
@@ -1876,6 +1879,7 @@ class MainWindow(tk.Frame):
                          float(k)
                      except ValueError:
                              self.secondary_window('ERROR', 'Dataset {} contains non-numerical input. Only numerical input is allowed.'.format(x+1))
+                             self.wantfit.set(0)
                              return False
         return True
     
@@ -2072,76 +2076,20 @@ class MainWindow(tk.Frame):
 
     # Função para plottar a funçao com parametros numericos dados pelo utilizador
     def plot_fittedfunction(self):
-        np.seterr(all='raise')
-        functions = ['sin',
-                     'cos',
-                     'tan',
-                     'arcsin',
-                     'arccos',
-                     'arctan',
-                     'exp',
-                     'log',
-                     'sqrt',
-                     'absolute',
-                     'heaviside',
-                     'cbrt',
-                     'sign'
-                     ]
-        forbidden = ['PI', 'E']
-        
-        expr = self.functionentry.get()
-        params = self.parameterentry.get()
-        indep = self.independententry.get()
-        
-        # Ver se a função não está vazia
-        expr=expr.replace(' ','')
-        if expr == '':
-            return (False, 'Não foi encontrada nenhuma função de ajustamento.')
-    
-        process = process_params(params, indep)
-        
-        if process[0]:
-            clean_split = process[1]
-        else:
-            return (False, process[1])
-                  
-        for function in enumerate(functions):
-            expr = expr.split(function[1])
-            expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
-        # Substituir as palavras reservadas
-        for keyword in forbidden:
-            expr = expr.split(keyword)
-            if keyword == 'PI':
-                expr = '[3.14]'.join(expr)
-            if keyword == 'E':
-                expr = '[2.72]'.join(expr)
-        # Substituir os números dos parâmetros
-        for pair in enumerate(clean_split):
-            expr = expr.split(pair[1])
-            expr = (str(self.fittedparams[pair[0]])).join(expr)
-    
-        # Por np atras da funçao para tipo, plottar isso
-        for function in enumerate(functions):
-            expr = expr.split('['+str(function[0]+len(clean_split))+']')
-            expr = ('np.'+str(function[1])).join(expr)
-            
-        # Pôr os números associados às palavras reservadas
-        expr = expr.split('[3.14]')
-        expr = 'np.pi'.join(expr)
-        expr = expr.split('[2.72]')
-        expr = 'np.e'.join(expr)
-
-        self.xfittedfunc=[]
-        self.yfittedfunc=[]
-        
-        x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
-        x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
+        self.xfittedfunc=[[] for function in self.functions]
+        self.yfittedfunc=[[] for function in self.functions]
+                
+        x_max  = float(self.xaxismaxentry.get().replace(' ',''))
+        x_min  = float(self.xaxisminentry.get().replace(' ',''))
         amp = x_max - x_min
         
-        for i in range(10000):
-            x = x_min + i*amp/9999
-            self.xfittedfunc.append(x)
-            self.yfittedfunc.append(eval(expr))
+        for i in range(len(self.functions)):
+            B = self.fit_params[i]
+            expr = self.clean_functions[i]
+            for j in range(10000):
+                _x = x_min + j*amp/9999
+                self.xfittedfunc[i].append(_x)
+                self.yfittedfunc[i].append(eval(expr))
         
     def plot_function(self):     
         
@@ -2152,12 +2100,13 @@ class MainWindow(tk.Frame):
             expr = parsed_input[1]
         else:
             self.secondary_window('ERROR', parsed_input[1])
+            self.wantfunction.set(0)
             return parsed_input
         
         #Criação da figura que vai segurar o plot, e seguidamente espetada no canvas
         #Criação dos arrays com muitos pontinhos x e y(x)
-        self.xfunc=[]
-        self.yfunc=[]
+        self.xfunc=[[]]
+        self.yfunc=[[]]
         
         B = []
         
@@ -2166,11 +2115,13 @@ class MainWindow(tk.Frame):
              paramboxes = paramboxes.replace(' ', '')
              if(paramboxes == ''):
                  self.secondary_window('ERROR', 'No parameter values were provided for plot.')
+                 self.wantfunction.set(0)
                  return False
              try:
                  float(paramboxes)
              except ValueError:
                  self.secondary_window('ERROR', 'A non-numerical parameter value was detected. Only numerical values are allowed.')
+                 self.wantfunction.set(0)
                  return False
              B.append(float(paramboxes))
         
@@ -2298,19 +2249,31 @@ class MainWindow(tk.Frame):
 
         fig = Figure(figsize=(10,10))
         
+        # dataforfit = []
+        # for x in range(self.numberdatasets):
+        #     if(self.datasetstoplotvar[x].get() == 1):
+        #         self.datastring = self.datasettext[x]
+        #         data = StringIO(self.datastring)
+        #         data_sets = read_file(data, float, False, 0)
+                
+        #         dataforfit.append(data_sets)
+                
+        #     a=[]
+        #     for h in range(len(dataforfit)):
+        #         for i in range(len(dataforfit[h][0])):
+        #             a.append(dataforfit[h][0][i])
+        
         dataforfit = []
         for x in range(self.numberdatasets):
             if(self.datasetstoplotvar[x].get() == 1):
                 self.datastring = self.datasettext[x]
                 data = StringIO(self.datastring)
                 data_sets = read_file(data, float, False, 0)
-                
-                dataforfit.append(data_sets)
-                
-            a=[]
-            for h in range(len(dataforfit)):
-                for i in range(len(dataforfit[h][0])):
-                    a.append(dataforfit[h][0][i])
+                dataforfit.append(data_sets[0])
+        a = []
+        for dataset in dataforfit:
+            for point in dataset:
+                a.append(point)
 
         if self.autoscalex.get() == 1:
             allabc = []
@@ -2341,6 +2304,7 @@ class MainWindow(tk.Frame):
                 allord.append(a[x][-2])
                 allord.append(a[x][-2])
             
+            # FAZER AQUI A CORREÇÃO PARA INCLUIR AS INCERTEZAS
             minord = min(allord)
             maxord = max(allord)
             amp = maxord - minord
@@ -2386,10 +2350,6 @@ class MainWindow(tk.Frame):
         self.subframeleft1=tk.Frame(self.frameleft, bg='#E4E4E4')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
         
-        self.fittedparams = []
-        self.fittedparamserror = []
-        self.chisq = 0
-        
         if(self.check_databox()):
         
             if(self.wanterror.get() == 1):
@@ -2412,64 +2372,49 @@ class MainWindow(tk.Frame):
         
             if(self.wantfit.get() == 1):
                 
-                params = process_params(self.parameterentry.get(), self.independententry.get())[1]
+                # params = process_params(self.parameterentry.get(), self.independententry.get())[1]
                 
-                init_values = []
                 for x in range(len(self.paramboxes)):
                     try:
-                        init_values.append(float(self.paramboxes[x].get()))
+                        self.init_values[self.selecteddataset].append(float(self.paramboxes[x].get()))
                     except ValueError:
                         if (self.paramboxes[x].get().replace(' ','')==''):
                             self.secondary_window('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
+                            self.wantfit.set(0)
                         else:
                             self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
+                            self.wantfit.set(0)
                         self.wantfit.set(0)
                         return False
                 
-                dataforfit = []
-                for x in range(self.numberdatasets):
-                    if(self.datasetstoplotvar[x].get() == 1):
-                         self.datastring = self.datasettext[x]
-                         data = StringIO(self.datastring)
-                         data_sets = read_file(data, float, False, 0)
-                         dataforfit.append(data_sets)
-                                
-                a=[]
-                for h in range(len(dataforfit)):
-                    for i in range(len(dataforfit[h][0])):
-                        a.append(dataforfit[h][0][i])
-                print(a)
-                gaita = []
-                gaita.append(a)
-                                
-                (self.fittedparams, self.fittedparamserror, self.chisq) = self.fit_data(gaita, init_values, 1000, 0)
+                # dataforfit = []
+                # for x in range(self.numberdatasets):
+                #     if(self.datasetstoplotvar[x].get() == 1):
+                #          self.datastring = self.datasettext[x]
+                #          data = StringIO(self.datastring)
+                #          data_sets = read_file(data, float, False, 0)
+                #          dataforfit.append(data_sets[0])
+                for i in range(len(dataforfit)):
+                    (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i]) = self.fit_data(dataforfit[i], self.init_values[i], 2000, i)
                 
                 self.plot_fittedfunction()
                 
-                params_text = ""
-                
-                for i in range(len(self.fittedparams)):
-                    params_text+="%s=%f$\pm$%f\n" % (params[i], self.fittedparams[i], self.fittedparamserror[i])
-                params_text+=r"$\chi^2/\nu$=%.2f" % self.chisq 
-                
-                # O texto ainda não está pronto para ser colocado, só vamos pôr no próximo update
-                
-                #self.a.text(0,0,params_text)
-                self.a.plot(self.xfittedfunc, self.yfittedfunc, lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
+                for i in range(len(self.xfittedfunc)):
+                    self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
             
                 for x in range (len(self.paramresboxes)):
                     self.paramresboxes[x].config(state = 'normal')
                     self.paramresboxes[x].delete(0, tk.END)
-                    self.paramresboxes[x].insert(0, '{0:.7e}'.format(self.fittedparams[x]))
+                    self.paramresboxes[x].insert(0, '{0:.7e}'.format(self.fit_params[self.selecteddataset][x]))
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramerrboxes[x].config(state = 'normal')
                     self.paramerrboxes[x].delete(0, tk.END)
-                    self.paramerrboxes[x].insert(0, '{0:.7e}'.format(self.fittedparamserror[x]))
+                    self.paramerrboxes[x].insert(0, '{0:.7e}'.format(self.fit_uncert[self.selecteddataset][x]))
                     self.paramerrboxes[x].config(state = 'readonly')
                 
                 self.chisqentry.config(state = 'normal')
                 self.chisqentry.delete(0, tk.END)
-                self.chisqentry.insert(0, "{0:.3e}".format(self.chisq))
+                self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
                 self.chisqentry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
@@ -2499,6 +2444,7 @@ class MainWindow(tk.Frame):
             self.initialguesslabel.destroy()
             self.secondary_window('ERROR', process[1])
         else:
+            self.process_params = process[1]
             clean_split = process[1]
             if (count==2) :
                 
@@ -2691,20 +2637,19 @@ class MainWindow(tk.Frame):
         y_err    = []
         
         # vamos começar por testar se todos os pontos têm as mesmas dimensões, e se não há pontos repetidos
-        dims = len(data[0][0])
-        for dataset in data:
-            for point in dataset:
-                if len(point)!=dims:
-                    self.secondary_window('ERROR','There are points with with x uncertainty and point without. All points need to match before a fit can be done.')
-                    return False
-                if point[0] in x_points:
-                    self.secondary_window('ERROR','There are repeated points. Remove them before fitting.')
-                    return False
-                x_points.append(point[0])
-                y_points.append(point[-2])
-                y_err.append(point[-1])
-                if len(point) == 4:
-                    x_err.append(point[1])
+        dims = len(data[0])
+        for point in data:
+            if len(point)!=dims:
+                self.secondary_window('ERROR','There are points with x uncertainty and points without. All points need to match before a fit can be done.')
+                return False
+            if point[0] in x_points:
+                self.secondary_window('ERROR','There are repeated points. Remove them before fitting.')
+                return False
+            x_points.append(point[0])
+            y_points.append(point[-2])
+            y_err.append(point[-1])
+            if dims == 4:
+                x_err.append(point[1])
         
         if (x_err and np.any(np.array(x_err)==0)):
             self.secondary_window('ERROR','At least one point in dataset {} has a null x uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
@@ -2742,7 +2687,6 @@ class MainWindow(tk.Frame):
         
         if(self.difxerror.get() == 1 and self.difx.get() == 1 and self.samex.get() == 0):
             new_data = read_file(file,str,True,2)
-        
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
         
