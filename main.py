@@ -800,6 +800,9 @@ class MainWindow(tk.Frame):
         # self.master.configure(background='#E4E4E4')
 
     def create_new(self):
+        
+        self.selecteddataset = 0
+        
         self.countplots = 0
         # Destruir tudo o que estava na janela
         self.title_canvas.delete("all")
@@ -823,7 +826,10 @@ class MainWindow(tk.Frame):
         self.fit_params = [['']]
         self.fit_uncert = [['']]
         self.fit_chi = ['']
-        self.init_values = [[]]
+        self.init_values = [[1.0,1.0]]
+        
+        self.x_func = [[]]
+        self.y_func = [[]]
         
         
         self.master.configure(background='#E4E4E4')
@@ -901,8 +907,8 @@ class MainWindow(tk.Frame):
         
         self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.3, relheight=1,relx = 0.5)
         self.plotfunctionbutton["command"] = self.plot_function
-        self.wantfunction = tk.BooleanVar()
-        self.wantfunction.set(0)
+        self.wantfunction = [tk.BooleanVar()]
+        self.wantfunction[0].set(0)
         
         # Botão para importar ficheiros
         self.import_data = tk.Button(self.databuttonframe,
@@ -915,7 +921,7 @@ class MainWindow(tk.Frame):
         self.import_data["command"] = self.import_window
         
         self.add_labels = tk.Button(self.databuttonframe,
-                                    text='ADD LABELS',
+                                    text='SET LABELS',
                                     fg='white',
                                     bg='#F21112',
                                     activebackground='white',
@@ -960,8 +966,8 @@ class MainWindow(tk.Frame):
                                        activeforeground='#F21112')
         self.fitbutton.place(in_ =self.plotbuttonframe, relwidth=0.1, relheight=1, relx = 0.85)
         self.fitbutton["command"] = self.fit_activate
-        self.wantfit = tk.BooleanVar()
-        self.wantfit.set(0)
+        self.wantfit = [tk.BooleanVar()]
+        self.wantfit[0].set(0)
         
         # Variável para armazenar todos os botoes
         self.buttons = [self.upbutton, 
@@ -1001,21 +1007,21 @@ class MainWindow(tk.Frame):
         self.menubar.add_cascade(label="Plot options", menu=self.plotoptions)
         
         # Estas 3 variáveis servem para o utilizador escolher o que quer ver
-        self.wantpoints = tk.BooleanVar()
-        self.wantline = tk.BooleanVar()
-        self.wanterror = tk.BooleanVar()
+        self.wantpoints = [tk.BooleanVar()]
+        self.wantline = [tk.BooleanVar()]
+        self.wanterror = [tk.BooleanVar()]
         # Valores default para as ditas variáveis
-        self.wantpoints.set(1)
-        self.wantline.set(0)
-        self.wanterror.set(0)
+        self.wantpoints[0].set(1)
+        self.wantline[0].set(0)
+        self.wanterror[0].set(0)
 
         # Aqui adicionam-se os 3 checkbuttons da dita checklist do que o utilizador quer ler,
         # as variáveis definidas anteriormente servem para registar se o utilizador tem o dito setting selecionado ou nao
-        self.plotoptions.add_checkbutton( label = "Plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints)
-        self.plotoptions.add_checkbutton( label = "Connect points", onvalue = 1, offvalue = 0, variable = self.wantline)
-        self.plotoptions.add_checkbutton( label = "Error bars", onvalue = 1, offvalue = 0, variable = self.wanterror)
-        self.plotoptions.add_checkbutton( label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit )
-        self.plotoptions.add_checkbutton( label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction)
+        self.plotoptions.add_checkbutton(label = "Plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints[self.selecteddataset])
+        self.plotoptions.add_checkbutton(label = "Connect points", onvalue = 1, offvalue = 0, variable = self.wantline[self.selecteddataset])
+        self.plotoptions.add_checkbutton(label = "Error bars", onvalue = 1, offvalue = 0, variable = self.wanterror[self.selecteddataset])
+        self.plotoptions.add_checkbutton(label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit[self.selecteddataset] )
+        self.plotoptions.add_checkbutton(label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction[self.selecteddataset])
         
         # Estes 3 menus na self.menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
         self.choosecolor = tk.Menu(self.menubar, tearoff=0)
@@ -1625,8 +1631,19 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
     
     def fit_activate(self):
-
-        self.wantfit.set(1)
+        for x in range(len(self.paramboxes)):
+            try:
+                self.init_values[self.selecteddataset][x] = float(self.paramboxes[x].get())
+            except ValueError:
+                if (self.paramboxes[x].get().replace(' ','')==''):
+                    self.secondary_window('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
+                    self.wantfit[self.selecteddataset].set(0)
+                else:
+                    self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
+                    self.wantfit[self.selecteddataset].set(0)
+                return False
+        
+        self.wantfit[self.selecteddataset].set(1)
         self.plot_dataset()
         
     def markercolorpick(self):
@@ -1743,7 +1760,22 @@ class MainWindow(tk.Frame):
         self.fit_params.append([])
         self.fit_uncert.append([])
         self.fit_chi.append('')
-        self.init_values.append([1]*len(self.params[self.selecteddataset]))
+        self.init_values.append([1.0]*len(self.paramboxes))
+        
+        self.x_func.append([])
+        self.y_func.append([])
+        
+        # Acrescentar para todas as variaveis de cores e opcoes 
+        self.wantfit.append(tk.BooleanVar())
+        self.wantfit[-1].set(0)
+        self.wantpoints.append(tk.BooleanVar())
+        self.wantpoints[-1].set(1)
+        self.wantline.append(tk.BooleanVar())
+        self.wantline[-1].set(0)
+        self.wanterror.append(tk.BooleanVar())
+        self.wanterror[-1].set(0)
+        self.wantfunction.append(tk.BooleanVar())
+        self.wantfunction[-1].set(0)
     
         # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
@@ -1817,6 +1849,16 @@ class MainWindow(tk.Frame):
         self.fit_uncert.pop(self.selecteddataset)
         self.fit_chi.pop(self.selecteddataset)
         self.init_values.pop(self.selecteddataset)
+        
+        self.x_func.pop(self.selecteddataset)
+        self.y_func.pop(self.selecteddataset)
+        
+        # remover todas as variaveis de cores e opcoes
+        self.wantfit.pop(self.selecteddataset)
+        self.wantpoints.pop(self.selecteddataset)
+        self.wantline.pop(self.selecteddataset)
+        self.wanterror.pop(self.selecteddataset)
+        self.wantfunction.pop(self.selecteddataset)
 
         self.abc.pop(self.selecteddataset)
         self.erabc.pop(self.selecteddataset)
@@ -1877,7 +1919,7 @@ class MainWindow(tk.Frame):
                 ponto = [p for p in ponto if p]
                 if(len(ponto)!= 3 and len(ponto)!= 4 and self.datasetstoplotvar[x].get()):
                      self.secondary_window('ERROR', 'Dataset {} has at least one point with an incorrect number of columns. Correct it.'.format(x+1))
-                     self.wantfit.set(0)
+                     self.wantfit[self.selecteddataset].set(0)
                      return False
                 
         for x in range(len(self.datasettext)):
@@ -1892,7 +1934,7 @@ class MainWindow(tk.Frame):
                         float(k)
                     except ValueError:
                         self.secondary_window('ERROR', 'Dataset {} contains non-numerical input. Only numerical input is allowed.'.format(x+1))
-                        self.wantfit.set(0)
+                        self.wantfit[self.selecteddataset].set(0)
                         return False
         return True
     
@@ -1918,6 +1960,16 @@ class MainWindow(tk.Frame):
 
         self.selecteddataset = select-1
         self.update_parameter()
+
+        # Corrigir as opções e cores
+        print(self.plotoptions)
+                
+        self.plotoptions.delete(0,tk.END)
+        self.plotoptions.add_checkbutton(label = "Plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints[self.selecteddataset])
+        self.plotoptions.add_checkbutton(label = "Connect points", onvalue = 1, offvalue = 0, variable = self.wantline[self.selecteddataset])
+        self.plotoptions.add_checkbutton(label = "Error bars", onvalue = 1, offvalue = 0, variable = self.wanterror[self.selecteddataset])
+        self.plotoptions.add_checkbutton(label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit[self.selecteddataset] )
+        self.plotoptions.add_checkbutton(label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction[self.selecteddataset])
 
 
         self.subframeleft2.destroy()
@@ -2114,13 +2166,8 @@ class MainWindow(tk.Frame):
             expr = parsed_input[1]
         else:
             self.secondary_window('ERROR', parsed_input[1])
-            self.wantfunction.set(0)
+            self.wantfunction[self.selecteddataset].set(0)
             return parsed_input
-        
-        #Criação da figura que vai segurar o plot, e seguidamente espetada no canvas
-        #Criação dos arrays com muitos pontinhos x e y(x)
-        self.xfunc=[[]]
-        self.yfunc=[[]]
         
         B = []
         
@@ -2129,13 +2176,13 @@ class MainWindow(tk.Frame):
              paramboxes = paramboxes.replace(' ', '')
              if(paramboxes == ''):
                  self.secondary_window('ERROR', 'No parameter values were provided for plot.')
-                 self.wantfunction.set(0)
+                 self.wantfunction[self.selecteddataset].set(0)
                  return False
              try:
                  float(paramboxes)
              except ValueError:
                  self.secondary_window('ERROR', 'A non-numerical parameter value was detected. Only numerical values are allowed.')
-                 self.wantfunction.set(0)
+                 self.wantfunction[self.selecteddataset].set(0)
                  return False
              B.append(float(paramboxes))
         
@@ -2143,12 +2190,12 @@ class MainWindow(tk.Frame):
         x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
         amp = x_max - x_min
                         
-        self.xfunc = _x = [x_min + i*amp/9999 for i in range(10000)]
+        self.x_func[self.selecteddataset] = _x = [x_min + i*amp/9999 for i in range(10000)]
         
         for i in range(10000):
-            self.yfunc.append(eval(expr.replace('_x','_x[i]')))
+            self.y_func[self.selecteddataset].append(eval(expr.replace('_x','_x[i]')))
         
-        self.wantfunction.set(1)
+        self.wantfunction[self.selecteddataset].set(1)
         self.plot_dataset()
         
     def plot_dataset(self):
@@ -2364,65 +2411,36 @@ class MainWindow(tk.Frame):
         self.subframeleft1=tk.Frame(self.frameleft, bg='#E4E4E4')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
         
-        if(self.check_databox()):
-        
-            if(self.wanterror.get() == 1):
-                for x in range(self.numberdatasets):
-                    if(self.datasetstoplotvar[x].get() == 1):
-                        self.a.errorbar(self.abc[x], self.ord[x], xerr = self.erabc[x], yerr = self.erord[x], fmt = 'none',zorder = -1,lw=0, ecolor = self.errorcolorvar[x], elinewidth = self.errorwidth[x].get())
-        
-            if(self.wantpoints.get() == 1):
-                for x in range(self.numberdatasets):
-                    if(self.datasetstoplotvar[x].get() == 1):
-                        self.a.plot(self.abc[x], self.ord[x], marker = self.markeroptiontranslater[x], color = str(self.markercolorvar[x]), zorder = 1, lw=0, ms=self.markersize[x].get()*2)
-        
-            if(self.wantline.get() == 1):
-                for x in range(self.numberdatasets):
-                    if(self.datasetstoplotvar[x].get() == 1):
-                        self.a.plot(self.abc[x], self.ord[x], color = self.linecolorvar[x], lw = self.linewidth[x].get(), ls = str(self.lineoptiontranslater[x]))
-            
-            if(self.wantfunction.get() == 1):
-                self.a.plot(self.xfunc, self.yfunc, lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
-        
-            if(self.wantfit.get() == 1):
-                
-                # params = process_params(self.parameterentry.get(), self.independententry.get())[1]
-                
-                for x in range(len(self.paramboxes)):
-                    try:
-                        self.init_values[self.selecteddataset].append(float(self.paramboxes[x].get()))
-                    except ValueError:
-                        if (self.paramboxes[x].get().replace(' ','')==''):
-                            self.secondary_window('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
-                            self.wantfit.set(0)
-                        else:
-                            self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
-                            self.wantfit.set(0)
-                        self.wantfit.set(0)
-                        return False
-
-                for i in range(len(dataforfit)):
-                    (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i]) = self.fit_data(dataforfit[i], self.init_values[i], 2000, i)
-                
-                self.plot_fittedfunction()
-                
-                for i in range(len(self.xfittedfunc)):
-                    self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
-            
-                for x in range (len(self.paramresboxes)):
-                    self.paramresboxes[x].config(state = 'normal')
-                    self.paramresboxes[x].delete(0, tk.END)
-                    self.paramresboxes[x].insert(0, '{0:.7e}'.format(self.fit_params[self.selecteddataset][x]))
-                    self.paramresboxes[x].config(state = 'readonly')
-                    self.paramerrboxes[x].config(state = 'normal')
-                    self.paramerrboxes[x].delete(0, tk.END)
-                    self.paramerrboxes[x].insert(0, '{0:.7e}'.format(self.fit_uncert[self.selecteddataset][x]))
-                    self.paramerrboxes[x].config(state = 'readonly')
-                
-                self.chisqentry.config(state = 'normal')
-                self.chisqentry.delete(0, tk.END)
-                self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
-                self.chisqentry.config(state = 'readonly')
+        if self.check_databox():
+            for i in range(self.numberdatasets):
+                if self.datasetstoplotvar[i].get():
+                    if self.wanterror[i].get():
+                        self.a.errorbar(self.abc[i], self.ord[i], xerr = self.erabc[i], yerr = self.erord[i], fmt = 'none',zorder = -1,lw=0, ecolor = self.errorcolorvar[i], elinewidth = self.errorwidth[i].get())
+                    if self.wantpoints[i].get():
+                        self.a.plot(self.abc[i], self.ord[i], marker = self.markeroptiontranslater[i], color = str(self.markercolorvar[i]), zorder = 1, lw=0, ms=self.markersize[i].get()*2)
+                    if self.wantline[i].get():
+                        self.a.plot(self.abc[i], self.ord[i], color = self.linecolorvar[i], lw = self.linewidth[i].get(), ls = str(self.lineoptiontranslater[i]))
+                    if self.wantfunction[i].get():
+                        self.a.plot(self.x_func[self.selecteddataset], self.y_func[self.selecteddataset], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
+                    if self.wantfit[i].get():
+                        (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i]) = self.fit_data(dataforfit[i], self.init_values[i], 2000, i)
+                        self.plot_fittedfunction()
+                        self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
+                    
+                        for x in range (len(self.paramresboxes)):
+                            self.paramresboxes[x].config(state = 'normal')
+                            self.paramresboxes[x].delete(0, tk.END)
+                            self.paramresboxes[x].insert(0, '{0:.7e}'.format(self.fit_params[self.selecteddataset][x]))
+                            self.paramresboxes[x].config(state = 'readonly')
+                            self.paramerrboxes[x].config(state = 'normal')
+                            self.paramerrboxes[x].delete(0, tk.END)
+                            self.paramerrboxes[x].insert(0, '{0:.7e}'.format(self.fit_uncert[self.selecteddataset][x]))
+                            self.paramerrboxes[x].config(state = 'readonly')
+                        
+                        self.chisqentry.config(state = 'normal')
+                        self.chisqentry.delete(0, tk.END)
+                        self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
+                        self.chisqentry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
         
@@ -2497,11 +2515,11 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
                 
+                self.chisqentry.config(state = 'normal')
                 self.chisqentry.delete(0, tk.END)
-                try:
-                    self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
-                except Exception as error:
-                    print(error)
+                try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
+                except: pass
+                self.chisqentry.config(state = 'readonly')
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
@@ -2518,7 +2536,7 @@ class MainWindow(tk.Frame):
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
-                    try: self.paramboxes[x].insert(0,self.init_values[self.selecteddataset][x])
+                    try: self.paramboxes[x].insert(0,"{0:e}".format(self.init_values[self.selecteddataset][x]))
                     except Exception as error: print(error)
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
@@ -2575,11 +2593,11 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
                 
+                self.chisqentry.config(state = 'normal')
                 self.chisqentry.delete(0, tk.END)
-                try: 
-                    self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
-                except:
-                    pass
+                try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
+                except: pass
+                self.chisqentry.config(state = 'readonly')
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
@@ -2596,7 +2614,7 @@ class MainWindow(tk.Frame):
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
-                    try: self.paramboxes[x].insert(0,self.init_values[self.selecteddataset][x])
+                    try: self.paramboxes[x].insert(0,"{0:e}".format(self.init_values[self.selecteddataset][x]))
                     except: pass
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
