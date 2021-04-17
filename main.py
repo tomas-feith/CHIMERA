@@ -54,9 +54,9 @@ def latexify_data(data,mode):
     -------
     None.
 
-    """    
+    """
     datasets = [[[i for i in point.split(' ')] for point in dataset.split('\n')] for dataset in data]
-        
+
     latex_table = r"""% Add the following required packages to your document preamble:
 % \usepackage{graphicx}
 \begin{table}[H]
@@ -97,7 +97,7 @@ def latexify_data(data,mode):
                                 data_text[-1] += '& $-$ '
                     data_text[-1] += ' \\\\'
         data_text.sort(key=take_first)
-                        
+
     if mode == 1:
         for i in range(len(datasets)):
             latex_table += 'cc|'
@@ -119,12 +119,12 @@ def latexify_data(data,mode):
                         data_text[i] += '%s$\\pm$%s & %s$\\pm$%s & ' % (point[0], point[1], point[2], point[3])
         for i in range(len(data_text)):
             data_text[i] = data_text[i][:-2] + '\\\\'
-    
+
     for line in data_text:
         latex_table += line + '\n'
     latex_table = latex_table[:-1] + ' '
     latex_table+='\\hline\n\\end{tabular}\n}\n}\n\\caption{<WRITE CAPTION HERE>}\n\\label{tab:my-table}\n\\end{table}'
-    
+
     return latex_table
 
 def math_2_latex(expr, params, indep):
@@ -290,7 +290,7 @@ def math_2_latex(expr, params, indep):
 
     # remover os * porque ninguém usa isso em LaTeX
     latex = latex.replace('*','')
-    
+
     # e pôr os parentesis com os tamanhos corretos
     latex = latex.replace('(','\\left(')
     latex = latex.replace(')','\\right)')
@@ -314,11 +314,11 @@ def process_params(params, indep):
                  'sign'
                  ]
     forbidden = ['PI', 'E']
-    
+
     if (len([p for p in indep.split(' ') if p]) > 1):
         return (False, 'Multiple independent variables found. Only one is allowed.')
     indep.replace(' ','')
-    
+
     # Fazer limpeza dos params
     # Assumindo que estão separados por virgulas ou espaços
     # Os parâmetros limpos serão guardados neste array
@@ -331,7 +331,7 @@ def process_params(params, indep):
             # Se param != ''
             if param:
                 clean_split.append(param)
-    
+
     # Ver se foi dado algum parâmetro
     if clean_split == []:
         return (False, 'No parameters were found.')
@@ -365,7 +365,7 @@ def process_params(params, indep):
     # Verificar se a variável independente não é uma palavra reservada
     if indep in forbidden:
         return (False, 'Name \''+str(indep)+'\' is a reserved keyword. Provide a different name.')
-        
+
     # Ver se nenhum dos parâmetros é repetido
     for val in clean_split:
         if clean_split.count(val) > 1:
@@ -392,9 +392,9 @@ def process_params(params, indep):
     # Igual a acima
     else:
         return (False, 'Independent variable \''+str(indep)+'\' given is a number. Use a different name.')
-    
+
     return (True, clean_split)
-    
+
 def parser(expr, params, indep):
     np.seterr(all='raise')
     # Funções do numpy a utilizar
@@ -415,23 +415,23 @@ def parser(expr, params, indep):
                  ]
     forbidden = ['PI', 'E']
 
-    
+
     # Ver se a função não está vazia
     expr=expr.replace(' ','')
     if expr == '':
         return (False, 'No fitting function was found.')
 
     process = process_params(params, indep)
-    
+
     if process[0]:
         clean_split = process[1]
     else:
         return (False, process[1])
-    
+
     # Ver se a função contém a variável independente
     if indep not in expr:
         return (False, "Independent variable is not present in fit function.")
-    
+
     # Substituir as funções pelo equivalente numpy
     # Primeira substituição temporária para não haver erros de conversão
     for function in enumerate(functions):
@@ -444,7 +444,7 @@ def parser(expr, params, indep):
             expr = '[3.14]'.join(expr)
         if keyword == 'E':
             expr = '[2.72]'.join(expr)
-    
+
     # Substituir os nomes dos parâmetros
     for pair in enumerate(clean_split):
         expr = expr.split(pair[1])
@@ -458,7 +458,7 @@ def parser(expr, params, indep):
     for function in enumerate(functions):
         expr = expr.split('['+str(function[0]+len(clean_split))+']')
         expr = ('np.'+str(function[1])).join(expr)
-        
+
     # Pôr os números associados às palavras reservadas
     expr = expr.split('[3.14]')
     expr = 'np.pi'.join(expr)
@@ -467,10 +467,10 @@ def parser(expr, params, indep):
 
     # Vamos finalmente testar se a função funciona
     # Valores de teste só porque sim
-    
+
     B = [np.pi/2]*len(clean_split)
     _x=-1
-        
+
     try:
         eval(expr)
     except NameError as error:
@@ -523,12 +523,12 @@ def read_file(src, out, mode, datatype):
     # Se for da classe Excel
     else:
         data = pd.read_excel(src, dtype="object",header=None)
-    
+
 
     # Fazer a divisão nos datasets fornecidos
     # Se não houver incerteza no x, então o número de colunas é ímpar
     full_sets = []
-    
+
     #Datatype 0 funciona dentro do programa, os outros dois so sao chamados caso venha de excel
     if(datatype == 0):
         if (data.shape[1]%2)!=0:
@@ -580,7 +580,7 @@ def read_file(src, out, mode, datatype):
                         ):
                         points.append([x, ex, y, ey])
                 full_sets.append(points)
-    
+
     if(datatype == 1):
         for i in range(0,int((data.shape[1])/3)):
             points = []
@@ -604,7 +604,7 @@ def read_file(src, out, mode, datatype):
                     ):
                     points.append([x, y, ey])
             full_sets.append(points)
-            
+
     # Se houver incerteza no x o tratamento é ligeiramente diferente
     if(datatype == 2):
         for i in range(0,int((data.shape[1])/4)):
@@ -632,12 +632,12 @@ def read_file(src, out, mode, datatype):
                     ):
                     points.append([x, ex, y, ey])
             full_sets.append(points)
-    
+
     if mode:
         for i in range(len(full_sets)):
             for j in range(len(full_sets[i])):
                 full_sets[i][j] = " ".join(full_sets[i][j])
-            full_sets[i] = "\n".join(full_sets[i])        
+            full_sets[i] = "\n".join(full_sets[i])
 
     return full_sets
 
@@ -715,7 +715,7 @@ class MainWindow(tk.Frame):
             self.new.configure(height = 1)
             self.old.configure(height = 1)
 
-        if(count == 1 or count == 2):    
+        if(count == 1 or count == 2):
             for button in self.buttons:
                 button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
                 self.functionlabel["font"] = ("Roboto",int(0.013*self.master.winfo_width()))
@@ -731,21 +731,21 @@ class MainWindow(tk.Frame):
                     self.paramerrboxes[x].configure(width=int(0.014*self.master.winfo_width()))
                     self.paramresboxes[x].configure(width=int(0.014*self.master.winfo_width()))
                     self.paramboxes[x].configure(width=int(0.014*self.master.winfo_width()))
-                    
+
                 self.xaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.xaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.yaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.yaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
                 self.resultlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
                 self.errorlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
-                
+
                 self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
                 self.errorscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
                 self.markerscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
                 self.linescalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
                 self.funcplotscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
                 self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
-        
+
             if(self.linewidthscale['state'] != tk.ACTIVE and self.errorsizescale['state'] != tk.ACTIVE and self.markersizescale['state'] != tk.ACTIVE and self.funcplotwidthscale['state'] != tk.ACTIVE and self.funcfitwidthscale['state'] != tk.ACTIVE):
                 self.linewidthscale['width'] = 0.025*self.master.winfo_height()
                 self.errorsizescale['width'] = 0.025*self.master.winfo_height()
@@ -786,9 +786,9 @@ class MainWindow(tk.Frame):
         self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
 
     def create_import(self):
-        
+
         self.secondary_window("SORRY", "Feature still in development...")
-        
+
         # ISTO AINDA NÃO ESTÁ FUNCIONAL
         # Destruir tudo o que estava na janela
         # self.title_canvas.delete("all")
@@ -800,9 +800,9 @@ class MainWindow(tk.Frame):
         # self.master.configure(background='#E4E4E4')
 
     def create_new(self):
-        
+
         self.selecteddataset = 0
-        
+
         self.countplots = 0
         # Destruir tudo o que estava na janela
         self.title_canvas.delete("all")
@@ -811,33 +811,33 @@ class MainWindow(tk.Frame):
         self.new.destroy()
         global count
         count = 1
-        
+
         # Definimos já o array para as labels
         self.data_labels = ['']
         self.plot_labels = ['']
         self.fit_labels = ['']
-        
+
         # Definimos as funções, variáveis e afins
         self.indeps = ['x']
         self.params = ['a,b']
         self.functions = ['sin(x) + a*x + b']
         self.clean_functions = ['np.sin(_x)+B[0]*_x+B[1]']
-        
+
         self.fit_params = [['']]
         self.fit_uncert = [['']]
         self.fit_chi = ['']
         self.init_values = [[1.0,1.0]]
-        
+
         self.x_func = [[]]
         self.y_func = [[]]
-        
-        
+
+
         self.master.configure(background='#E4E4E4')
 
         # Criação da estrutura de frames da janela
         self.frameleft = tk.Frame(self.master,  bg='#E4E4E4')
         self.frameleft.place(in_=self.master, relwidth=0.5, relheight=1, relx=0, rely=0)
-        
+
         #Frameright, contem tudo na parte direita da janela
         self.frameright = tk.Frame(self.master,  bg='#E4E4E4')
         self.frameright.place( in_ = self.master, relwidth=0.5, relheight=1,relx=0.5, rely=0)
@@ -845,7 +845,7 @@ class MainWindow(tk.Frame):
         #Subsecção da mesma onde se inserem as entrys de parametros, variavel independente e funçao
         self.subframeright1=tk.Frame(self.frameright, bg='#E4E4E4', highlightbackground="black", highlightthickness=0, padx=20, pady=20)
         self.subframeright1.place(in_=self.frameright, relwidth=1, relheight=0.5, relx=0, rely=0)
-        
+
          # Criação das frames para a edição visual do gráfico
         self.subframeright2=tk.Frame(self.frameright, bg='#E4E4E4')
         self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.2, relx=0, rely=0.25)
@@ -855,13 +855,13 @@ class MainWindow(tk.Frame):
 
         self.plotbuttonframe = tk.Frame(self.frameleft, bg= '#E4E4E4')
         self.plotbuttonframe.place(in_ = self.frameleft, relwidth=1, relheight=0.05, relx=0, rely=0.5)
-        
+
         self.databuttonframe = tk.Frame(self.frameleft, bg='#E4E4E4')
         self.databuttonframe.place(in_ = self.frameleft, relwidth=1, relheight=0.05, relx=0, rely=0.93)
-        
+
         self.subframeleft2 = tk.Frame(self.frameleft, bg='#E4E4E4')
         self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.38, relx=0, rely=0.55)
-        
+
         #Criação da zona onde se inserem as informaçoes relativas aos eixos do grafico
         self.subframeright3 = tk.Frame(self.frameright, bg='#E4E4E4')
         self.subframeright3.place(in_ = self.frameright, relwidth = 1, relheight = 0.52, rely=0.48)
@@ -875,7 +875,7 @@ class MainWindow(tk.Frame):
                                        activeforeground='#F21112')
         self.compilebutton.place(relwidth=0.2,relx=0.8, rely=0.2,relheight=0.1 )
         self.compilebutton["command"] = self.compile_function
-        
+
         #Botão que serve para updatar a lista de entries dos parâmetros
         self.upbutton = tk.Button(self.subframeright1,
                                   text="UPDATE",
@@ -885,7 +885,7 @@ class MainWindow(tk.Frame):
                                   activeforeground='#F21112')
         self.upbutton.place(relwidth=0.2,relx=0.8, rely=0.1,relheight=0.1 )
         self.upbutton["command"] = self.update_parameter
-        
+
         #Botão pra plottar o dataset, chama a função plot_dataset
         self.plotbutton = tk.Button(self.plotbuttonframe,
                                        text="PLOT",
@@ -893,10 +893,10 @@ class MainWindow(tk.Frame):
                                        bg='#F21112',
                                        activebackground='white',
                                        activeforeground='#F21112')
-        
+
         self.plotbutton.place(in_  = self.plotbuttonframe, relwidth=0.2, relheight=1, relx=0.25)
         self.plotbutton["command"] = self.plot_dataset
-        
+
         #Botão pra plottar a funçao, chama a funçao plot_function
         self.plotfunctionbutton = tk.Button(self.plotbuttonframe,
                                        text="PLOT FUNCTION",
@@ -904,12 +904,12 @@ class MainWindow(tk.Frame):
                                        bg='#F21112',
                                        activebackground='white',
                                        activeforeground='#F21112')
-        
+
         self.plotfunctionbutton.place(in_  = self.plotbuttonframe, relwidth=0.3, relheight=1,relx = 0.5)
         self.plotfunctionbutton["command"] = self.plot_function
         self.wantfunction = [tk.BooleanVar()]
         self.wantfunction[0].set(0)
-        
+
         # Botão para importar ficheiros
         self.import_data = tk.Button(self.databuttonframe,
                                      text='IMPORT DATA',
@@ -919,7 +919,7 @@ class MainWindow(tk.Frame):
                                      activeforeground='#F21112')
         self.import_data.place(relwidth=0.23, relheight=1,relx = 0.1)
         self.import_data["command"] = self.import_window
-        
+
         self.add_labels = tk.Button(self.databuttonframe,
                                     text='SET LABELS',
                                     fg='white',
@@ -928,7 +928,7 @@ class MainWindow(tk.Frame):
                                     activeforeground='#F21112')
         self.add_labels.place(relwidth=0.2, relheight=1, relx=0.4)
         self.add_labels["command"] = self.labels
-        
+
         # Botão para exportar como latex
         self.export_latex = tk.Button(self.databuttonframe,
                                   text="LaTeX-ify",
@@ -938,7 +938,7 @@ class MainWindow(tk.Frame):
                                   activeforeground='#F21112')
         self.export_latex.place(relwidth=0.23, relheight=1, relx= 0.67)
         self.export_latex["command"] = self.latexify
-        
+
         #Criação do botão ligado à funçao que adiciona mais um dataset
         self.adddatasetbutton = tk.Button(self.plotbuttonframe,
                                        text="+",
@@ -947,7 +947,7 @@ class MainWindow(tk.Frame):
                                        activebackground='white',
                                        activeforeground='#F21112', command = lambda: self.add_dataset(''))
         self.adddatasetbutton.place(in_ = self.plotbuttonframe, relwidth=0.05, relheight=0.5, relx = 0.15, rely=0)
-        
+
         # Botão para remover datasets
         self.removedatasetbutton = tk.Button(self.plotbuttonframe,
                                              text="-",
@@ -957,7 +957,7 @@ class MainWindow(tk.Frame):
                                              activeforeground='#F21112')
         self.removedatasetbutton.place(in_ = self.plotbuttonframe, relwidth=0.05, relheight=0.5, relx= 0.15, rely=0.5)
         self.removedatasetbutton["command"] = self.remove_dataset
-        
+
         self.fitbutton = tk.Button(self.plotbuttonframe,
                                        text="FIT",
                                        fg='white',
@@ -968,9 +968,9 @@ class MainWindow(tk.Frame):
         self.fitbutton["command"] = self.fit_activate
         self.wantfit = [tk.BooleanVar()]
         self.wantfit[0].set(0)
-        
+
         # Variável para armazenar todos os botoes
-        self.buttons = [self.upbutton, 
+        self.buttons = [self.upbutton,
                   self.compilebutton,
                   self.plotbutton,
                   self.plotfunctionbutton,
@@ -981,7 +981,7 @@ class MainWindow(tk.Frame):
                   self.removedatasetbutton,
                   self.add_labels
                   ]
-        
+
         for button in self.buttons:
             def hover(button):
                 return lambda e: button.config(bg='white',fg='#F21112')
@@ -990,22 +990,22 @@ class MainWindow(tk.Frame):
             button.bind("<Enter>", hover(button))
             button.bind("<Leave>", unhover(button))
             button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
-        
+
         self.datastringcarrier = "1 0.5 2 0.5\n2 0.5 3 0.5\n3 0.5 5 0.5\n4 0.5 3 0.5\n5 0.5 6 0.5"
         # Criar uma menu bar
         # esta self.menubar é a mais geral, é a que contem as outras
         self.menubar = tk.Menu(self.master)
         self.master.config(menu=self.menubar)
-                
+
         # Este é o botão file na self.menubar
         self.file_options = tk.Menu(self.menubar, tearoff=0)
         self.file_options.add_command(label='Export Image', command=self.export_image)
         self.menubar.add_cascade(label="File", menu=self.file_options)
-          
+
         # Botao na self.menubar para escolher as opçoes do plot
         self.plotoptions = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Plot options", menu=self.plotoptions)
-        
+
         # Estas 3 variáveis servem para o utilizador escolher o que quer ver
         self.wantpoints = [tk.BooleanVar()]
         self.wantline = [tk.BooleanVar()]
@@ -1022,41 +1022,41 @@ class MainWindow(tk.Frame):
         self.plotoptions.add_checkbutton(label = "Error bars", onvalue = 1, offvalue = 0, variable = self.wanterror[self.selecteddataset])
         self.plotoptions.add_checkbutton(label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit[self.selecteddataset] )
         self.plotoptions.add_checkbutton(label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction[self.selecteddataset])
-        
+
         # Estes 3 menus na self.menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
         self.choosecolor = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Choose Colors", menu = self.choosecolor)
-        
+
         self.currentselection = 1
-        
+
         self.markercolorvar = []
         self.linecolorvar = []
         self.errorcolorvar = []
         self.funcfitcolorvar = []
         self.funcplotcolorvar = []
-        
+
         self.markercolorvar.append('black')
         self.linecolorvar.append('black')
         self.errorcolorvar.append('black')
         self.funcfitcolorvar.append('black')
         self.funcplotcolorvar.append('black')
-        
+
         # Aqui tou so a meter os checkbuttons nas caixas
         self.choosecolor.add_command(label = 'Marker Color', command = self.markercolorpick)
         self.choosecolor.add_command(label = 'Connection Color', command = self.linecolorpick)
         self.choosecolor.add_command(label = 'Errorbar Color', command = self.errorcolorpick)
         self.choosecolor.add_command(label = 'Plot Function Color', command = self.funcplotcolorpick)
         self.choosecolor.add_command(label = 'Fit Function Color', command = self.funcfitcolorpick)
-        
+
         self.datasetstoplot = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
-        
+
         self.datasetstoplotvar = []
         self.datasetstoplotvar.append(tk.BooleanVar())
         self.datasetstoplotvar[0].set(1)
-       
-        self.datasetstoplot.add_checkbutton(label = "Plot Dataset 1", onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[0] ) 
-       
+
+        self.datasetstoplot.add_checkbutton(label = "Plot Dataset 1", onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[0] )
+
         # Criação da zona para inserir a variável independente
         self.independentlabel = tk.Label(self.subframeright1,text="Independent Var", bg='#E4E4E4')
         self.independentlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
@@ -1074,7 +1074,7 @@ class MainWindow(tk.Frame):
         self.parameterentry.place(relwidth=0.55, rely=0.1, relheight=0.1,relx = 0.27)
         self.parameterentry.insert(0, "a,b")
         self.parameterentry.focus_set()
-        
+
         # Criação da zona onde se insere a função
         self.functionlabel = tk.Label(self.subframeright1,text= "Function", bg='#E4E4E4')
         self.functionlabel["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
@@ -1083,12 +1083,12 @@ class MainWindow(tk.Frame):
         self.functionentry.place(relwidth=0.55,relx=0.27, rely=0.2, relheight=0.1)
         self.functionentry.insert(0, "sin(x) + a*x + b")
         self.functionentry.focus_set()
-        
+
         self.autoscalex = tk.BooleanVar()
         self.autoscalex.set(0)
         self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale')
         self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = -0.03)
-     
+
         self.xaxislabel = tk.Label(self.subframeright3, text="X Axis", bg='#E4E4E4')
         self.xaxislabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0)
 
@@ -1108,10 +1108,10 @@ class MainWindow(tk.Frame):
         self.xaxismaxentry = tk.Entry(self.subframeright3, justify='center')
         self.xaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.35, rely=0.1)
         self.xaxismaxentry.insert(0, "10")
-        
+
         self.xaxistitlelabel = tk.Label(self.subframeright3, text = "Title", bg='#E4E4E4')
         self.xaxistitlelabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0, rely=0.25)
-        
+
         self.xaxistitleentry = tk.Entry(self.subframeright3)
         self.xaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.1, rely=0.25)
         self.xaxistitleentry.insert(0, "Abcissas")
@@ -1122,7 +1122,7 @@ class MainWindow(tk.Frame):
         self.xaxistickspentry = tk.Entry(self.subframeright3, justify='center')
         self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0.4, rely=0.4)
         self.xaxistickspentry.insert(0, "1")
-        
+
         self.autoscaley = tk.BooleanVar()
         self.autoscaley.set(0)
         self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale')
@@ -1141,27 +1141,27 @@ class MainWindow(tk.Frame):
         self.yaxismaxentry = tk.Entry(self.subframeright3, justify='center')
         self.yaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.85, rely=0.1)
         self.yaxismaxentry.insert(0, "10")
-        
+
         self.yaxistitlelabel = tk.Label(self.subframeright3, text = "Title", bg='#E4E4E4')
         self.yaxistitlelabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0.5, rely=0.25)
 
         self.yaxistitleentry = tk.Entry(self.subframeright3)
         self.yaxistitleentry.place(in_ = self.subframeright3, relwidth = 0.3, relheight = 0.1, relx = 0.6, rely=0.25)
         self.yaxistitleentry.insert(0, "Ordenadas")
-        
+
         self.yaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#E4E4E4')
         self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx = 0.725, rely= 0.4)
 
         self.yaxistickspentry = tk.Entry(self.subframeright3, justify='center')
         self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx=0.9, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
-        
+
         self.linewidth = []
         self.markersize = []
         self.errorwidth = []
         self.funcplotwidth = []
         self.funcfitwidth = []
-       
+
         self.linewidth.append(tk.DoubleVar())
         self.markersize.append(tk.DoubleVar())
         self.errorwidth.append(tk.DoubleVar())
@@ -1206,7 +1206,7 @@ class MainWindow(tk.Frame):
         self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.895)
         self.errorsizescale['width'] = 0.025*self.master.winfo_width()
         self.errorsizescale['state'] = tk.DISABLED
-        
+
         self.funcplotscalelabel = tk.Label(self.subframeright3, text = 'Plot Func. Width', bg = '#E4E4E4')
         self.funcplotscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
         self.funcplotscalelabel.place(in_ = self.subframeright3,relwidth = 0.3, relx = 0.02, rely=0.72)
@@ -1217,7 +1217,7 @@ class MainWindow(tk.Frame):
         self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.735)
         self.funcplotwidthscale['width'] = 0.025*self.master.winfo_width()
         self.funcplotwidthscale['state'] = tk.DISABLED
-        
+
         self.funcfitscalelabel = tk.Label(self.subframeright3, text = 'Fit Func. Width', bg = '#E4E4E4')
         self.funcfitscalelabel['font'] = ("Roboto",int(0.0075*self.master.winfo_width()))
         self.funcfitscalelabel.place(in_ = self.subframeright3,relwidth = 0.3, relx = 0.022, rely=0.80)
@@ -1228,53 +1228,53 @@ class MainWindow(tk.Frame):
         self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.815)
         self.funcfitwidthscale['width'] = 0.025*self.master.winfo_width()
         self.funcfitwidthscale['state'] = tk.DISABLED
-        
+
         self.markeroption = tk.StringVar()
-        self.markeroptiontranslater = [] 
-        
+        self.markeroptiontranslater = []
+
         self.lineoption = tk.StringVar()
         self.lineoptiontranslater = []
-        
+
         self.erroroption = tk.StringVar()
         self.erroroptiontranslater = []
-        
+
         self.funcplotoption = tk.StringVar()
         self.funcplotoptiontranslater = []
-        
+
         self.funcfitoption = tk.StringVar()
         self.funcfitoptiontranslater = []
-        
+
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
             'Triangle', 'Square', 'Circle'], textvariable = self.markeroption)
         self.markersizecombo.current(2)
         self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.64, relheight=0.065)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
         self.markeroptiontranslater.append('o')
-        
+
         self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
         self.linestylecombo.current(0)
         self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.57, relheight=0.065)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
         self.lineoptiontranslater.append('-')
-        
+
         self.funcplotstylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.funcplotoption)
         self.funcplotstylecombo.current(0)
         self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.71, relheight=0.065)
         self.funcplotstylecombo.bind("<<ComboboxSelected>>", self.funcplotselector)
         self.funcplotoptiontranslater.append('-')
-        
+
         self.funcfitstylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.funcfitoption)
         self.funcfitstylecombo.current(0)
         self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.79, relheight=0.065)
         self.funcfitstylecombo.bind("<<ComboboxSelected>>", self.funcfitselector)
         self.funcfitoptiontranslater.append('-')
-        
+
         sty = ttk.Style(self.subframeright3)
         sty.configure("TSeparator", background="#F21112")
-        
+
         self.chisqlabel = tk.Label(self.frameright, text = u'\u03C7'+'\N{SUPERSCRIPT TWO}'+'/'+'\u03BD', bg= '#E4E4E4')
         self.chisqlabel.place(in_ = self.frameright, rely=0.46, relx = 0.425)
         self.chisqentry = tk.Entry(self.frameright, justify='center')
@@ -1282,45 +1282,45 @@ class MainWindow(tk.Frame):
         except: pass
         self.chisqentry.place( in_ = self.frameright, rely = 0.46, relx=0.475, relwidth = 0.1)
         self.chisqentry.config(state = 'readonly')
-        
+
         sep = ttk.Separator(self.subframeright3, orient = tk.VERTICAL)
         sep.place(in_ = self.subframeright3, relx=0.5, relheight = 0.5, rely=0.05)
-        
+
         sep1 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
         sep1.place(in_ = self.subframeright3, relx=0.3, rely=0.05, relwidth = 0.4)
-        
+
         sep2 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
         sep2.place(in_ = self.subframeright3, relx=0, rely=0.05, relwidth = 0.2)
-        
+
         sep2 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL )
         sep2.place(in_ = self.subframeright3, relx=0.8, rely=0.05, relwidth = 0.2)
-        
+
         sep3 = ttk.Separator(self.subframeright3, orient = tk.HORIZONTAL)
         sep3.place(in_ = self.subframeright3, relx=0, rely=0.55, relwidth=1)
-        
+
         # Criação do texto respetivo ao primeiro dataset
         # A variável datasettext contém os textos presentes em cada dataset
         self.datasettext = []
         self.datasettext.append("1 0.5 1 0.5\n2 0.5 2 0.5\n3 0.5 1 0.5\n4 0.5 2 0.5\n5 0.5 1 0.5\n6 0.5 2 0.5\n7 0.5 1 0.5")
-        
+
         self.datalistvariable = tk.StringVar()
-        
+
         # Variável que mostra qual está selecionada
         self.datalistvariable.set('dataset 1')
-        
+
         # Variável que contem os datasets e respetivo numero
         self.datalist = ['dataset 1']
-        
+
         # Criação do botão seletor de data-sets, ligalo à função update_databox
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
-        
+
         # Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
         self.dataentry = ( ScrolledText(self.subframeleft2))
         self.dataentry.pack(expand = 1, fill = tk.X)
         self.dataentry.insert(tk.INSERT,self.datasettext[0])
-        
+
         # Francamente eu so inicio isto assim pq ya, da pouco trabalho e resolveu um bug na altura,
         # NÃO MEXER, FUI EU A POR EU RESOLVO
         # Basicamente a lógica é isto começar com alguma coisa pq fode com indices dps, soluçao preguicosa
@@ -1329,73 +1329,73 @@ class MainWindow(tk.Frame):
         self.erabcissas = [[1, 1, 1, 1]]
         self.ordenadas = [[1,1,1,1]]
         self.erordenadas = [[1,1,1,1]]
-        
+
         self.abc=[]
         self.erabc = []
         self.ord = []
         self.erord = []
-        
+
         self.selecteddataset = 0
         self.numberdatasets = 1
-        
+
         self.abc.append(np.array(self.abcissas[0]))
         self.erabc.append(np.array(self.erabcissas[0]))
         self.ord.append(np.array(self.erabcissas[0]))
         self.erord.append(np.array(self.erabcissas[0]))
-        
+
         self.dataset_points = []
         self.update_parameter()
-    
+
     def markerselector(self,event):
         if(self.markeroption.get() == 'Circle'):
             self.markeroptiontranslater[self.selecteddataset] = 'o'
-        
+
         if(self.markeroption.get() == 'Square'):
             self.markeroptiontranslater[self.selecteddataset] = 's'
-        
+
         if(self.markeroption.get() == 'Triangle'):
             self.markeroptiontranslater[self.selecteddataset] = '^'
-        
+
         self.plot_dataset()
-    
+
     def lineselector(self,event):
         if(self.lineoption.get() == 'Solid'):
             self.lineoptiontranslater[self.selecteddataset] = '-'
-        
+
         if(self.lineoption.get() == 'Dashed'):
             self.lineoptiontranslater[self.selecteddataset] = '--'
-        
+
         if(self.lineoption.get() == 'Dotted'):
             self.lineoptiontranslater[self.selecteddataset] = ':'
-        
+
         self.plot_dataset()
 
     def funcplotselector(self,event):
         if(self.funcplotoption.get() == 'Solid'):
             self.funcplotoptiontranslater[0] = '-'
-        
+
         if(self.funcplotoption.get() == 'Dashed'):
             self.funcplotoptiontranslater[0] = '--'
-        
+
         if(self.funcplotoption.get() == 'Dotted'):
             self.funcplotoptiontranslater[0] = ':'
-        
+
         self.plot_dataset()
-        
+
     def funcfitselector(self,event):
         if(self.funcfitoption.get() == 'Solid'):
             self.funcfitoptiontranslater[0] = '-'
-        
+
         if(self.funcfitoption.get() == 'Dashed'):
             self.funcfitoptiontranslater[0] = '--'
-        
+
         if(self.funcfitoption.get() == 'Dotted'):
             self.funcfitoptiontranslater[0] = ':'
-        
+
         self.plot_dataset()
-        
+
     def labels(self):
-    
+
         try:
             self.labels_window.destroy()
         except:
@@ -1405,7 +1405,7 @@ class MainWindow(tk.Frame):
         self.labels_window.geometry('400x400')
         self.labels_window.configure(background='#E4E4E4')
         self.labels_window.resizable(False,False)
-        
+
         canvas = tk.Canvas(master=self.labels_window,bg='#E4E4E4',highlightthickness=0)
         scrollbar = ttk.Scrollbar(self.labels_window, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas,bg='#E4E4E4')
@@ -1415,42 +1415,42 @@ class MainWindow(tk.Frame):
         )
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
-        
+
         canvas.pack(side="left")
         scrollbar.pack(side="right",fill='y')
-        
+
         self.label_entries = []
-        
+
         for i in range(len(self.datasettext)):
             frame1 = tk.Frame(scrollable_frame,bg='#E4E4E4')
             frame2 = tk.Frame(scrollable_frame,bg='#E4E4E4')
             frame3 = tk.Frame(scrollable_frame,bg='#E4E4E4')
-            
+
             self.label_entries.append([tk.Entry(frame1,width=35),
                                        tk.Entry(frame2,width=35),
                                        tk.Entry(frame3,width=35)])
-            
+
             label1 = tk.Label(frame1, text='Label for Dataset %d' % (i+1),bg='#E4E4E4')
             label1["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
             self.label_entries[i][0].insert(0,self.data_labels[i])
             label1.pack(side='left')
             self.label_entries[i][0].pack(side='right')
             frame1.pack(side='top',pady=10)
-            
+
             label2 = tk.Label(frame2, text='Label for Plotted Function %d' % (i+1),bg='#E4E4E4')
             label2["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
             self.label_entries[i][1].insert(0,self.plot_labels[i])
             label2.pack(side='left')
             self.label_entries[i][1].pack(side='right')
             frame2.pack(side='top',pady=10)
-            
+
             label3 = tk.Label(frame3, text='Label for Fitted Function %d' % (i+1),bg='#E4E4E4')
             label3["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
             self.label_entries[i][2].insert(0,self.fit_labels[i])
             label3.pack(side='left')
             self.label_entries[i][2].pack(side='right')
             frame3.pack(side='top',pady=10)
-            
+
         # Colocação do botão para salvar as legendas
         save_button = tk.Button(scrollable_frame,
                                 text="SAVE",
@@ -1464,15 +1464,14 @@ class MainWindow(tk.Frame):
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
         save_button.pack(side='bottom')
-        
+
     def save_labels(self):
         for i in range(len(self.label_entries)):
             self.data_labels[i] = self.label_entries[i][0].get()
             self.plot_labels[i] = self.label_entries[i][1].get()
             self.fit_labels[i]  = self.label_entries[i][2].get()
         self.labels_window.destroy()
-    
-        
+
     def export_image(self):
         try:
             print(self.fig)
@@ -1494,20 +1493,20 @@ class MainWindow(tk.Frame):
         self.export_window.geometry('400x200')
         self.export_window.configure(background='#E4E4E4')
         self.export_window.resizable(False, False)
-        
+
         # Colocação das várias opções de exportação
         function = tk.Label(self.export_window, text='Fitting Function')
         function["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         function.configure(background='#E4E4E4')
-        
+
         data_samex = tk.Label(self.export_window, text='Datasets (share x)')
         data_samex["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         data_samex.configure(background='#E4E4E4')
-        
+
         data_diffx = tk.Label(self.export_window, text='Datasets (split x)')
         data_diffx["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         data_diffx.configure(background='#E4E4E4')
-        
+
         # Colocação dos botões para copiar o texto
         self.function_button = tk.Button(self.export_window,
                                     text="COPY",
@@ -1520,7 +1519,7 @@ class MainWindow(tk.Frame):
         # Alterar as cores quando entra e sai
         self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
         self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
-        
+
         self.data_samex_button = tk.Button(self.export_window,
                                            text="COPY",
                                            fg='white',
@@ -1532,7 +1531,7 @@ class MainWindow(tk.Frame):
         # Alterar as cores quando entra e sai
         self.data_samex_button.bind("<Enter>", func=lambda e: self.data_samex_button.config(bg='white',fg='#F21112'))
         self.data_samex_button.bind("<Leave>", func=lambda e: self.data_samex_button.config(bg='#F21112',fg='white'))
-        
+
         self.data_diffx_button = tk.Button(self.export_window,
                                            text="COPY",
                                            fg='white',
@@ -1552,7 +1551,7 @@ class MainWindow(tk.Frame):
         self.function_button.place(relx=.85, rely=.15, anchor='c')
         self.data_samex_button.place(relx=.85,rely=.5, anchor='c')
         self.data_diffx_button.place(relx=.85,rely=.85,anchor='c')
-    
+
     def export_function(self):
         # Se a função já tiver sido compilada
         try:
@@ -1566,14 +1565,14 @@ class MainWindow(tk.Frame):
             self.function_button.configure(text='COPIED!',fg='#F21112',bg='white')
             self.data_samex_button.configure(text='COPY',fg='white',bg='#F21112')
             self.data_diffx_button.configure(text='COPY',fg='white',bg='#F21112')
-            
+
             self.function_button.bind("<Enter>", func=lambda e: '')
             self.function_button.bind("<Leave>", func=lambda e: '')
             self.data_samex_button.bind("<Enter>", func=lambda e: self.data_samex_button.config(bg='white',fg='#F21112'))
             self.data_samex_button.bind("<Leave>", func=lambda e: self.data_samex_button.config(bg='#F21112',fg='white'))
             self.data_diffx_button.bind("<Enter>", func=lambda e: self.data_diffx_button.config(bg='white',fg='#F21112'))
             self.data_diffx_button.bind("<Leave>", func=lambda e: self.data_diffx_button.config(bg='#F21112',fg='white'))
-            
+
             text = math_2_latex(self.functionentry.get(),self.parameterentry.get(),self.independententry.get())
             pyperclip.copy(text)
         else:
@@ -1585,7 +1584,7 @@ class MainWindow(tk.Frame):
         self.function_button.configure(text='COPY',fg='white',bg='#F21112')
         self.data_samex_button.configure(text='COPIED!',fg='#F21112',bg='white')
         self.data_diffx_button.configure(text='COPY',fg='white',bg='#F21112')
-        
+
         self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
         self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
         self.data_samex_button.bind("<Enter>", func=lambda e: '')
@@ -1594,13 +1593,13 @@ class MainWindow(tk.Frame):
         self.data_diffx_button.bind("<Leave>", func=lambda e: self.data_diffx_button.config(bg='#F21112',fg='white'))
         text = latexify_data(self.datasettext,0)
         pyperclip.copy(text)
-        
+
     def export_data_diffx(self):
         # Algumas operações de estética
         self.function_button.configure(text='COPY',fg='white',bg='#F21112')
         self.data_samex_button.configure(text='COPY',fg='white',bg='#F21112')
         self.data_diffx_button.configure(text='COPIED!',fg='#F21112',bg='white')
-        
+
         self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
         self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
         self.data_samex_button.bind("<Enter>", func=lambda e: self.data_samex_button.config(bg='white',fg='#F21112'))
@@ -1613,15 +1612,15 @@ class MainWindow(tk.Frame):
     def lineslider(self, a):
         self.linescalelabelvalue['text'] = str(a)
         self.plot_dataset()
-    
+
     def markerslider(self, a):
         self.markerscalelabelvalue['text'] = str(a)
         self.plot_dataset()
-    
+
     def errorslider(self, a):
         self.errorscalelabelvalue['text'] = str(a)
         self.plot_dataset()
-    
+
     def funcplotslider(self, a):
         self.funcplotscalelabelvalue['text'] = str(a)
         self.plot_dataset()
@@ -1629,7 +1628,7 @@ class MainWindow(tk.Frame):
     def funcfitslider(self, a):
         self.funcfitscalelabelvalue['text'] = str(a)
         self.plot_dataset()
-    
+
     def fit_activate(self):
         for x in range(len(self.paramboxes)):
             try:
@@ -1642,69 +1641,69 @@ class MainWindow(tk.Frame):
                     self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
                     self.wantfit[self.selecteddataset].set(0)
                 return False
-        
+
         self.wantfit[self.selecteddataset].set(1)
         self.plot_dataset()
-        
+
     def markercolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
         self.markercolorvar[self.selecteddataset] = pick_color
         self.plot_dataset()
-    
+
     def linecolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
         self.linecolorvar[self.selecteddataset] = pick_color
         self.plot_dataset()
-    
+
     def errorcolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
         self.errorcolorvar[self.selecteddataset] = pick_color
         self.plot_dataset()
-    
+
     def funcplotcolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
         self.funcplotcolorvar[0] = pick_color
         self.plot_dataset()
-    
+
     def funcfitcolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
         self.funcfitcolorvar[0] = pick_color
         self.plot_dataset()
-        
+
     def import_window(self):
         self.import_window = tk.Toplevel(self.master)
         self.import_window.title('File Format')
         self.import_window.geometry('400x250')
         self.import_window.configure(background='#E4E4E4')
         self.import_window.resizable(False, False)
-        
+
         self.samex = tk.BooleanVar()
         self.difx = tk.BooleanVar()
         self.difxerror = tk.BooleanVar()
-                
+
         self.samex.set(1)
         self.difx.set(0)
         self.difxerror.set(0)
-        
+
         self.samexbutton = tk.Checkbutton(self.import_window, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.samex, text = 'All datasets have same x', command = self.samexfunction)
         self.samexbutton.place(in_ = self.import_window, relwidth = 0.7, relheight = 0.1, rely = 0.05, relx = 0.15)
-        
+
         self.samexbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
-        
+
         self.samextext=tk.Label(self.import_window, bg = '#E4E4E4', text = 'First column will be x.\nSubsequencial columns will be (y1, ey1, y2, ey2,...)')
         self.samextext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.15, rely = 0.15, relx = 0.05)
-        
+
         self.difxbutton = tk.Checkbutton(self.import_window, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.difx, text = 'All datasets have their own x',  command = self.difxfunction)
         self.difxbutton.place(in_ = self.import_window, relwidth = 0.8, relheight = 0.15, rely = 0.35, relx = 0.1)
-        
+
         self.difxbutton["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
-        
+
         self.difxtext=tk.Label(self.import_window, bg = '#E4E4E4', text = 'Columns will be (x1, y1, ey1, x2, y2, ey2,...)')
         self.difxtext.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.1, rely = 0.46, relx = 0.05)
-        
+
         difxerrorbutton = tk.Checkbutton(self.import_window, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.difxerror, text = 'Include ex',  command = self.difxerrorfunction)
         difxerrorbutton.place(in_ = self.import_window, relwidth = 0.5, relheight = 0.1, rely = 0.6, relx = 0.25)
-        
+
         importbutton = tk.Button(self.import_window, text = "CHOOSE FILE", command = self.open_file, fg='white',
                                   bg='#F21112',
                                   activebackground='white',
@@ -1714,17 +1713,17 @@ class MainWindow(tk.Frame):
         # Alterar as cores quando entra e sai
         importbutton.bind("<Enter>", func=lambda e: importbutton.config(bg='white',fg='#F21112'))
         importbutton.bind("<Leave>", func=lambda e: importbutton.config(bg='#F21112',fg='white'))
-        
+
     def samexfunction(self):
         self.difx.set(0)
-    
+
     def difxfunction(self):
         self.samex.set(0)
-        
+
     def difxerrorfunction(self):
         # Esta função não faz nada??
         self.difxerror.get()
-        
+
         if self.difxerror.get():
             self.samextext['text'] = 'First columns will be (x, ex).\nSubsequencial columns will be (y1, ey1, y2, ey2,...)'
             self.samexbutton['text'] = 'All datasets have same (x, ex)'
@@ -1745,27 +1744,27 @@ class MainWindow(tk.Frame):
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
-    
+
         self.datasettext.append(string)
-        
+
         self.data_labels.append('')
         self.plot_labels.append('')
         self.fit_labels.append('')
-        
+
         self.indeps.append(self.indeps[self.selecteddataset])
         self.params.append(self.params[self.selecteddataset])
         self.functions.append(self.functions[self.selecteddataset])
         self.clean_functions.append(self.clean_functions[self.selecteddataset])
-        
+
         self.fit_params.append([])
         self.fit_uncert.append([])
         self.fit_chi.append('')
         self.init_values.append([1.0]*len(self.paramboxes))
-        
+
         self.x_func.append([])
         self.y_func.append([])
-        
-        # Acrescentar para todas as variaveis de cores e opcoes 
+
+        # Acrescentar para todas as variaveis de cores e opcoes
         self.wantfit.append(tk.BooleanVar())
         self.wantfit[-1].set(0)
         self.wantpoints.append(tk.BooleanVar())
@@ -1776,7 +1775,7 @@ class MainWindow(tk.Frame):
         self.wanterror[-1].set(0)
         self.wantfunction.append(tk.BooleanVar())
         self.wantfunction[-1].set(0)
-    
+
         # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
         self.erabcissas.append([0, 0, 0, 0])
@@ -1787,72 +1786,72 @@ class MainWindow(tk.Frame):
         self.erabc.append(np.array(self.abcissas[-1]))
         self.ord.append(np.array(self.abcissas[-1]))
         self.erord.append(np.array(self.abcissas[-1]))
-        
+
         # Criar as variáveis respetivas à escolha de cores para cada plot
         self.markercolorvar.append("black")
         self.linecolorvar.append("black")
         self.errorcolorvar.append("black")
         self.funcfitcolorvar.append("black")
         self.funcplotcolorvar.append("black")
-        
+
         self.markeroptiontranslater.append('o')
         self.lineoptiontranslater.append('-')
         self.funcfitoptiontranslater.append('-')
         self.funcplotoptiontranslater.append('-')
-        
+
         self.linewidth.append(tk.DoubleVar())
         self.markersize.append(tk.DoubleVar())
         self.errorwidth.append(tk.DoubleVar())
         self.funcfitwidth.append(tk.DoubleVar())
         self.funcplotwidth.append(tk.DoubleVar())
-        
+
         self.markersize[self.numberdatasets-1].set(2.0)
         self.linewidth[self.numberdatasets-1].set(2.0)
         self.errorwidth[self.numberdatasets-1].set(2.0)
         self.funcfitwidth[self.numberdatasets-1].set(2.0)
         self.funcplotwidth[self.numberdatasets-1].set(2.0)
-        
+
         self.datasetstoplotvar.append(tk.BooleanVar())
         self.datasetstoplotvar[self.numberdatasets-1].set(1)
-       
-        self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(len(self.datalist)), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[self.numberdatasets-1] ) 
-        
+
+        self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(len(self.datalist)), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[self.numberdatasets-1] )
+
     # Função para remover datasets
     def remove_dataset(self):
-        
+
         if self.numberdatasets == 1:
             self.secondary_window('ERROR', 'At least one dataset is needed. Add one before removing this one.')
             return -1
-    
-        self.numberdatasets -= 1   
-        
+
+        self.numberdatasets -= 1
+
         # apagar o data_set
-        self.datasettext.pop(self.selecteddataset)        
-                
+        self.datasettext.pop(self.selecteddataset)
+
         # remover todas as variáveis guardadas
         self.datalist = ["datalist "+str(i+1) for i in range(self.numberdatasets)]
         self.abcissas.pop(self.selecteddataset)
         self.erabcissas.pop(self.selecteddataset)
         self.ordenadas.pop(self.selecteddataset)
         self.erordenadas.pop(self.selecteddataset)
-        
+
         self.data_labels.pop(self.selecteddataset)
         self.plot_labels.pop(self.selecteddataset)
         self.fit_labels.pop(self.selecteddataset)
-        
+
         self.indeps.pop(self.selecteddataset)
         self.params.pop(self.selecteddataset)
         self.functions.pop(self.selecteddataset)
         self.clean_functions.pop(self.selecteddataset)
-        
+
         self.fit_params.pop(self.selecteddataset)
         self.fit_uncert.pop(self.selecteddataset)
         self.fit_chi.pop(self.selecteddataset)
         self.init_values.pop(self.selecteddataset)
-        
+
         self.x_func.pop(self.selecteddataset)
         self.y_func.pop(self.selecteddataset)
-        
+
         # remover todas as variaveis de cores e opcoes
         self.wantfit.pop(self.selecteddataset)
         self.wantpoints.pop(self.selecteddataset)
@@ -1860,50 +1859,57 @@ class MainWindow(tk.Frame):
         self.wanterror.pop(self.selecteddataset)
         self.wantfunction.pop(self.selecteddataset)
 
+        self.plotoptions.delete(0,tk.END)
+        self.plotoptions.add_checkbutton(label = "Plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints[0])
+        self.plotoptions.add_checkbutton(label = "Connect points", onvalue = 1, offvalue = 0, variable = self.wantline[0])
+        self.plotoptions.add_checkbutton(label = "Error bars", onvalue = 1, offvalue = 0, variable = self.wanterror[0])
+        self.plotoptions.add_checkbutton(label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit[0] )
+        self.plotoptions.add_checkbutton(label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction[0])
+
         self.abc.pop(self.selecteddataset)
         self.erabc.pop(self.selecteddataset)
         self.ord.pop(self.selecteddataset)
         self.erord.pop(self.selecteddataset)
-        
+
         # Criar as variáveis respetivas à escolha de cores para cada plot
         self.markercolorvar.pop(self.selecteddataset)
         self.linecolorvar.pop(self.selecteddataset)
         self.errorcolorvar.pop(self.selecteddataset)
         self.funcfitcolorvar.pop(self.selecteddataset)
         self.funcplotcolorvar.pop(self.selecteddataset)
-        
+
         self.markeroptiontranslater.pop(self.selecteddataset)
         self.lineoptiontranslater.pop(self.selecteddataset)
         self.funcfitoptiontranslater.pop(self.selecteddataset)
         self.funcplotoptiontranslater.pop(self.selecteddataset)
-        
+
         self.linewidth.pop(self.selecteddataset)
         self.markersize.pop(self.selecteddataset)
         self.errorwidth.pop(self.selecteddataset)
         self.funcfitwidth.pop(self.selecteddataset)
         self.funcplotwidth.pop(self.selecteddataset)
-        
+
         self.menubar.delete("Plot Datasets")
-        
+
         self.datasetstoplot = tk.Menu(self.menubar)
         self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
-        
+
         self.datasetstoplotvar.pop(self.selecteddataset)
-        
+
         self.selecteddataset = 0
         self.currentselection = 1
-                
+
         self.datalistvariable.set("dataset 1")
-                
+
         self.datasetselector.destroy()
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
         self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
-               
+
         for x in range(self.numberdatasets):
-            self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(x+1), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[x] ) 
+            self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(x+1), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[x] )
             self.datasetstoplotvar[x].set(self.datasetstoplotvar[x].get())
-        
+
         self.update_databox("remove")
 
     def check_databox(self):
@@ -1911,7 +1917,7 @@ class MainWindow(tk.Frame):
             if (self.datasettext[x].replace(' ','') == '' and self.datasetstoplotvar[x].get()):
                 self.secondary_window('ERROR', 'Dataset {} is empty. Insert your data or remove it.'.format(x+1))
                 return False
-        
+
         for x in range(len(self.datasettext)):
             split = self.datasettext[x].split("\n")
             for i in range(len(split)):
@@ -1921,14 +1927,14 @@ class MainWindow(tk.Frame):
                      self.secondary_window('ERROR', 'Dataset {} has at least one point with an incorrect number of columns. Correct it.'.format(x+1))
                      self.wantfit[self.selecteddataset].set(0)
                      return False
-                
+
         for x in range(len(self.datasettext)):
             split=[]
             split = self.datasettext[x].split("\n")
             for i in range(len(split)):
                 ponto = split[i].split(' ')
                 ponto = [p for p in ponto if p]
-                
+
                 for k in ponto:
                     try:
                         float(k)
@@ -1937,7 +1943,7 @@ class MainWindow(tk.Frame):
                         self.wantfit[self.selecteddataset].set(0)
                         return False
         return True
-    
+
     def update_databox(self, event):
 
         # Guardar o atual na cena
@@ -1961,9 +1967,6 @@ class MainWindow(tk.Frame):
         self.selecteddataset = select-1
         self.update_parameter()
 
-        # Corrigir as opções e cores
-        print(self.plotoptions)
-                
         self.plotoptions.delete(0,tk.END)
         self.plotoptions.add_checkbutton(label = "Plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints[self.selecteddataset])
         self.plotoptions.add_checkbutton(label = "Connect points", onvalue = 1, offvalue = 0, variable = self.wantline[self.selecteddataset])
@@ -1974,15 +1977,15 @@ class MainWindow(tk.Frame):
 
         self.subframeleft2.destroy()
         self.dataentry.destroy()
-        
+
         self.subframeleft2 = tk.Frame(self.frameleft, bg='#E4E4E4')
         self.subframeleft2.place(in_ = self.frameleft, relwidth = 1, relheight= 0.38, relx=0, rely=0.55)
-        
+
         # Criação da caixa de texto com a informaçao respetiva
         self.dataentry = (ScrolledText(self.subframeleft2))
         self.dataentry.pack(expand = 1, fill = tk.X)
         self.dataentry.insert(tk.INSERT,self.datasettext[select-1])
-        
+
         # Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
         # ao dataset selecionado
         self.markersizescale.destroy()
@@ -1990,34 +1993,34 @@ class MainWindow(tk.Frame):
         self.errorsizescale.destroy()
         self.funcfitwidthscale.destroy()
         self.funcplotwidthscale.destroy()
-        
+
         self.markersizecombo.destroy()
         self.linestylecombo.destroy()
         self.funcfitstylecombo.destroy()
         self.funcplotstylecombo.destroy()
-        
+
         self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
-        
+
         self.funcfitstylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.funcfitoption)
-        
+
         self.funcplotstylecombo = ttk.Combobox(self.subframeright3, values=[
             'Solid', 'Dashed', 'Dotted'], textvariable = self.funcplotoption)
-        
+
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
             'Triangle', 'Square', 'Circle'], textvariable = self.markeroption )
 
         if(self.markeroptiontranslater[self.selecteddataset] == 'o'):
             self.markersizecombo.current(2)
-            self.markeroption.set('Circle')       
+            self.markeroption.set('Circle')
         if(self.markeroptiontranslater[self.selecteddataset] == 's'):
             self.markersizecombo.current(1)
             self.markeroption.set('Square')
         if(self.markeroptiontranslater[self.selecteddataset] == '^'):
             self.markersizecombo.current(0)
             self.markeroption.set('Triangle')
-            
+
         if(self.lineoptiontranslater[self.selecteddataset] == '-'):
             self.linestylecombo.current(0)
             self.lineoption.set('Solid')
@@ -2027,7 +2030,7 @@ class MainWindow(tk.Frame):
         if(self.lineoptiontranslater[self.selecteddataset] == ':'):
             self.linestylecombo.current(2)
             self.lineoption.set('Dotted')
-        
+
         if(self.funcfitoptiontranslater[self.selecteddataset] == '-'):
             self.funcfitstylecombo.current(0)
             self.funcfitoption.set('Solid')
@@ -2037,7 +2040,7 @@ class MainWindow(tk.Frame):
         if(self.funcfitoptiontranslater[self.selecteddataset] == ':'):
             self.funcfitstylecombo.current(2)
             self.funcfitoption.set('Dotted')
-        
+
         if(self.funcplotoptiontranslater[self.selecteddataset] == '-'):
             self.funcplotstylecombo.current(0)
             self.funcplotoption.set('Solid')
@@ -2047,13 +2050,13 @@ class MainWindow(tk.Frame):
         if(self.funcplotoptiontranslater[self.selecteddataset] == ':'):
             self.funcplotstylecombo.current(2)
             self.funcplotoption.set('Dotted')
-        
+
         self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.64, relheight=0.05)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
 
         self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.57, relheight=0.05)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
-        
+
         self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.71, relheight=0.05)
         self.funcplotstylecombo.bind("<<ComboboxSelected>>", self.funcplotselector)
 
@@ -2076,7 +2079,7 @@ class MainWindow(tk.Frame):
         self.funcfitwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.funcfitslider,showvalue =False, variable = self.funcfitwidth[self.selecteddataset])
         self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.815)
         self.funcfitwidthscale['width'] = 0.025*self.master.winfo_width()
-        
+
         self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.errorslider, showvalue = False, variable = self.errorwidth[self.selecteddataset])
         self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.895)
         self.errorsizescale['width'] = 0.025*self.master.winfo_width()
@@ -2086,14 +2089,14 @@ class MainWindow(tk.Frame):
         self.linescalelabelvalue['text'] = self.linewidth[self.selecteddataset].get()
         self.funcfitscalelabelvalue['text'] = self.funcfitwidth[self.selecteddataset].get()
         self.funcplotscalelabelvalue['text'] = self.funcplotwidth[self.selecteddataset].get()
-        
+
         if(self.countplots == 0):
             self.linewidthscale['state'] = tk.DISABLED
             self.markersizescale['state'] = tk.DISABLED
             self.errorsizescale['state'] = tk.DISABLED
             self.funcfitwidthscale['state'] = tk.DISABLED
             self.funcplotwidthscale['state'] = tk.DISABLED
-            
+
     def secondary_window(self, title, message):
 
         new_window = tk.Toplevel(self.master)
@@ -2105,7 +2108,7 @@ class MainWindow(tk.Frame):
         # Criar as imagens do warning, 2 canvas porque uma de cada lado
         canvas1 = tk.Canvas(new_window, bg='#E4E4E4')
         canvas2 = tk.Canvas(new_window, bg='#E4E4E4')
-        
+
         size = 50
         # Criação da imagem per se
         img_src = Image.open(resource_path('img/Warning.png'))
@@ -2124,7 +2127,7 @@ class MainWindow(tk.Frame):
         warning = tk.Label(new_window, text=message, wraplength=250)
         warning["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
         warning.configure(background='#E4E4E4')
-        
+
         canvas1.place(relx=.1, rely=.5, anchor="c")
         warning.place(relx=.5, rely=.5, anchor="c")
         canvas2.place(relx=.9, rely=.5, anchor="c")
@@ -2144,11 +2147,11 @@ class MainWindow(tk.Frame):
     def plot_fittedfunction(self):
         self.xfittedfunc=[[] for function in self.functions]
         self.yfittedfunc=[[] for function in self.functions]
-                
+
         x_max  = float(self.xaxismaxentry.get().replace(' ',''))
         x_min  = float(self.xaxisminentry.get().replace(' ',''))
         amp = x_max - x_min
-        
+
         for i in range(len(self.functions)):
             B = self.fit_params[i]
             expr = self.clean_functions[i]
@@ -2156,9 +2159,9 @@ class MainWindow(tk.Frame):
                 _x = x_min + j*amp/9999
                 self.xfittedfunc[i].append(_x)
                 self.yfittedfunc[i].append(eval(expr))
-        
-    def plot_function(self):     
-        
+
+    def plot_function(self):
+
         parsed_input = parser(self.functionentry.get(),
                               self.parameterentry.get(),
                               self.independententry.get())
@@ -2168,9 +2171,9 @@ class MainWindow(tk.Frame):
             self.secondary_window('ERROR', parsed_input[1])
             self.wantfunction[self.selecteddataset].set(0)
             return parsed_input
-        
+
         B = []
-        
+
         for i in range(len(self.plotparamboxes)):
              paramboxes = self.plotparamboxes[i].get()
              paramboxes = paramboxes.replace(' ', '')
@@ -2185,25 +2188,25 @@ class MainWindow(tk.Frame):
                  self.wantfunction[self.selecteddataset].set(0)
                  return False
              B.append(float(paramboxes))
-        
+
         x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
         x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
         amp = x_max - x_min
-                        
+
         self.x_func[self.selecteddataset] = _x = [x_min + i*amp/9999 for i in range(10000)]
-        
+
         for i in range(10000):
             self.y_func[self.selecteddataset].append(eval(expr.replace('_x','_x[i]')))
-        
+
         self.wantfunction[self.selecteddataset].set(1)
         self.plot_dataset()
-        
+
     def plot_dataset(self):
-        
+
         # Testar se os limites estão bem definidos. Se não estiverem podemos saltar isto tudo
         info_x = [(self.xaxismaxentry, 'Max value of x'), (self.xaxisminentry, 'Min value of x'), (self.xaxistickspentry, 'X axis tick spacing')]
         info_y = [(self.yaxismaxentry, 'Max value of y'), (self.yaxisminentry, 'Min value of y'), (self.yaxistickspentry, 'Y axis tick spacing')]
-                
+
         if not self.autoscalex.get():
             for var in info_x:
                 try:
@@ -2230,7 +2233,7 @@ class MainWindow(tk.Frame):
             if n_ticks > 100:
                 self.secondary_window('ERROR','Having {} ticks will make your plot unreabable. Adjust X tick spacing.'.format(n_ticks))
                 return False
-        
+
         if not self.autoscaley.get():
             for var in info_y:
                 try:
@@ -2256,18 +2259,18 @@ class MainWindow(tk.Frame):
             if n_ticks > 100:
                 self.secondary_window('ERROR','Having {} ticks will make your plot unreabable. Adjust Y tick spacing.'.format(n_ticks))
                 return False
-        
-        
+
+
         # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo.
         select = int(self.datalistvariable.get()[-1])
         self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
-        
+
         if not self.check_databox():
             return False
-        
+
         # pôr os dados em plot=true
         self.datasetstoplotvar[select-1].set(1)
-                
+
         if(self.countplots == 0):
             self.linewidthscale['state'] = tk.NORMAL
             self.markersizescale['state'] = tk.NORMAL
@@ -2275,9 +2278,9 @@ class MainWindow(tk.Frame):
             self.funcfitwidthscale['state'] = tk.NORMAL
             self.funcplotwidthscale['state'] = tk.NORMAL
             self.countplots = 1
-        
+
         for x in range(self.numberdatasets):
-            if(self.datasetstoplotvar[x].get() == 1 ):
+            if self.datasetstoplotvar[x].get():
                 self.abcissas[x] = []
                 self.erabcissas[x] = []
                 self.ordenadas[x] = []
@@ -2296,7 +2299,7 @@ class MainWindow(tk.Frame):
                         self.erabcissas[x].append(data_sets[0][i][1])
                         self.ordenadas[x].append(data_sets[0][i][2])
                         self.erordenadas[x].append(data_sets[0][i][3])
-            
+
                     if len(data_sets[0][i]) == 3:
                         self.abcissas[x].append(data_sets[0][i][0])
                         self.erabcissas[x].append(0)
@@ -2309,24 +2312,10 @@ class MainWindow(tk.Frame):
                 self.erord[x] = np.array(self.erordenadas[x])
 
         self.fig = Figure(figsize=(10,10))
-        
-        # dataforfit = []
-        # for x in range(self.numberdatasets):
-        #     if(self.datasetstoplotvar[x].get() == 1):
-        #         self.datastring = self.datasettext[x]
-        #         data = StringIO(self.datastring)
-        #         data_sets = read_file(data, float, False, 0)
-                
-        #         dataforfit.append(data_sets)
-                
-        #     a=[]
-        #     for h in range(len(dataforfit)):
-        #         for i in range(len(dataforfit[h][0])):
-        #             a.append(dataforfit[h][0][i])
-        
+
         dataforfit = []
         for x in range(self.numberdatasets):
-            if(self.datasetstoplotvar[x].get() == 1):
+            if self.datasetstoplotvar[x].get():
                 self.datastring = self.datasettext[x]
                 data = StringIO(self.datastring)
                 data_sets = read_file(data, float, False, 0)
@@ -2340,52 +2329,76 @@ class MainWindow(tk.Frame):
             allabc = []
             for x in range(len(a)):
                 allabc.append(a[x][0])
-        
+
             minabc = min(allabc)
             maxabc = max(allabc)
+
+            min_indexes = []
+            max_indexes = []
+            for point in a:
+                if point[0] == minabc and len(point)==4:
+                    min_indexes.append(point[1])
+                if point[0] == maxabc and len(point)==4:
+                    max_indexes.append(point[1])
+
+            maxabc += max(max_indexes)
+            minabc -= max(min_indexes)
+
             amp = maxabc - minabc
-            maxabc = maxabc + 0.05*amp
-            minabc = minabc - 0.05*amp
-            
+
+            maxabc += 0.05*amp
+            minabc -= 0.05*amp
+
             self.xaxismaxentry.delete(0, 'end')
             self.xaxisminentry.delete(0, 'end')
-            
+
             self.xaxismaxentry.insert(0, "{0:.2e}".format(maxabc))
             self.xaxisminentry.insert(0, "{0:.2e}".format(minabc))
-            
+
             self.xaxistickspentry.delete(0,'end')
             self.xaxistickspentry.insert(0, "{0:.2e}".format(amp/10))
-            
+
             self.autoscalex.set(1)
-            
-            
-        if(self.autoscaley.get() == 1):
+
+
+        if self.autoscaley.get():
             allord = []
             for x in range(len(a)):
                 allord.append(a[x][-2])
                 allord.append(a[x][-2])
-            
-            # FAZER AQUI A CORREÇÃO PARA INCLUIR AS INCERTEZAS
+
             minord = min(allord)
             maxord = max(allord)
+
+            min_indexes = []
+            max_indexes = []
+            for point in a:
+                if point[-2] == minord:
+                    min_indexes.append(point[-1])
+                if point[-2] == maxord:
+                    max_indexes.append(point[-1])
+
+            minord -= max(min_indexes)
+            maxord += max(max_indexes)
+
             amp = maxord - minord
-            maxord = maxord + 0.05*amp
-            minord = minord - 0.05*amp
-            
+            maxord += 0.05*amp
+            minord -= 0.05*amp
+
             self.yaxismaxentry.delete(0, 'end')
             self.yaxisminentry.delete(0, 'end')
-            
+
             self.yaxismaxentry.insert(0, "{0:.2e}".format(maxord))
             self.yaxisminentry.insert(0, "{0:.2e}".format(minord))
-            
+
             self.yaxistickspentry.delete(0,'end')
             self.yaxistickspentry.insert(0, "{0:.2e}".format(amp/10))
-            
+
             self.autoscaley.set(1)
-        
+
         x_ticks = []
         y_ticks = []
-        
+
         x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
         x_min  = float(self.xaxisminentry.get().replace(',','.').replace(' ',''))
         x_space = float(self.xaxistickspentry.get().replace(',','.').replace(' ',''))
@@ -2395,38 +2408,47 @@ class MainWindow(tk.Frame):
 
         xticknumber = 1+int((x_max-x_min)/x_space)
         yticknumber = 1+int((y_max-y_min)/y_space)
-        
+
         for x in range(xticknumber):
             x_ticks.append(x*x_space + x_min)
 
         for x in range(yticknumber):
             y_ticks.append(x*y_space + y_min)
-        
+
         self.a = self.fig.add_subplot(111 ,projection = None,
                                  xlim = (x_min,x_max), ylim = (y_min, y_max),
-                                 xticks = x_ticks, yticks = y_ticks, 
+                                 xticks = x_ticks, yticks = y_ticks,
                                  ylabel = self.yaxistitleentry.get(), xlabel = self.xaxistitleentry.get())
-        
+
         self.subframeleft1.destroy()
         self.subframeleft1=tk.Frame(self.frameleft, bg='#E4E4E4')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
-        
+
         if self.check_databox():
             for i in range(self.numberdatasets):
                 if self.datasetstoplotvar[i].get():
                     if self.wanterror[i].get():
                         self.a.errorbar(self.abc[i], self.ord[i], xerr = self.erabc[i], yerr = self.erord[i], fmt = 'none',zorder = -1,lw=0, ecolor = self.errorcolorvar[i], elinewidth = self.errorwidth[i].get())
                     if self.wantpoints[i].get():
-                        self.a.plot(self.abc[i], self.ord[i], marker = self.markeroptiontranslater[i], color = str(self.markercolorvar[i]), zorder = 1, lw=0, ms=self.markersize[i].get()*2)
+                        if self.data_labels[i]:
+                            self.a.plot(self.abc[i], self.ord[i], label=self.data_labels[i], marker = self.markeroptiontranslater[i], color = str(self.markercolorvar[i]), zorder = 1, lw=0, ms=self.markersize[i].get()*2)
+                        else:
+                            self.a.plot(self.abc[i], self.ord[i], marker = self.markeroptiontranslater[i], color = str(self.markercolorvar[i]), zorder = 1, lw=0, ms=self.markersize[i].get()*2)
                     if self.wantline[i].get():
                         self.a.plot(self.abc[i], self.ord[i], color = self.linecolorvar[i], lw = self.linewidth[i].get(), ls = str(self.lineoptiontranslater[i]))
                     if self.wantfunction[i].get():
-                        self.a.plot(self.x_func[self.selecteddataset], self.y_func[self.selecteddataset], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
+                        if self.plot_labels[i]:
+                            self.a.plot(self.x_func[i], self.y_func[i], label=self.plot_labels[i], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
+                        else:
+                            self.a.plot(self.x_func[i], self.y_func[i], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
                     if self.wantfit[i].get():
                         (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i]) = self.fit_data(dataforfit[i], self.init_values[i], 2000, i)
                         self.plot_fittedfunction()
-                        self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
-                    
+                        if self.fit_labels[i]:
+                            self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], label=self.fit_labels[i], lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
+                        else:
+                            self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], label=self.fit_labels[i], lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
+
                         for x in range (len(self.paramresboxes)):
                             self.paramresboxes[x].config(state = 'normal')
                             self.paramresboxes[x].delete(0, tk.END)
@@ -2436,14 +2458,18 @@ class MainWindow(tk.Frame):
                             self.paramerrboxes[x].delete(0, tk.END)
                             self.paramerrboxes[x].insert(0, '{0:.7e}'.format(self.fit_uncert[self.selecteddataset][x]))
                             self.paramerrboxes[x].config(state = 'readonly')
-                        
+
                         self.chisqentry.config(state = 'normal')
                         self.chisqentry.delete(0, tk.END)
                         self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
                         self.chisqentry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
-        
+
+        if np.any(np.array(self.data_labels)!='') or np.any(np.array(self.plot_labels)!='') or np.any(np.array(self.fit_labels)!=''):
+            self.a.legend()
+
+
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.subframeleft1)
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
@@ -2457,12 +2483,12 @@ class MainWindow(tk.Frame):
         if not process[0]:
             count = 1
             self.boxnumber = 0
-        
+
             self.paramlabel=[]
             self.paramboxes=[]
             self.plotparamlabel = []
             self.plotparamboxes = []
-    
+
             self.paramscrolly.destroy()
             self.anotherframe.destroy()
             self.paramcanvas.destroy()
@@ -2472,18 +2498,18 @@ class MainWindow(tk.Frame):
             self.process_params = process[1]
             clean_split = process[1]
             if (count==2) :
-                
+
                 self.subframeright2.destroy()
-    
+
                 self.subframeright2=tk.Frame(self.frameright, bg='#E4E4E4')
                 self.subframeright2.place(in_ = self.frameright, relwidth=1, relheight=0.2, relx=0, rely=0.25)
-    
+
                 self.boxnumber = len(clean_split)
-    
+
                 self.paramscrolly.destroy()
                 self.anotherframe.destroy()
                 self.paramcanvas.destroy()
-                
+
                 self.paramlabel=[]
                 self.paramboxes=[]
                 self.paramresboxes=[]
@@ -2492,20 +2518,20 @@ class MainWindow(tk.Frame):
                 self.paramerrboxes = []
                 self.plotparamlabel = []
                 self.plotparamboxes = []
-    
+
                 self.boxnumber = len(clean_split)
-                
+
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#E4E4E4')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
-        
+
                 self.anotherframe=tk.Frame(self.paramcanvas, bg='#E4E4E4')
-                
+
                 self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
-    
+
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
                 self.paramcanvas.bind('<Configure>', self.algumacoisa)
-                    
+
                 self.anotherframe.columnconfigure(0, weight = 1)
                 self.anotherframe.columnconfigure(1, weight = 3)
                 self.anotherframe.columnconfigure(2, weight = 1)
@@ -2514,7 +2540,7 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(5, weight = 3)
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
-                
+
                 self.chisqentry.config(state = 'normal')
                 self.chisqentry.delete(0, tk.END)
                 try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
@@ -2545,11 +2571,11 @@ class MainWindow(tk.Frame):
                     self.plotparamlabel[x].grid(column=0, row=x, pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky=tk.W + tk.E)
-                
+
                 self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
 
             if (count == 1):
-    
+
                 self.paramlabel = []
                 self.paramboxes = []
                 self.paramresboxes = []
@@ -2558,32 +2584,32 @@ class MainWindow(tk.Frame):
                 self.paramerrboxes = []
                 self.plotparamlabel = []
                 self.plotparamboxes = []
-    
+
                 self.boxnumber = len(clean_split)
-                
+
                 self.resultlabel = tk.Label(self.subframeright1, text="Results", bg='#E4E4E4')
                 self.resultlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.5)
-                
+
                 self.errorlabel = tk.Label(self.subframeright1, text="Errors", bg='#E4E4E4')
                 self.errorlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.75)
-    
+
                 self.initialguesslabel = tk.Label(self.subframeright1, text="Initial Guess", bg='#E4E4E4')
                 self.initialguesslabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=0.25)
-                
+
                 self.funcplotlabel = tk.Label(self.subframeright1, text="Plot Function", bg='#E4E4E4')
                 self.funcplotlabel.place(rely=0.4, relwidth=0.25, relheight = 0.1, relx=-0.03)
-    
+
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#E4E4E4')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
-                
+
                 self.anotherframe=tk.Frame(self.paramcanvas, bg='#E4E4E4')
-                
+
                 self.paramscrolly = ttk.Scrollbar(self.subframeright2, orient = "vertical", command=self.paramcanvas.yview)
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
-    
+
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
                 self.paramcanvas.bind('<Configure>', self.algumacoisa)
-    
+
                 self.anotherframe.columnconfigure(0, weight = 1)
                 self.anotherframe.columnconfigure(1, weight = 3)
                 self.anotherframe.columnconfigure(2, weight = 1)
@@ -2592,7 +2618,7 @@ class MainWindow(tk.Frame):
                 self.anotherframe.columnconfigure(5, weight = 3)
                 self.anotherframe.columnconfigure(6, weight = 1)
                 self.anotherframe.columnconfigure(7, weight = 3)
-                
+
                 self.chisqentry.config(state = 'normal')
                 self.chisqentry.delete(0, tk.END)
                 try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
@@ -2624,9 +2650,9 @@ class MainWindow(tk.Frame):
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky=tk.W + tk.E)
             count = 2
-            
+
             self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
-            
+
             sep2_plot = ttk.Separator(self.frameright, orient = tk.VERTICAL)
             sep2_plot.place(in_ = self.frameright, relx = 0.24, relheight = 0.245, rely = 0.20)
             sep3_plot = ttk.Separator(self.frameright, orient = tk.HORIZONTAL)
@@ -2637,24 +2663,24 @@ class MainWindow(tk.Frame):
             sep5_plot.place(in_ = self.frameright, relx = 0, relheight = 1, rely = 0)
 
             self.paramcanvas.update()
-    
+
     def algumacoisa(self, event):
         canvas_width = event.width
         self.paramcanvas.itemconfig(self.windows_item, width = canvas_width)
         self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all"))
-        
+
     def update(self):
         "Update the canvas and the scrollregion"
         self.update_idletasks()
         self.paramcanvas.config(scrollregion=self.paramcanvas.bbox(self.windows_item))
-            
+
     def fit_data(self, data, init_params, max_iter, dataset_number):
         """
         Parameters
         ----------
         data : array of array
             Pontos, no formato [[x1,ex1,y1,ey1],[x2,ex2,y2,ey2],...]
-        
+
         init_params: array
             Estimativas iniciais para os valores dos parâmetros
 
@@ -2667,7 +2693,7 @@ class MainWindow(tk.Frame):
         """
         self.dataset_to_fit = dataset_number
         func = odr.Model(self.fit_function)
-        
+
         for i in range(len(self.clean_functions)):
             if self.clean_functions[i] == '':
                 self.secondary_window('ERROR','Fitting function for dataset {} is not defined. Make sure it is compiled without errors.'.format(i+1))
@@ -2677,7 +2703,7 @@ class MainWindow(tk.Frame):
         y_points = []
         x_err    = []
         y_err    = []
-        
+
         # vamos começar por testar se todos os pontos têm as mesmas dimensões, e se não há pontos repetidos
         dims = len(data[0])
         for point in data:
@@ -2692,14 +2718,14 @@ class MainWindow(tk.Frame):
             y_err.append(point[-1])
             if dims == 4:
                 x_err.append(point[1])
-        
+
         if (x_err and np.any(np.array(x_err)==0)):
             self.secondary_window('ERROR','At least one point in dataset {} has a null x uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
             return 0
         if (y_err and np.any(np.array(y_err)==0)):
             self.secondary_window('ERROR','At least one point in dataset {} has a null y uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
             return 0
-            
+
         if (len(data[0])==3):
             fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0]*len(x_points))
         else:
@@ -2708,30 +2734,30 @@ class MainWindow(tk.Frame):
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
         fit.pprint()
-        
+
         return (fit.beta, fit.sd_beta, fit.res_var)
-        
+
     def fit_function(self, B, _x):
         return eval(self.clean_functions[self.dataset_to_fit])
 
     def open_file(self):
-        
+
         self.import_window.destroy()
-        
+
         # Isto ainda não faz nada, preciso de compreender melhor o programa
         file = tk.filedialog.askopenfilename()
-        
+
         if(self.samex.get() == 1):
             new_data = read_file(file,str,True,0)
-        
+
         if(self.difx.get() == 1 and self.difxerror.get()== 0):
             new_data = read_file(file,str,True,1)
-        
+
         if(self.difxerror.get() == 1 and self.difx.get() == 1 and self.samex.get() == 0):
             new_data = read_file(file,str,True,2)
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
-        
+
 root = tk.Tk()
 app = MainWindow(master=root)
 app.mainloop()
