@@ -817,6 +817,9 @@ class MainWindow(tk.Frame):
         self.plot_labels = ['']
         self.fit_labels = ['']
 
+        # Definir um array para armazenar os textos para mostrar no plot
+        self.plot_text = ['']
+
         # Definimos as funções, variáveis e afins
         self.indeps = ['x']
         self.params = ['a,b']
@@ -917,7 +920,7 @@ class MainWindow(tk.Frame):
                                      bg='#F21112',
                                      activebackground='white',
                                      activeforeground='#F21112')
-        self.import_data.place(relwidth=0.23, relheight=1,relx = 0.1)
+        self.import_data.place(relwidth=0.23, relheight=1,relx = 0.05)
         self.import_data["command"] = self.import_window
 
         self.add_labels = tk.Button(self.databuttonframe,
@@ -926,17 +929,27 @@ class MainWindow(tk.Frame):
                                     bg='#F21112',
                                     activebackground='white',
                                     activeforeground='#F21112')
-        self.add_labels.place(relwidth=0.2, relheight=1, relx=0.4)
+        self.add_labels.place(relwidth=0.2, relheight=1, relx=0.33)
         self.add_labels["command"] = self.labels
 
-        # Botão para exportar como latex
-        self.export_latex = tk.Button(self.databuttonframe,
-                                  text="LaTeX-ify",
+        # Botão para adicionar entradas de texto
+        self.add_text = tk.Button(self.databuttonframe,
+                                  text='SET TEXT',
                                   fg='white',
                                   bg='#F21112',
                                   activebackground='white',
                                   activeforeground='#F21112')
-        self.export_latex.place(relwidth=0.23, relheight=1, relx= 0.67)
+        self.add_text.place(relwidth=0.16, relheight=1, relx=0.58)
+        self.add_text["command"] = self.text
+
+        # Botão para exportar como latex
+        self.export_latex = tk.Button(self.databuttonframe,
+                                      text="LaTeX-ify",
+                                      fg='white',
+                                      bg='#F21112',
+                                      activebackground='white',
+                                      activeforeground='#F21112')
+        self.export_latex.place(relwidth=0.16, relheight=1, relx=0.79)
         self.export_latex["command"] = self.latexify
 
         #Criação do botão ligado à funçao que adiciona mais um dataset
@@ -979,7 +992,8 @@ class MainWindow(tk.Frame):
                   self.fitbutton,
                   self.export_latex,
                   self.removedatasetbutton,
-                  self.add_labels
+                  self.add_labels,
+                  self.add_text
                   ]
 
         for button in self.buttons:
@@ -1394,8 +1408,81 @@ class MainWindow(tk.Frame):
 
         self.plot_dataset()
 
-    def labels(self):
+    def text(self):
+        try:
+            self.text_window.destroy()
+        except:
+            pass
+        self.text_window = tk.Toplevel(self.master)
+        self.text_window.title('Add Text')
+        self.text_window.geometry('600x300')
+        self.text_window.configure(background='#E4E4E4')
+        self.text_window.resizable(False,False)
 
+        canvas = tk.Canvas(master=self.text_window,bg='#E4E4E4',highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self.text_window,orient='vertical',command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas,bg='#E4E4E4')
+        scrollable_frame.bind(
+            '<Configure>',
+            lambda e: canvas.configure(scrollregion=(0,0,600,250))
+        )
+        canvas.create_window((0,0), window=scrollable_frame, anchor='nw')
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side='left')
+        scrollbar.pack(side='right',fill='y')
+
+        self.text_entries = []
+
+        pos = tk.Label(scrollable_frame, text='X and Y positions must be set in plot coordinates.',bg='#E4E4E4')
+        pos["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
+        pos.pack(side='top')
+
+        for i in range(len(self.plot_text)):
+            frame = tk.Frame(scrollable_frame,bg='#E4E4E4')
+            self.text_entries.append(tk.Entry(frame,width=50))
+
+            label = tk.Label(frame, text='Text %d' % (i+1),bg='#E4E4E4')
+            label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            self.text_entries[i].insert(0,self.plot_text[i])
+
+            remove = tk.Button(frame,
+                               text='REMOVE',
+                               fg='white',
+                               bg='#F21112',
+                               activebackground='white',
+                               activeforeground='#F21112')
+            remove["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            # Alterar as cores quando entra e sai
+            remove.bind("<Enter>", func=lambda e: remove.config(bg='white',fg='#F21112'))
+            remove.bind("<Leave>", func=lambda e: remove.config(bg='#F21112',fg='white'))
+
+
+            label.pack(side='left')
+            self.text_entries[i].pack(side='left')
+            remove.pack(side='left',padx=10)
+            frame.pack(side='top',pady=10)
+
+         # Colocação do botão para salvar as legendas
+        save_button = tk.Button(scrollable_frame,
+                                text="SAVE",
+                                fg='white',
+                                bg='#F21112',
+                                activebackground='white',
+                                activeforeground='#F21112')
+        save_button["command"] = self.save_text
+        save_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        # Alterar as cores quando entra e sai
+        save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
+        save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
+        save_button.pack(side='bottom')
+
+    def save_text(self):
+        for i in range(len(self.text_entries)):
+            self.plot_text[i] = self.text_entries[i].get()
+        self.labels_window.destroy()
+
+    def labels(self):
         try:
             self.labels_window.destroy()
         except:
