@@ -1424,15 +1424,18 @@ class MainWindow(tk.Frame):
         scrollable_frame = tk.Frame(canvas,bg='#E4E4E4')
         scrollable_frame.bind(
             '<Configure>',
-            lambda e: canvas.configure(scrollregion=(0,0,600,250))
+            lambda e: canvas.configure(scrollregion=canvas.bbox('all'))
         )
         canvas.create_window((0,0), window=scrollable_frame, anchor='nw')
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        canvas.pack(side='left')
+        canvas.pack(side='left',fill='x',expand=True)
         scrollbar.pack(side='right',fill='y')
 
         self.text_entries = []
+        self.x_entries = []
+        self.y_entries = []
+        self.remove_buttons = []
 
         pos = tk.Label(scrollable_frame, text='X and Y positions must be set in plot coordinates.',bg='#E4E4E4')
         pos["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
@@ -1440,11 +1443,23 @@ class MainWindow(tk.Frame):
 
         for i in range(len(self.plot_text)):
             frame = tk.Frame(scrollable_frame,bg='#E4E4E4')
-            self.text_entries.append(tk.Entry(frame,width=50))
+
+            self.text_entries.append(tk.Entry(frame,width=40))
 
             label = tk.Label(frame, text='Text %d' % (i+1),bg='#E4E4E4')
             label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+
             self.text_entries[i].insert(0,self.plot_text[i])
+
+            x_label = tk.Label(frame, text='x', bg='#E4E4E4')
+            x_label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+
+            self.x_entries.append(tk.Entry(frame,width=7))
+
+            y_label = tk.Label(frame, text='y', bg='#E4E4E4')
+            y_label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+
+            self.y_entries.append(tk.Entry(frame,width=7))
 
             remove = tk.Button(frame,
                                text='REMOVE',
@@ -1456,11 +1471,15 @@ class MainWindow(tk.Frame):
             # Alterar as cores quando entra e sai
             remove.bind("<Enter>", func=lambda e: remove.config(bg='white',fg='#F21112'))
             remove.bind("<Leave>", func=lambda e: remove.config(bg='#F21112',fg='white'))
+            self.remove_buttons.append(remove)
 
-
-            label.pack(side='left')
+            label.pack(side='left',padx=5)
             self.text_entries[i].pack(side='left')
-            remove.pack(side='left',padx=10)
+            self.remove_buttons[i].pack(side='left',padx=10)
+            x_label.pack(side='left',padx=5)
+            self.x_entries[i].pack(side='left',padx=5)
+            y_label.pack(side='left',padx=5)
+            self.y_entries[i].pack(side='left',padx=5)
             frame.pack(side='top',pady=10)
 
          # Colocação do botão para salvar as legendas
