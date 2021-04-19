@@ -589,14 +589,6 @@ def read_file(src, out, mode, datatype):
                 x = data[3*i].to_numpy(out)[j]
                 y = data[3*i+1].to_numpy(out)[j]
                 ey = data[3*i+2].to_numpy(out)[j]
-                # Procurar incoerências nas linhas
-                # if (
-                #        (out==float and np.isnan(y)!=np.isnan(ey)) or
-                #        (out==str and y=='nan' and ey!='nan') or
-                #        (out==str and y!='nan'and ey=='nan')
-                #    ):
-                    #return -2
-                # Se a linha estiver vazia não se acrescenta
                 if (
                         not (out==float and np.isnan(x)) and
                         not (out==str and x=='nan') and
@@ -615,15 +607,6 @@ def read_file(src, out, mode, datatype):
                 ex = data[4*i+1].to_numpy(out)[j]
                 y = data[4*i+2].to_numpy(out)[j]
                 ey = data[4*i+3].to_numpy(out)[j]
-                # Procurar incoerências nas linhas
-                #if (
-                #       (out==float and np.isnan(x)!=np.isnan(ex)) or
-                #      (out==str and x!='nan' and ex!='nan') or
-                #     (out==float and np.isnan(y)!=np.isnan(ey)) or
-                #    (out==str and y=='nan' and ey!='nan') or
-                #  (out==str and y!='nan'and ey=='nan')
-                #):
-                    #return -32
                 # Se a linha estiver vazia não se acrescenta
                 if (
                         not (out==float and np.isnan(x) and np.isnan(ex)) and
@@ -787,8 +770,7 @@ class MainWindow(tk.Frame):
         self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
 
     def create_import(self):
-
-        self.secondary_window("SORRY", "Feature still in development...")
+        tk.messagebox.showwarning('SORRY', 'Feature still in development...')
 
         # ISTO AINDA NÃO ESTÁ FUNCIONAL
         # Destruir tudo o que estava na janela
@@ -818,8 +800,9 @@ class MainWindow(tk.Frame):
         self.plot_labels = ['']
         self.fit_labels = ['']
 
-        # Definir um array para armazenar os textos para mostrar no plot
+        # Definir arrays para armazenar texto e as suas posições
         self.plot_text = ['']
+        self.text_pos = [[0,0]]
 
         # Definimos as funções, variáveis e afins
         self.indeps = ['x']
@@ -1074,7 +1057,8 @@ class MainWindow(tk.Frame):
 
         self.help = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label = 'Help', menu = self.help)
-        self.help.add_command(label='Online Documentation', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/docs'))
+        self.help.add_command(label='Documentation', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/docs'))
+        self.help.add_command(label='FAQs', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/faq'))
 
 
         # Criação da zona para inserir a variável independente
@@ -1419,9 +1403,15 @@ class MainWindow(tk.Frame):
             self.text_window.destroy()
         except:
             pass
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
         self.text_window = tk.Toplevel(self.master)
         self.text_window.title('Add Text')
-        self.text_window.geometry('600x300')
+        self.text_window.geometry('600x350')
         self.text_window.configure(background='#E4E4E4')
         self.text_window.resizable(False,False)
 
@@ -1467,29 +1457,34 @@ class MainWindow(tk.Frame):
 
             self.y_entries.append(tk.Entry(frame,width=7))
 
-            remove = tk.Button(frame,
-                               text='REMOVE',
-                               fg='white',
-                               bg='#F21112',
-                               activebackground='white',
-                               activeforeground='#F21112')
-            remove["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            self.remove_buttons.append(tk.Button(frame,
+                                    text='REMOVE %d' % (i+1),
+                                    fg='white',
+                                    bg='#F21112',
+                                    activebackground='white',
+                                    activeforeground='#F21112')
+                                       )
+            self.remove_buttons[i]["command"] = self.remove_text(i)
+            self.remove_buttons[i]["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
             # Alterar as cores quando entra e sai
-            remove.bind("<Enter>", func=lambda e: remove.config(bg='white',fg='#F21112'))
-            remove.bind("<Leave>", func=lambda e: remove.config(bg='#F21112',fg='white'))
-            self.remove_buttons.append(remove)
+            self.remove_buttons[i].bind("<Enter>", hover(self.remove_buttons[i]))
+            self.remove_buttons[i].bind("<Leave>", unhover(self.remove_buttons[i]))
+            # self.remove_buttons[i].bind("<Enter>", func=lambda e: self.remove_buttons[i].config(bg='white',fg='#F21112'))
+            # self.remove_buttons[i].bind("<Leave>", func=lambda e: self.remove_buttons[i].config(bg='#F21112',fg='white'))
 
             label.pack(side='left',padx=5)
             self.text_entries[i].pack(side='left')
-            self.remove_buttons[i].pack(side='left',padx=10)
             x_label.pack(side='left',padx=5)
             self.x_entries[i].pack(side='left',padx=5)
             y_label.pack(side='left',padx=5)
             self.y_entries[i].pack(side='left',padx=5)
+            self.remove_buttons[i].pack(side='left',padx=10)
             frame.pack(side='top',pady=10)
 
          # Colocação do botão para salvar as legendas
-        save_button = tk.Button(scrollable_frame,
+        frame = tk.Frame(scrollable_frame,bg='#E4E4E4')
+
+        save_button = tk.Button(frame,
                                 text="SAVE",
                                 fg='white',
                                 bg='#F21112',
@@ -1500,12 +1495,46 @@ class MainWindow(tk.Frame):
         # Alterar as cores quando entra e sai
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
-        save_button.pack(side='bottom')
+        save_button.pack(side='left',padx=20)
+
+        add_button = tk.Button(frame,
+                               text="ADD TEXT",
+                               fg='white',
+                               bg='#F21112',
+                               activebackground='white',
+                               activeforeground='#F21112')
+        add_button["command"] = self.new_text
+        add_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        add_button.bind("<Enter>", func=lambda e: add_button.config(bg='white',fg='#F21112'))
+        add_button.bind("<Leave>", func=lambda e: add_button.config(bg='#F21112',fg='white'))
+        add_button.pack(side='right',padx=20)
+
+        frame.pack(side='top')
+
+    def remove_text(self, pos):
+        print(pos)
+
+    def new_text(self):
+        self.plot_text.append('')
+        self.text_pos.append([0,0])
+        self.text_window.destroy()
+        self.text()
 
     def save_text(self):
         for i in range(len(self.text_entries)):
+            try:
+                float(self.x_entries[i].get())
+            except:
+                tk.messagebox.showwarning('ERROR', 'Non-numerical input found in X position for text %d.' % (i+1))
+                continue
+            try:
+                float(self.y_entries[i].get())
+            except:
+                tk.messagebox.showwarning('ERROR', 'Non-numerical input found in Y position for text %d.' % (i+1))
+                continue
             self.plot_text[i] = self.text_entries[i].get()
-        self.labels_window.destroy()
+            self.text_pos[i] = [float(self.x_entries[i].get()), float(self.y_entries[i].get())]
+        self.text_window.destroy()
 
     def labels(self):
         try:
@@ -1588,7 +1617,7 @@ class MainWindow(tk.Frame):
         try:
             print(self.fig)
         except:
-            self.secondary_window('ERROR', 'The plot does not yet exist.')
+            tk.messagebox.showwarning('ERROR', 'The plot does not yet exist')
         else:
             file = tk.filedialog.asksaveasfilename(filetypes=(("PNG Image", "*.png"),("All Files", "*.*")),defaultextension='.png')
             if file:
@@ -1669,7 +1698,7 @@ class MainWindow(tk.Frame):
         try:
             print(self.function)
         except:
-            self.secondary_window('ERROR','The function has not been compiled yet! Compile before exporting.')
+            tk.messagebox.showwarning('ERROR', 'The function has not been compiled yet! Compile before exporting.')
             self.export_window.destroy()
             return 0
         if self.function:
@@ -1688,7 +1717,7 @@ class MainWindow(tk.Frame):
             text = math_2_latex(self.functionentry.get(),self.parameterentry.get(),self.independententry.get())
             pyperclip.copy(text)
         else:
-            self.secondary_window('ERROR','The function was compiled with errors! Make sure it compiles correctly before exporting.')
+            tk.messagebox.showwarning('ERROR','The function was compiled with errors! Make sure it compiles correctly before exporting.')
             self.export_window.destroy()
 
     def export_data_samex(self):
@@ -1747,10 +1776,10 @@ class MainWindow(tk.Frame):
                 self.init_values[self.selecteddataset][x] = float(self.paramboxes[x].get())
             except ValueError:
                 if (self.paramboxes[x].get().replace(' ','')==''):
-                    self.secondary_window('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
+                    tk.messagebox.showwarning('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
                     self.wantfit[self.selecteddataset].set(0)
                 else:
-                    self.secondary_window('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
+                    tk.messagebox.showwarning('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
                     self.wantfit[self.selecteddataset].set(0)
                 return False
 
@@ -1932,7 +1961,7 @@ class MainWindow(tk.Frame):
     def remove_dataset(self):
 
         if self.numberdatasets == 1:
-            self.secondary_window('ERROR', 'At least one dataset is needed. Add one before removing this one.')
+            tk.messagebox.showwarning('ERROR', 'At least one dataset is needed. Add one before removing this one.')
             return -1
 
         self.numberdatasets -= 1
@@ -2027,7 +2056,7 @@ class MainWindow(tk.Frame):
     def check_databox(self):
         for x in range(len(self.datasettext)):
             if (self.datasettext[x].replace(' ','') == '' and self.datasetstoplotvar[x].get()):
-                self.secondary_window('ERROR', 'Dataset {} is empty. Insert your data or remove it.'.format(x+1))
+                tk.messagebox.showwarning('ERROR', 'Dataset {} is empty. Insert your data or remove it.'.format(x+1))
                 return False
 
         for x in range(len(self.datasettext)):
@@ -2036,7 +2065,7 @@ class MainWindow(tk.Frame):
                 ponto = split[i].split(' ')
                 ponto = [p for p in ponto if p]
                 if(len(ponto)!= 3 and len(ponto)!= 4 and self.datasetstoplotvar[x].get()):
-                     self.secondary_window('ERROR', 'Dataset {} has at least one point with an incorrect number of columns. Correct it.'.format(x+1))
+                     tk.messagebox.showwarning('ERROR', 'Dataset {} has at least one point with an incorrect number of columns. Correct it.'.format(x+1))
                      self.wantfit[self.selecteddataset].set(0)
                      return False
 
@@ -2051,7 +2080,7 @@ class MainWindow(tk.Frame):
                     try:
                         float(k)
                     except ValueError:
-                        self.secondary_window('ERROR', 'Dataset {} contains non-numerical input. Only numerical input is allowed.'.format(x+1))
+                        tk.messagebox.showwarning('ERROR', 'Dataset {} contains non-numerical input. Only numerical input is allowed.'.format(x+1))
                         self.wantfit[self.selecteddataset].set(0)
                         return False
         return True
@@ -2209,50 +2238,26 @@ class MainWindow(tk.Frame):
             self.funcfitwidthscale['state'] = tk.DISABLED
             self.funcplotwidthscale['state'] = tk.DISABLED
 
-    def secondary_window(self, title, message):
-
-        new_window = tk.Toplevel(self.master)
-        new_window.title(title)
-        new_window.geometry('400x200')
-        new_window.configure(background='#E4E4E4')
-        new_window.resizable(False, False)
-
-        # Criar as imagens do warning, 2 canvas porque uma de cada lado
-        canvas1 = tk.Canvas(new_window, bg='#E4E4E4')
-        canvas2 = tk.Canvas(new_window, bg='#E4E4E4')
-
-        size = 50
-        # Criação da imagem per se
-        img_src = Image.open(resource_path('img/Warning.png'))
-        img_src = img_src.resize((size, size))
-        # Definir a canvas para pôr tudo na tela
-        canvas1.config(width = size, height = size, highlightthickness = 0)
-        canvas2.config(width = size, height = size, highlightthickness = 0)
-        img = ImageTk.PhotoImage(img_src)
-        canvas1.create_image(size/2, size/2, image = img)
-        canvas2.create_image(size/2, size/2, image = img)
-        # Guardar a imagem só porque às vezes o tkinter é chato
-        canvas1.image = img
-        canvas2.image = img
-
-        # Colocação da mensagem de erro
-        warning = tk.Label(new_window, text=message, wraplength=250)
-        warning["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
-        warning.configure(background='#E4E4E4')
-
-        canvas1.place(relx=.1, rely=.5, anchor="c")
-        warning.place(relx=.5, rely=.5, anchor="c")
-        canvas2.place(relx=.9, rely=.5, anchor="c")
-
     def compile_function(self):
         parsed_input = parser(self.functionentry.get(),
                               self.parameterentry.get(),
                               self.independententry.get())
         self.functions[self.selecteddataset] = self.functionentry.get()
+
+        for x in range(len(self.paramboxes)):
+            try:
+                self.init_values[self.selecteddataset][x] = float(self.paramboxes[x].get())
+            except ValueError:
+                if (self.paramboxes[x].get().replace(' ','')==''):
+                    tk.messagebox.showwarning('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
+                    self.wantfit[self.selecteddataset].set(0)
+                else:
+                    tk.messagebox.showwarning('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
+                    self.wantfit[self.selecteddataset].set(0)
         if parsed_input[0]:
             self.clean_functions[self.selecteddataset] = parsed_input[1]
         else:
-            self.secondary_window('ERROR', parsed_input[1])
+            tk.messagebox.showwarning('ERROR', parsed_input[1])
             self.clean_functions[self.selecteddataset] = ''
 
     # Função para plottar a funçao com parametros numericos dados pelo utilizador
@@ -2280,7 +2285,7 @@ class MainWindow(tk.Frame):
         if parsed_input[0]:
             expr = parsed_input[1]
         else:
-            self.secondary_window('ERROR', parsed_input[1])
+            tk.messagebox.showwarning('ERROR', parsed_input[1])
             self.wantfunction[self.selecteddataset].set(0)
             return parsed_input
 
@@ -2290,13 +2295,13 @@ class MainWindow(tk.Frame):
              paramboxes = self.plotparamboxes[i].get()
              paramboxes = paramboxes.replace(' ', '')
              if(paramboxes == ''):
-                 self.secondary_window('ERROR', 'No parameter values were provided for plot.')
+                 tk.messagebox.showwarning('ERROR', 'No parameter values were provided for plot.')
                  self.wantfunction[self.selecteddataset].set(0)
                  return False
              try:
                  float(paramboxes)
              except ValueError:
-                 self.secondary_window('ERROR', 'A non-numerical parameter value was detected. Only numerical values are allowed.')
+                 tk.messagebox.showwarning('ERROR', 'A non-numerical parameter value was detected. Only numerical values are allowed.')
                  self.wantfunction[self.selecteddataset].set(0)
                  return False
              B.append(float(paramboxes))
@@ -2325,17 +2330,17 @@ class MainWindow(tk.Frame):
                     float(var[0].get().replace(',','.').replace(' ',''))
                 except ValueError:
                     if var[0].get().replace(' ','')=='':
-                        self.secondary_window('ERROR', var[1]+' contains no input.')
+                        tk.messagebox.showwarning('ERROR', var[1]+' contains no input.')
                     else:
-                        self.secondary_window('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
+                        tk.messagebox.showwarning('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
                     return False
             # Ver ainda se não temos os max menores que os min
             if float(self.xaxismaxentry.get().replace(',','.').replace(' ','')) <= float(self.xaxisminentry.get().replace(',','.').replace(' ','')):
-                self.secondary_window('ERROR', 'Upper limit for X axis is not greater that lower limit.')
+                tk.messagebox.showwarning('ERROR', 'Upper limit for X axis is not greater that lower limit.')
                 return False
             # E se os espaçamentos dos ticks são positivos
             if float(self.xaxistickspentry.get().replace(',','.').replace(' ','')) <= 0:
-                self.secondary_window('ERROR', 'Tick spacing must be a positive non-zero number.')
+                tk.messagebox.showwarning('ERROR', 'Tick spacing must be a positive non-zero number.')
                 return False
             # E se não estamos com demasiados ticks
             x_max  = float(self.xaxismaxentry.get().replace(',','.').replace(' ',''))
@@ -2343,7 +2348,7 @@ class MainWindow(tk.Frame):
             amp = x_max - x_min
             n_ticks = int(amp/float(self.xaxistickspentry.get().replace(',','.').replace(' ','')))
             if n_ticks > 100:
-                self.secondary_window('ERROR','Having {} ticks will make your plot unreabable. Adjust X tick spacing.'.format(n_ticks))
+                tk.messagebox.showwarning('ERROR','Having {} ticks will make your plot unreabable. Adjust X tick spacing.'.format(n_ticks))
                 return False
 
         if not self.autoscaley.get():
@@ -2352,24 +2357,24 @@ class MainWindow(tk.Frame):
                     float(var[0].get().replace(',','.').replace(' ',''))
                 except ValueError:
                     if var[0].get().replace(' ','')=='':
-                        self.secondary_window('ERROR', var[1]+' contains no input.')
+                        tk.messagebox.showwarning('ERROR', var[1]+' contains no input.')
                     else:
-                        self.secondary_window('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
+                        tk.messagebox.showwarning('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
                     return False
             # Ver ainda se não temos os max menores que os min
             if float(self.yaxismaxentry.get().replace(',','.').replace(' ','')) <= float(self.yaxisminentry.get().replace(',','.').replace(' ','')):
-                self.secondary_window('ERROR', 'Upper limit for Y axis is not greater that lower limit.')
+                tk.messagebox.showwarning('ERROR', 'Upper limit for Y axis is not greater that lower limit.')
                 return False
             # E se os espaçamentos dos ticks são positivos
             if float(self.yaxistickspentry.get().replace(',','.').replace(' ','')) <= 0:
-                self.secondary_window('ERROR', 'Tick spacing must be a positive non-zero number.')
+                tk.messagebox.showwarning('ERROR', 'Tick spacing must be a positive non-zero number.')
                 return False
             y_max  = float(self.yaxismaxentry.get().replace(',','.').replace(' ',''))
             y_min  = float(self.yaxisminentry.get().replace(',','.').replace(' ',''))
             amp = y_max - y_min
             n_ticks = int(amp/float(self.yaxistickspentry.get().replace(',','.').replace(' ','')))
             if n_ticks > 100:
-                self.secondary_window('ERROR','Having {} ticks will make your plot unreabable. Adjust Y tick spacing.'.format(n_ticks))
+                tk.messagebox.showwarning('ERROR','Having {} ticks will make your plot unreabable. Adjust Y tick spacing.'.format(n_ticks))
                 return False
 
 
@@ -2401,7 +2406,7 @@ class MainWindow(tk.Frame):
                 data = StringIO(self.datastring)
                 data_sets = read_file(data, float, False, 0)
                 if data_sets == -2:
-                    self.secondary_window('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
+                    tk.messagebox.showwarning('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
                     self.datasettext[select-1] = ""
                     self.datasetring = ""
                     return False
@@ -2578,6 +2583,10 @@ class MainWindow(tk.Frame):
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
 
+        # Escrever os textos no gráfico
+        for i in range(len(self.plot_text)):
+            self.a.text(self.text_pos[i][0],self.text_pos[i][1],self.plot_text[i],fontsize='x-large')
+
         if np.any(np.array(self.data_labels)!='') or np.any(np.array(self.plot_labels)!='') or np.any(np.array(self.fit_labels)!=''):
             self.a.legend()
 
@@ -2591,6 +2600,22 @@ class MainWindow(tk.Frame):
         global count
         self.params[self.selecteddataset] = self.parameterentry.get()
         self.indeps[self.selecteddataset] = self.independententry.get()
+        try:
+            print(self.paramboxes)
+        except:
+            pass
+        else:
+            for x in range(len(self.paramboxes)):
+                try:
+                    self.init_values[self.selecteddataset][x] = float(self.paramboxes[x].get())
+                except ValueError:
+                    if (self.paramboxes[x].get().replace(' ','')==''):
+                        tk.messagebox.showwarning('ERROR','Empty input found in initial guesses. Provide an initial guess for every parameter.')
+                        self.wantfit[self.selecteddataset].set(0)
+                    else:
+                        tk.messagebox.showwarning('ERROR','Non-numerical input found in initial guesses. Only numerical input allowed.')
+                        self.wantfit[self.selecteddataset].set(0)
+
         process = process_params(self.parameterentry.get(), self.independententry.get())
         if not process[0]:
             count = 1
@@ -2605,7 +2630,7 @@ class MainWindow(tk.Frame):
             self.anotherframe.destroy()
             self.paramcanvas.destroy()
             self.initialguesslabel.destroy()
-            self.secondary_window('ERROR', process[1])
+            tk.messagebox.showwarning('ERROR', process[1])
         else:
             self.process_params = process[1]
             clean_split = process[1]
@@ -2808,7 +2833,7 @@ class MainWindow(tk.Frame):
 
         for i in range(len(self.clean_functions)):
             if self.clean_functions[i] == '':
-                self.secondary_window('ERROR','Fitting function for dataset {} is not defined. Make sure it is compiled without errors.'.format(i+1))
+                tk.messagebox.showwarning('ERROR','Fitting function for dataset {} is not defined. Make sure it is compiled without errors.'.format(i+1))
                 return 0
 
         x_points = []
@@ -2820,10 +2845,10 @@ class MainWindow(tk.Frame):
         dims = len(data[0])
         for point in data:
             if len(point)!=dims:
-                self.secondary_window('ERROR','There are points with x uncertainty and points without. All points need to match before a fit can be done.')
+                tk.messagebox.showwarning('ERROR','There are points with x uncertainty and points without. All points need to match before a fit can be done.')
                 return False
             if point[0] in x_points:
-                self.secondary_window('ERROR','There are repeated points. Remove them before fitting.')
+                tk.messagebox.showwarning('ERROR','There are repeated points. Remove them before fitting.')
                 return False
             x_points.append(point[0])
             y_points.append(point[-2])
@@ -2832,10 +2857,10 @@ class MainWindow(tk.Frame):
                 x_err.append(point[1])
 
         if (x_err and np.any(np.array(x_err)==0)):
-            self.secondary_window('ERROR','At least one point in dataset {} has a null x uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
+            tk.messagebox.showwarning('ERROR','At least one point in dataset {} has a null x uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
             return 0
         if (y_err and np.any(np.array(y_err)==0)):
-            self.secondary_window('ERROR','At least one point in dataset {} has a null y uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
+            tk.messagebox.showwarning('ERROR','At least one point in dataset {} has a null y uncertainty. It is not possible to fit data with null uncertainty.'.format(self.currentselection))
             return 0
 
         if (len(data[0])==3):
