@@ -20,6 +20,7 @@ from scipy import odr
 from tkinter import colorchooser
 import pyperclip
 import sys, os
+import webbrowser
 
 def resource_path(relative_path):
     """ Get the absolute path to the resource, works for dev and for PyInstaller """
@@ -1070,6 +1071,11 @@ class MainWindow(tk.Frame):
         self.datasetstoplotvar[0].set(1)
 
         self.datasetstoplot.add_checkbutton(label = "Plot Dataset 1", onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[0] )
+
+        self.help = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label = 'Help', menu = self.help)
+        self.help.add_command(label='Online Documentation', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/docs'))
+
 
         # Criação da zona para inserir a variável independente
         self.independentlabel = tk.Label(self.subframeright1,text="Independent Var", bg='#E4E4E4')
