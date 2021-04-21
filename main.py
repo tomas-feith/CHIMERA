@@ -27,7 +27,10 @@ def check_version():
 
     current_version = '1.0.0'
 
-    latest_version = requests.get('https://sites.google.com/view/chimera-fit/install')
+    try:
+        latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
+    except:
+        return
     # print('Versão' in check_version.text)
     latest_version = latest_version.text.split(' ')
     # print(check_version)
@@ -717,13 +720,13 @@ class MainWindow(tk.Frame):
             self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
             self.place_item(resource_path("img/Logo.png"), 0.26, self.logo_canvas)
             #Define novas posicoes relativas a janela
-            self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
+            # self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
             self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
             #define novos tamanhos relativos a janela
             self.new["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
-            self.old["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
+            # self.old["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
             self.new.configure(height = 1)
-            self.old.configure(height = 1)
+            # self.old.configure(height = 1)
 
         if(count == 1 or count == 2):
             for button in self.buttons:
@@ -781,22 +784,22 @@ class MainWindow(tk.Frame):
         self.new.bind("<Leave>", func=lambda e: self.new.config(bg='#F21112',fg='white'))
 
         # Criar botão para importar um fit
-        self.old = tk.Button(self.bottom,
-                             width = int(0.011*self.master.winfo_width()),
-                             height=1,
-                             fg='white',
-                             bg='#F21112',
-                             activebackground='white',
-                             activeforeground='#F21112')
-        self.old["text"] = "IMPORT FIT"
-        self.old["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
-        self.old["command"] = self.create_import
-        self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
-        self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='#F21112'))
-        self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
+        # self.old = tk.Button(self.bottom,
+        #                      width = int(0.011*self.master.winfo_width()),
+        #                      height=1,
+        #                      fg='white',
+        #                      bg='#F21112',
+        #                      activebackground='white',
+        #                      activeforeground='#F21112')
+        # self.old["text"] = "IMPORT FIT"
+        # self.old["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
+        # self.old["command"] = self.create_import
+        # self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
+        # self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='#F21112'))
+        # self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
 
-    def create_import(self):
-        tk.messagebox.showwarning('SORRY', 'Feature still in development...')
+    # def create_import(self):
+    #     tk.messagebox.showwarning('SORRY', 'Feature still in development...')
 
         # ISTO AINDA NÃO ESTÁ FUNCIONAL
         # Destruir tudo o que estava na janela
@@ -816,7 +819,7 @@ class MainWindow(tk.Frame):
         # Destruir tudo o que estava na janela
         self.title_canvas.delete("all")
         self.logo_canvas.delete("all")
-        self.old.destroy()
+        # self.old.destroy()
         self.new.destroy()
         global count
         count = 1
@@ -1028,10 +1031,10 @@ class MainWindow(tk.Frame):
         # Este é o botão file na self.menubar
         self.file_options = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="File", menu=self.file_options)
-        self.file_options.add_command(label='Export Image', command=self.export_image)
-        self.file_options.add_command(label='Save Project', command=self.save_everything)
-        self.file_options.add_command(label='Import Project', command=self.import_project)
         self.file_options.add_command(label='Start New', command=self.create_new)
+        self.file_options.add_command(label='Export Image', command=self.export_image)
+        # self.file_options.add_command(label='Save Project', command=self.save_everything)
+        # self.file_options.add_command(label='Import Project', command=self.import_project)
 
         # Botao na self.menubar para escolher as opçoes do plot
         self.plotoptions = tk.Menu(self.menubar, tearoff=0)
@@ -1664,11 +1667,69 @@ class MainWindow(tk.Frame):
                 self.fig.tight_layout()
                 self.fig.savefig(file)
 
-    def save_everything(self):
-        print('aa')
+    # def save_everything(self):
+    #     file = tk.filedialog.asksaveasfilename(filetypes=(("*Text File (.txt)", "*.txt"),),defaultextension='.txt')
+    #     if file:
+    #         file = open(file, 'w')
+    #     else:
+    #         return
 
-    def import_project(self):
-        print('aa')
+    #     for text in self.plot_text:
+    #         file.write(text)
+    #     file.write('\nSECTION\n')
+    #     for pos in self.text_pos:
+    #         file.write('%s\n' % str(pos[0]))
+    #         file.write('%s\n' % str(pos[1]))
+    #     for i in range(len(self.datasettext)):
+    #         file.write('DATASET\n')
+    #         file.write(self.datasettext[i])
+    #         file.write('\nSECTION\n')
+    #         file.write(self.indeps[i])
+    #         file.write('\nSECTION\n')
+    #         file.write(self.params[i])
+    #         file.write('\nSECTION\n')
+    #         file.write(self.functions[i])
+    #         file.write('\nSECTION\n')
+    #         for value in self.init_values[i]:
+    #             file.write('%s\n' % value)
+    #         # file.write(self.init_values[i])
+    #         file.write('SECTION\n')
+    #         for param in self.fit_params[i]:
+    #             file.write('%s\n' % param)
+    #         # file.write(self.fit_params[i])
+    #         file.write('SECTION\n')
+    #         for uncert in self.fit_uncert[i]:
+    #             file.write('%s\n' % uncert)
+    #         # file.write(self.fit_uncert[i])
+    #         file.write('SECTION\n')
+    #         file.write(str(self.fit_chi[i]))
+    #         file.write('\nSECTION\n')
+    #         file.write('%s\n' % self.data_labels[i])
+    #         file.write('%s\n' % self.plot_labels[i])
+    #         file.write('%s\n' % self.fit_labels[i])
+
+    #     file.close()
+
+    # def import_project(self):
+
+    #     file = tk.filedialog.askopenfilename()
+    #     if not file:
+    #         return
+    #     try:
+    #         file = open(file, 'r')
+    #         data = file.read().split('\nDATASET\n')
+    #         print(data)
+    #         first = data[0].split('\nSECTION\n')
+    #         self.plot_text = [text for text in first[0].split('\n')]
+    #         print(first[1].split('\n'))
+    #         self.text_pos = [[float(first[1].split('\n')[i]),float(first[1].split('\n')[i+1])] for i in range(0,len(first[1].split('\n')),2)]
+    #         self.datasettext = []
+    #         for dataset in data[1:]:
+    #             split_data = dataset.set('\nSECTION\n')
+    #             self.datasettext.append(split_data[0])
+    #     except:
+    #         tk.showwarning('ERROR','Unable to open. File corrupted.')
+    #         return
 
     def latexify(self):
         try:
@@ -2964,15 +3025,6 @@ class MainWindow(tk.Frame):
         for r in fit.stopreason:
             self.full_output[dataset_number] += str(r) + '\n'
 
-        # if hasattr(self, 'info'):
-        #     print('Residual Variance:',self.res_var)
-        #     print('Inverse Condition #:', self.inv_condnum)
-        #     print('Reason(s) for Halting:')
-        #     for r in self.stopreason:
-        #         print('  %s' % r)
-        # self.full_output[dataset_number] = fit.pprint()
-        # print(self.full_output)
-
         return (fit.beta, fit.sd_beta, fit.res_var)
 
     def fit_function(self, B, _x):
@@ -2982,8 +3034,10 @@ class MainWindow(tk.Frame):
 
         self.import_window.destroy()
 
-        # Isto ainda não faz nada, preciso de compreender melhor o programa
         file = tk.filedialog.askopenfilename()
+
+        if not file:
+            return
 
         if(self.samex.get() == 1):
             new_data = read_file(file,str,True,0)
