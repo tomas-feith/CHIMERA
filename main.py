@@ -21,6 +21,30 @@ from tkinter import colorchooser
 import pyperclip
 import sys, os
 import webbrowser
+import requests
+
+def check_version():
+
+    current_version = '1.0.0'
+
+    latest_version = requests.get('https://sites.google.com/view/chimera-fit/install')
+    # print('Versão' in check_version.text)
+    latest_version = latest_version.text.split(' ')
+    # print(check_version)
+    for elem in latest_version:
+        if 'Versão' in elem:
+            pos = latest_version.index(elem)
+    # pos = check_version.index('Versão')
+    clean_version = ''
+    for char in latest_version[pos+1]:
+        if char == '<':
+            break
+        else:
+            clean_version += char
+
+    if clean_version != current_version:
+        if tk.messagebox.askyesno('UPDATE AVAILABLE','There is a new version available! Do you want to be redirected to download it now?'):
+            webbrowser.open('https://sites.google.com/view/chimera-fit/install')
 
 def resource_path(relative_path):
     """ Get the absolute path to the resource, works for dev and for PyInstaller """
@@ -672,6 +696,8 @@ class MainWindow(tk.Frame):
         # Para garantir que os widgets e imagens mudam de tamanho
         self.master.bind('<Configure>', self.resize_window)
 
+        check_version()
+
     def place_item(self, src, ratio, canvas):
         img_src = Image.open(src)
         img_ratio = self.master.winfo_width()*ratio/float(img_src.size[0])
@@ -820,6 +846,8 @@ class MainWindow(tk.Frame):
 
         self.xfittedfunc = [[]]
         self.yfittedfunc = [[]]
+
+        self.full_output = ['']
 
         self.master.configure(background='#E4E4E4')
 
@@ -1925,6 +1953,8 @@ class MainWindow(tk.Frame):
         self.yfittedfunc.append([])
         self.xfittedfunc.append([])
 
+        self.full_output.append('')
+
         # Acrescentar para todas as variaveis de cores e opcoes
         self.wantfit.append(tk.BooleanVar())
         self.wantfit[-1].set(0)
@@ -2014,6 +2044,8 @@ class MainWindow(tk.Frame):
 
         self.xfittedfunc.pop(self.selecteddataset)
         self.yfittedfunc.pop(self.selecteddataset)
+
+        self.full_output.pop(self.selecteddataset)
 
         # remover todas as variaveis de cores e opcoes
         self.wantfit.pop(self.selecteddataset)
@@ -2732,6 +2764,17 @@ class MainWindow(tk.Frame):
                     self.plotparamlabel[x].grid(column=0, row=x, pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky=tk.W + tk.E)
+                output = tk.Button(self.anotherframe,
+                                   text='GET FULL OUTPUT',
+                                   fg='white',
+                                   bg='#F21112',
+                                   activebackground='white',
+                                   activeforeground='#F21112')
+                output['command'] = self.show_output
+                output['font'] = ('Roboto',int(20*1000/self.master.winfo_width()))
+                output.bind("<Enter>", func=lambda e: output.config(bg='white',fg='#F21112'))
+                output.bind("<Leave>", func=lambda e: output.config(bg='#F21112',fg='white'))
+                output.grid(row = x+1, column = 5)
 
                 self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
 
@@ -2810,6 +2853,18 @@ class MainWindow(tk.Frame):
                     self.plotparamlabel[x].grid(column=0, row=x, pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
                     self.plotparamboxes[x].grid(column = 1, row = x, pady=10, sticky=tk.W + tk.E)
+                output = tk.Button(self.anotherframe,
+                                   text='GET FULL OUTPUT',
+                                   fg='white',
+                                   bg='#F21112',
+                                   activebackground='white',
+                                   activeforeground='#F21112')
+                output['command'] = self.show_output
+                output['font'] = ('Roboto',int(20*1000/self.master.winfo_width()))
+                output.bind("<Enter>", func=lambda e: output.config(bg='white',fg='#F21112'))
+                output.bind("<Leave>", func=lambda e: output.config(bg='#F21112',fg='white'))
+                output.grid(row = x+1, column = 5)
+
             count = 2
 
             self.windows_item = self.paramcanvas.create_window((0,0), window=self.anotherframe, anchor="nw")
@@ -2824,6 +2879,12 @@ class MainWindow(tk.Frame):
             sep5_plot.place(in_ = self.frameright, relx = 0, relheight = 1, rely = 0)
 
             self.paramcanvas.update()
+
+    def show_output(self):
+        if self.full_output[self.selecteddataset]:
+            tk.messagebox.showinfo('FULL OUTPUT', self.full_output[self.selecteddataset])
+        else:
+            tk.messagebox.showwarning('ERROR', 'Fit not yet done.')
 
     def adjust_canvas(self, event):
         canvas_width = event.width
@@ -2894,7 +2955,23 @@ class MainWindow(tk.Frame):
 
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
-        fit.pprint()
+        self.full_output[dataset_number] += 'Beta:' + str(fit.beta) + '\n'
+        self.full_output[dataset_number] += 'Beta Std Error:' + str(fit.sd_beta) + '\n'
+        self.full_output[dataset_number] += 'Beta Covariance:' + str(fit.cov_beta) + '\n'
+        self.full_output[dataset_number] += 'Residual Variance:' + str(fit.res_var) + '\n'
+        self.full_output[dataset_number] += 'Inverse Condition #:' +str(fit.inv_condnum) + '\n'
+        self.full_output[dataset_number] += 'Reason(s) for Halting:' + '\n'
+        for r in fit.stopreason:
+            self.full_output[dataset_number] += str(r) + '\n'
+
+        # if hasattr(self, 'info'):
+        #     print('Residual Variance:',self.res_var)
+        #     print('Inverse Condition #:', self.inv_condnum)
+        #     print('Reason(s) for Halting:')
+        #     for r in self.stopreason:
+        #         print('  %s' % r)
+        # self.full_output[dataset_number] = fit.pprint()
+        # print(self.full_output)
 
         return (fit.beta, fit.sd_beta, fit.res_var)
 
