@@ -634,7 +634,7 @@ class MainWindow(tk.Frame):
             self.master.attributes('-zoomed',True)
         if os.name == 'nt':
             self.master.state('zoomed')
-        self.master.iconphoto(True, tk.PhotoImage(file=resource_path('img/Image.png')))
+        self.master.iconphoto(True, tk.PhotoImage(file=resource_path('img/Logo.png')))
         # Tirar o título
         self.winfo_toplevel().title("")
 
@@ -665,7 +665,7 @@ class MainWindow(tk.Frame):
         self.pack
         # Colocar as imagens e botoes
         self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
-        self.place_item(resource_path("img/Image.png"), 0.26, self.logo_canvas)
+        self.place_item(resource_path("img/Logo.png"), 0.26, self.logo_canvas)
         self.create_widgets()
 
         global count
@@ -689,7 +689,7 @@ class MainWindow(tk.Frame):
             self.title_canvas.delete("all")
             self.logo_canvas.delete("all")
             self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
-            self.place_item(resource_path("img/Image.png"), 0.26, self.logo_canvas)
+            self.place_item(resource_path("img/Logo.png"), 0.26, self.logo_canvas)
             #Define novas posicoes relativas a janela
             self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
             self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
@@ -818,6 +818,8 @@ class MainWindow(tk.Frame):
         self.x_func = [[]]
         self.y_func = [[]]
 
+        self.xfittedfunc = [[]]
+        self.yfittedfunc = [[]]
 
         self.master.configure(background='#E4E4E4')
 
@@ -1376,25 +1378,25 @@ class MainWindow(tk.Frame):
 
     def funcplotselector(self,event):
         if(self.funcplotoption.get() == 'Solid'):
-            self.funcplotoptiontranslater[0] = '-'
+            self.funcplotoptiontranslater[self.selecteddataset] = '-'
 
         if(self.funcplotoption.get() == 'Dashed'):
-            self.funcplotoptiontranslater[0] = '--'
+            self.funcplotoptiontranslater[self.selecteddataset] = '--'
 
         if(self.funcplotoption.get() == 'Dotted'):
-            self.funcplotoptiontranslater[0] = ':'
+            self.funcplotoptiontranslater[self.selecteddataset] = ':'
 
         self.plot_dataset()
 
     def funcfitselector(self,event):
         if(self.funcfitoption.get() == 'Solid'):
-            self.funcfitoptiontranslater[0] = '-'
+            self.funcfitoptiontranslater[self.selecteddataset] = '-'
 
         if(self.funcfitoption.get() == 'Dashed'):
-            self.funcfitoptiontranslater[0] = '--'
+            self.funcfitoptiontranslater[self.selecteddataset] = '--'
 
         if(self.funcfitoption.get() == 'Dotted'):
-            self.funcfitoptiontranslater[0] = ':'
+            self.funcfitoptiontranslater[self.selecteddataset] = ':'
 
         self.plot_dataset()
 
@@ -1441,36 +1443,35 @@ class MainWindow(tk.Frame):
             frame = tk.Frame(scrollable_frame,bg='#E4E4E4')
 
             self.text_entries.append(tk.Entry(frame,width=40))
+            self.text_entries[i].insert(0,self.plot_text[i])
 
             label = tk.Label(frame, text='Text %d' % (i+1),bg='#E4E4E4')
             label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
-
-            self.text_entries[i].insert(0,self.plot_text[i])
 
             x_label = tk.Label(frame, text='x', bg='#E4E4E4')
             x_label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
 
             self.x_entries.append(tk.Entry(frame,width=7))
+            self.x_entries[i].insert(0,self.text_pos[i][0])
 
             y_label = tk.Label(frame, text='y', bg='#E4E4E4')
             y_label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
 
             self.y_entries.append(tk.Entry(frame,width=7))
+            self.y_entries[i].insert(0,self.text_pos[i][1])
 
             self.remove_buttons.append(tk.Button(frame,
-                                    text='REMOVE %d' % (i+1),
+                                    text='REMOVE',
                                     fg='white',
                                     bg='#F21112',
                                     activebackground='white',
                                     activeforeground='#F21112')
                                        )
-            self.remove_buttons[i]["command"] = self.remove_text(i)
+            self.remove_buttons[i]["command"] = lambda pos=i: self.remove_text(pos)
             self.remove_buttons[i]["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
             # Alterar as cores quando entra e sai
             self.remove_buttons[i].bind("<Enter>", hover(self.remove_buttons[i]))
             self.remove_buttons[i].bind("<Leave>", unhover(self.remove_buttons[i]))
-            # self.remove_buttons[i].bind("<Enter>", func=lambda e: self.remove_buttons[i].config(bg='white',fg='#F21112'))
-            # self.remove_buttons[i].bind("<Leave>", func=lambda e: self.remove_buttons[i].config(bg='#F21112',fg='white'))
 
             label.pack(side='left',padx=5)
             self.text_entries[i].pack(side='left')
@@ -1512,28 +1513,37 @@ class MainWindow(tk.Frame):
         frame.pack(side='top')
 
     def remove_text(self, pos):
-        print(pos)
+        self.save_text()
+        if len(self.plot_text)==1:
+            self.plot_text[0] = ''
+            self.text_pos[0] = [0.0,0.0]
+            self.text()
+        else:
+            self.plot_text.pop(pos)
+            self.text_pos.pop(pos)
+            self.text()
 
     def new_text(self):
+        self.save_text()
         self.plot_text.append('')
         self.text_pos.append([0,0])
-        self.text_window.destroy()
         self.text()
 
     def save_text(self):
         for i in range(len(self.text_entries)):
-            try:
-                float(self.x_entries[i].get())
-            except:
-                tk.messagebox.showwarning('ERROR', 'Non-numerical input found in X position for text %d.' % (i+1))
-                continue
-            try:
-                float(self.y_entries[i].get())
-            except:
-                tk.messagebox.showwarning('ERROR', 'Non-numerical input found in Y position for text %d.' % (i+1))
-                continue
-            self.plot_text[i] = self.text_entries[i].get()
-            self.text_pos[i] = [float(self.x_entries[i].get()), float(self.y_entries[i].get())]
+            if (self.text_entries[i].get().replace(' ','') != ''):
+                try:
+                    float(self.x_entries[i].get())
+                except:
+                    tk.messagebox.showwarning('ERROR', 'Non-numerical input found in X position for text %d.' % (i+1))
+                    continue
+                try:
+                    float(self.y_entries[i].get())
+                except:
+                    tk.messagebox.showwarning('ERROR', 'Non-numerical input found in Y position for text %d.' % (i+1))
+                    continue
+                self.plot_text[i] = self.text_entries[i].get()
+                self.text_pos[i] = [float(self.x_entries[i].get()), float(self.y_entries[i].get())]
         self.text_window.destroy()
 
     def labels(self):
@@ -1803,12 +1813,12 @@ class MainWindow(tk.Frame):
 
     def funcplotcolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
-        self.funcplotcolorvar[0] = pick_color
+        self.funcplotcolorvar[self.selecteddataset] = pick_color
         self.plot_dataset()
 
     def funcfitcolorpick(self):
         pick_color = tk.colorchooser.askcolor()[1]
-        self.funcfitcolorvar[0] = pick_color
+        self.funcfitcolorvar[self.selecteddataset] = pick_color
         self.plot_dataset()
 
     def import_window(self):
@@ -1905,6 +1915,9 @@ class MainWindow(tk.Frame):
         self.x_func.append([])
         self.y_func.append([])
 
+        self.yfittedfunc.append([])
+        self.xfittedfunc.append([])
+
         # Acrescentar para todas as variaveis de cores e opcoes
         self.wantfit.append(tk.BooleanVar())
         self.wantfit[-1].set(0)
@@ -1992,6 +2005,9 @@ class MainWindow(tk.Frame):
 
         self.x_func.pop(self.selecteddataset)
         self.y_func.pop(self.selecteddataset)
+
+        self.xfittedfunc.pop(self.selecteddataset)
+        self.yfittedfunc.pop(self.selecteddataset)
 
         # remover todas as variaveis de cores e opcoes
         self.wantfit.pop(self.selecteddataset)
@@ -2261,21 +2277,22 @@ class MainWindow(tk.Frame):
             self.clean_functions[self.selecteddataset] = ''
 
     # Função para plottar a funçao com parametros numericos dados pelo utilizador
-    def plot_fittedfunction(self):
-        self.xfittedfunc=[[] for function in self.functions]
-        self.yfittedfunc=[[] for function in self.functions]
+    def plot_fittedfunction(self, dataset):
+        self.xfittedfunc[dataset]=[0]*10000
+        self.yfittedfunc[dataset]=[0]*10000
 
         x_max  = float(self.xaxismaxentry.get().replace(' ',''))
         x_min  = float(self.xaxisminentry.get().replace(' ',''))
         amp = x_max - x_min
 
-        for i in range(len(self.functions)):
-            B = self.fit_params[i]
-            expr = self.clean_functions[i]
-            for j in range(10000):
-                _x = x_min + j*amp/9999
-                self.xfittedfunc[i].append(_x)
-                self.yfittedfunc[i].append(eval(expr))
+        B = self.fit_params[dataset]
+        expr = self.clean_functions[dataset]
+        print(expr)
+        print(B)
+        for j in range(10000):
+            _x = x_min + j*amp/9999
+            self.xfittedfunc[dataset][j] = _x
+            self.yfittedfunc[dataset][j] = eval(expr)
 
     def plot_function(self):
 
@@ -2311,6 +2328,7 @@ class MainWindow(tk.Frame):
         amp = x_max - x_min
 
         self.x_func[self.selecteddataset] = _x = [x_min + i*amp/9999 for i in range(10000)]
+        self.y_func[self.selecteddataset] = []
 
         for i in range(10000):
             self.y_func[self.selecteddataset].append(eval(expr.replace('_x','_x[i]')))
@@ -2555,16 +2573,16 @@ class MainWindow(tk.Frame):
                         self.a.plot(self.abc[i], self.ord[i], color = self.linecolorvar[i], lw = self.linewidth[i].get(), ls = str(self.lineoptiontranslater[i]))
                     if self.wantfunction[i].get():
                         if self.plot_labels[i]:
-                            self.a.plot(self.x_func[i], self.y_func[i], label=self.plot_labels[i], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
+                            self.a.plot(self.x_func[i], self.y_func[i], label=self.plot_labels[i], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[i]), color = self.funcplotcolorvar[i])
                         else:
-                            self.a.plot(self.x_func[i], self.y_func[i], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[0]), color = self.funcplotcolorvar[0])
+                            self.a.plot(self.x_func[i], self.y_func[i], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[i]), color = self.funcplotcolorvar[i])
                     if self.wantfit[i].get():
                         (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i]) = self.fit_data(dataforfit[i], self.init_values[i], 2000, i)
-                        self.plot_fittedfunction()
+                        self.plot_fittedfunction(i)
                         if self.fit_labels[i]:
-                            self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], label=self.fit_labels[i], lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
+                            self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], label=self.fit_labels[i], lw = self.funcfitwidth[i].get(), ls = str(self.funcfitoptiontranslater[i]), color = self.funcfitcolorvar[i])
                         else:
-                            self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], label=self.fit_labels[i], lw = self.funcfitwidth[0].get(), ls = str(self.funcfitoptiontranslater[0]), color = self.funcfitcolorvar[0])
+                            self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], lw = self.funcfitwidth[i].get(), ls = str(self.funcfitoptiontranslater[i]), color = self.funcfitcolorvar[i])
 
                         for x in range (len(self.paramresboxes)):
                             self.paramresboxes[x].config(state = 'normal')
