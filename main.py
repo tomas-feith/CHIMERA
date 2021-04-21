@@ -999,8 +999,11 @@ class MainWindow(tk.Frame):
 
         # Este é o botão file na self.menubar
         self.file_options = tk.Menu(self.menubar, tearoff=0)
-        self.file_options.add_command(label='Export Image', command=self.export_image)
         self.menubar.add_cascade(label="File", menu=self.file_options)
+        self.file_options.add_command(label='Export Image', command=self.export_image)
+        self.file_options.add_command(label='Save Project', command=self.save_everything)
+        self.file_options.add_command(label='Import Project', command=self.import_project)
+        self.file_options.add_command(label='Start New', command=self.create_new)
 
         # Botao na self.menubar para escolher as opçoes do plot
         self.plotoptions = tk.Menu(self.menubar, tearoff=0)
@@ -1061,6 +1064,7 @@ class MainWindow(tk.Frame):
         self.menubar.add_cascade(label = 'Help', menu = self.help)
         self.help.add_command(label='Documentation', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/docs'))
         self.help.add_command(label='FAQs', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/faq'))
+        self.help.add_command(label='About', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/about'))
 
 
         # Criação da zona para inserir a variável independente
@@ -1323,23 +1327,21 @@ class MainWindow(tk.Frame):
         self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
 
         # Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
-        self.dataentry = ( ScrolledText(self.subframeleft2))
+        self.dataentry = (ScrolledText(self.subframeleft2))
         self.dataentry.pack(expand = 1, fill = tk.X)
         self.dataentry.insert(tk.INSERT,self.datasettext[0])
 
-        # Francamente eu so inicio isto assim pq ya, da pouco trabalho e resolveu um bug na altura,
-        # NÃO MEXER, FUI EU A POR EU RESOLVO
         # Basicamente a lógica é isto começar com alguma coisa pq fode com indices dps, soluçao preguicosa
         # é darlhe os valores do textinho default
-        self.abcissas = [[9, 9, 9, 9]]
-        self.erabcissas = [[1, 1, 1, 1]]
-        self.ordenadas = [[1,1,1,1]]
-        self.erordenadas = [[1,1,1,1]]
+        self.abcissas = [[0, 0, 0, 0]]
+        self.erabcissas = [[0, 0, 0, 0]]
+        self.ordenadas = [[0, 0, 0, 0]]
+        self.erordenadas = [[0, 0, 0, 0]]
 
-        self.abc=[]
-        self.erabc = []
-        self.ord = []
-        self.erord = []
+        self.abc=[[]]
+        self.erabc = [[]]
+        self.ord = [[]]
+        self.erord = [[]]
 
         self.selecteddataset = 0
         self.numberdatasets = 1
@@ -1634,6 +1636,12 @@ class MainWindow(tk.Frame):
                 self.fig.tight_layout()
                 self.fig.savefig(file)
 
+    def save_everything(self):
+        print('aa')
+
+    def import_project(self):
+        print('aa')
+
     def latexify(self):
         try:
             self.export_window.destroy()
@@ -1872,7 +1880,6 @@ class MainWindow(tk.Frame):
         self.samex.set(0)
 
     def difxerrorfunction(self):
-        # Esta função não faz nada??
         self.difxerror.get()
 
         if self.difxerror.get():
@@ -1930,16 +1937,15 @@ class MainWindow(tk.Frame):
         self.wantfunction.append(tk.BooleanVar())
         self.wantfunction[-1].set(0)
 
-        # Fazer a mesma coisa que fiz antes, que é encher o lixo de alguma coisa so pros arrays ja irem todos com o formato certinho
         self.abcissas.append([0, 0, 0, 0])
         self.erabcissas.append([0, 0, 0, 0])
         self.ordenadas.append([0, 0, 0, 0])
         self.erordenadas.append([0, 0, 0, 0])
 
         self.abc.append(np.array(self.abcissas[-1]))
-        self.erabc.append(np.array(self.abcissas[-1]))
-        self.ord.append(np.array(self.abcissas[-1]))
-        self.erord.append(np.array(self.abcissas[-1]))
+        self.erabc.append(np.array(self.erabcissas[-1]))
+        self.ord.append(np.array(self.ordenadas[-1]))
+        self.erord.append(np.array(self.erordenadas[-1]))
 
         # Criar as variáveis respetivas à escolha de cores para cada plot
         self.markercolorvar.append("black")
@@ -2685,7 +2691,7 @@ class MainWindow(tk.Frame):
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
 
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
-                self.paramcanvas.bind('<Configure>', self.algumacoisa)
+                self.paramcanvas.bind('<Configure>', self.adjust_canvas)
 
                 self.anotherframe.columnconfigure(0, weight = 1)
                 self.anotherframe.columnconfigure(1, weight = 3)
@@ -2763,7 +2769,7 @@ class MainWindow(tk.Frame):
                 self.paramscrolly.pack(side=tk.RIGHT, fill="y")
 
                 self.paramcanvas.configure(yscrollcommand=self.paramscrolly.set)
-                self.paramcanvas.bind('<Configure>', self.algumacoisa)
+                self.paramcanvas.bind('<Configure>', self.adjust_canvas)
 
                 self.anotherframe.columnconfigure(0, weight = 1)
                 self.anotherframe.columnconfigure(1, weight = 3)
@@ -2819,7 +2825,7 @@ class MainWindow(tk.Frame):
 
             self.paramcanvas.update()
 
-    def algumacoisa(self, event):
+    def adjust_canvas(self, event):
         canvas_width = event.width
         self.paramcanvas.itemconfig(self.windows_item, width = canvas_width)
         self.paramcanvas.configure(scrollregion = self.paramcanvas.bbox("all"))
