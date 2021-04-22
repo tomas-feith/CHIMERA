@@ -25,7 +25,7 @@ import requests
 
 def check_version():
 
-    current_version = '1.0.0'
+    current_version = '1.0.1'
 
     try:
         latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
@@ -1803,12 +1803,12 @@ class MainWindow(tk.Frame):
     def export_function(self):
         # Se a função já tiver sido compilada
         try:
-            print(self.function)
+            print(self.functions[self.selecteddataset])
         except:
             tk.messagebox.showwarning('ERROR', 'The function has not been compiled yet! Compile before exporting.')
             self.export_window.destroy()
             return 0
-        if self.function:
+        if self.functions[self.selecteddataset]:
             # Algumas operações de estética
             self.function_button.configure(text='COPIED!',fg='#F21112',bg='white')
             self.data_samex_button.configure(text='COPY',fg='white',bg='#F21112')
@@ -1821,7 +1821,7 @@ class MainWindow(tk.Frame):
             self.data_diffx_button.bind("<Enter>", func=lambda e: self.data_diffx_button.config(bg='white',fg='#F21112'))
             self.data_diffx_button.bind("<Leave>", func=lambda e: self.data_diffx_button.config(bg='#F21112',fg='white'))
 
-            text = math_2_latex(self.functionentry.get(),self.parameterentry.get(),self.independententry.get())
+            text = math_2_latex(self.functions[self.selecteddataset],self.params[self.selecteddataset],self.indeps[self.selecteddataset])
             pyperclip.copy(text)
         else:
             tk.messagebox.showwarning('ERROR','The function was compiled with errors! Make sure it compiles correctly before exporting.')
@@ -2774,6 +2774,11 @@ class MainWindow(tk.Frame):
                 self.plotparamboxes = []
 
                 self.boxnumber = len(clean_split)
+                if len(self.init_values[self.selecteddataset]) > self.boxnumber:
+                    self.init_values[self.selecteddataset] = [1.0]*self.boxnumber
+                else:
+                    while len(self.init_values[self.selecteddataset]) != self.boxnumber:
+                        self.init_values[self.selecteddataset].append(1.0)
 
                 self.paramcanvas = tk.Canvas(self.subframeright2, highlightthickness=0, bg='#E4E4E4')
                 self.paramcanvas.pack(side=tk.LEFT, fill = tk.BOTH, expand=1)
@@ -3016,6 +3021,7 @@ class MainWindow(tk.Frame):
 
         my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
         fit = my_odr.run()
+        self.full_output[dataset_number] = ''
         self.full_output[dataset_number] += 'Beta:' + str(fit.beta) + '\n'
         self.full_output[dataset_number] += 'Beta Std Error:' + str(fit.sd_beta) + '\n'
         self.full_output[dataset_number] += 'Beta Covariance:' + str(fit.cov_beta) + '\n'
