@@ -25,19 +25,15 @@ import requests
 
 def check_version():
 
-    current_version = '1.0.1'
-
+    current_version = '0.3.0'
     try:
         latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
     except:
         return
-    # print('Versão' in check_version.text)
     latest_version = latest_version.text.split(' ')
-    # print(check_version)
     for elem in latest_version:
         if 'Versão' in elem:
             pos = latest_version.index(elem)
-    # pos = check_version.index('Versão')
     clean_version = ''
     for char in latest_version[pos+1]:
         if char == '<':
@@ -1665,7 +1661,7 @@ class MainWindow(tk.Frame):
             file = tk.filedialog.asksaveasfilename(filetypes=(("PNG Image", "*.png"),("All Files", "*.*")),defaultextension='.png')
             if file:
                 self.fig.tight_layout()
-                self.fig.savefig(file)
+                self.fig.savefig(file,dpi=600)
 
     # def save_everything(self):
     #     file = tk.filedialog.asksaveasfilename(filetypes=(("*Text File (.txt)", "*.txt"),),defaultextension='.txt')
@@ -2204,7 +2200,7 @@ class MainWindow(tk.Frame):
 
         # Guardar o atual na cena
         if event != "remove":
-            self.datasettext[self.currentselection - 1] = self.dataentry.get("1.0", "end-1c")
+            self.datasettext[self.currentselection - 1] = self.dataentry.get("1.0", "end-1c").replace('\t',' ')
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
@@ -2386,12 +2382,13 @@ class MainWindow(tk.Frame):
 
         B = self.fit_params[dataset]
         expr = self.clean_functions[dataset]
-        print(expr)
-        print(B)
         for j in range(10000):
             _x = x_min + j*amp/9999
             self.xfittedfunc[dataset][j] = _x
-            self.yfittedfunc[dataset][j] = eval(expr)
+            try:
+                self.yfittedfunc[dataset][j] = eval(expr)
+            except FloatingPointError:
+                self.yfittedfunc[dataset][j] = 0
 
     def plot_function(self):
 
@@ -2497,7 +2494,7 @@ class MainWindow(tk.Frame):
 
         # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo.
         select = int(self.datalistvariable.get()[-1])
-        self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c")
+        self.datasettext[select-1]= self.dataentry.get("1.0", "end-1c").replace('\t',' ')
 
         if not self.check_databox():
             return False
@@ -2567,16 +2564,17 @@ class MainWindow(tk.Frame):
             minabc = min(allabc)
             maxabc = max(allabc)
 
-            min_indexes = []
-            max_indexes = []
-            for point in a:
-                if point[0] == minabc and len(point)==4:
-                    min_indexes.append(point[1])
-                if point[0] == maxabc and len(point)==4:
-                    max_indexes.append(point[1])
+            if len(a[0]) == 4:
+                min_indexes = []
+                max_indexes = []
+                for point in a:
+                    if point[0] == minabc and len(point)==4:
+                        min_indexes.append(point[1])
+                    if point[0] == maxabc and len(point)==4:
+                        max_indexes.append(point[1])
 
-            maxabc += max(max_indexes)
-            minabc -= max(min_indexes)
+                maxabc += max(max_indexes)
+                minabc -= max(min_indexes)
 
             amp = maxabc - minabc
 
@@ -2822,7 +2820,7 @@ class MainWindow(tk.Frame):
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
                     try: self.paramboxes[x].insert(0,"{0:e}".format(self.init_values[self.selecteddataset][x]))
-                    except Exception as error: print(error)
+                    except: pass
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
                     self.paramlabel[x].grid(column = 2, row = x, pady=10, sticky= tk.E)
@@ -3034,7 +3032,11 @@ class MainWindow(tk.Frame):
         return (fit.beta, fit.sd_beta, fit.res_var)
 
     def fit_function(self, B, _x):
-        return eval(self.clean_functions[self.dataset_to_fit])
+        try:
+            out = eval(self.clean_functions[self.dataset_to_fit])
+        except FloatingPointError:
+            return np.array([0]*len(_x))
+        return out
 
     def open_file(self):
 
