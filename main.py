@@ -420,7 +420,7 @@ def process_params(params, indep):
     return (True, clean_split)
 
 def parser(expr, params, indep):
-    np.seterr(all='raise')
+    np.seterr(divide='raise', invalid='raise', under='warn', over='warn')
     # Funções do numpy a utilizar
     # Ainda falta acrescentar as funções de estatística
     functions = ['sin',
@@ -2385,10 +2385,10 @@ class MainWindow(tk.Frame):
         for j in range(10000):
             _x = x_min + j*amp/9999
             self.xfittedfunc[dataset][j] = _x
-            try:
-                self.yfittedfunc[dataset][j] = eval(expr)
-            except FloatingPointError:
-                self.yfittedfunc[dataset][j] = 0
+            # try:
+            self.yfittedfunc[dataset][j] = eval(expr)
+            # except FloatingPointError:
+                # self.yfittedfunc[dataset][j] = 0
 
     def plot_function(self):
 
@@ -3032,11 +3032,12 @@ class MainWindow(tk.Frame):
         return (fit.beta, fit.sd_beta, fit.res_var)
 
     def fit_function(self, B, _x):
-        try:
-            out = eval(self.clean_functions[self.dataset_to_fit])
-        except FloatingPointError:
-            return np.array([0]*len(_x))
-        return out
+        # try:
+        #     out = eval(self.clean_functions[self.dataset_to_fit])
+        # except FloatingPointError:
+        #     return np.array([0]*len(_x))
+        # return out
+        return eval(self.clean_functions[self.dataset_to_fit])
 
     def open_file(self):
 
