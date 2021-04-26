@@ -420,7 +420,7 @@ def process_params(params, indep):
     return (True, clean_split)
 
 def parser(expr, params, indep):
-    np.seterr(divide='raise', invalid='raise', under='warn', over='warn')
+    np.seterr(divide='warn', invalid='warn', under='warn', over='warn')
     # Funções do numpy a utilizar
     # Ainda falta acrescentar as funções de estatística
     functions = ['sin',
@@ -501,8 +501,6 @@ def parser(expr, params, indep):
         return (False, 'Function \''+str(error).split('\'')[1]+'\' not recognized.')
     except AttributeError as error:
         return (False, 'Function '+str(error).split('attribute ')[1]+' not recognized.')
-    except FloatingPointError:
-        return (True, expr)
     except SyntaxError:
         return (False, 'It was not possible to compile your expression. Verify if all your parameters are defined and the expression is written correctly.')
 
