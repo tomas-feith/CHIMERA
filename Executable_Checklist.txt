@@ -1,4 +1,5 @@
 1 - Change version in code and in the site to current version
-2 - run 
+2 - Activate CHIMERA environment
+3 - run 
 pyinstaller --noconfirm --onedir --windowed --icon "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img;img/"  "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/main.py"
-3 - Copy the file libiomp5md.dll to output folder
+4 - Copy the file libiomp5md.dll to output folder
