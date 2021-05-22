@@ -826,6 +826,7 @@ class MainWindow(tk.Frame):
         # Definir arrays para armazenar texto e as suas posições
         self.plot_text = ['']
         self.text_pos = [[0,0]]
+        self.text_size = [10]
 
         # Definimos as funções, variáveis e afins
         self.indeps = ['x']
@@ -1152,10 +1153,10 @@ class MainWindow(tk.Frame):
         self.xaxistitleentry.insert(0, "Abcissas")
 
         self.xaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#E4E4E4')
-        self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx=0.225, rely= 0.4)
+        self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx=0.175, rely= 0.4)
 
-        self.xaxistickspentry = tk.Entry(self.subframeright3, justify='center')
-        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0.4, rely=0.4)
+        self.xaxistickspentry = tk.Entry(self.subframeright3)
+        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.15, relheight = 0.1, relx = 0.35, rely=0.4)
         self.xaxistickspentry.insert(0, "1")
 
         self.autoscaley = tk.BooleanVar()
@@ -1185,10 +1186,10 @@ class MainWindow(tk.Frame):
         self.yaxistitleentry.insert(0, "Ordenadas")
 
         self.yaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#E4E4E4')
-        self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx = 0.725, rely= 0.4)
+        self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx = 0.675, rely= 0.4)
 
-        self.yaxistickspentry = tk.Entry(self.subframeright3, justify='center')
-        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx=0.9, rely=0.4)
+        self.yaxistickspentry = tk.Entry(self.subframeright3)
+        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.125, relheight = 0.1, relx=0.85, rely=0.4)
         self.yaxistickspentry.insert(0, "1")
 
         self.linewidth = []
@@ -1452,7 +1453,7 @@ class MainWindow(tk.Frame):
 
         self.text_window = tk.Toplevel(self.master)
         self.text_window.title('Add Text')
-        self.text_window.geometry('600x350')
+        self.text_window.geometry('1000x600')
         self.text_window.configure(background='#E4E4E4')
         self.text_window.resizable(False,False)
 
@@ -1472,6 +1473,7 @@ class MainWindow(tk.Frame):
         self.text_entries = []
         self.x_entries = []
         self.y_entries = []
+        self.fontsize_entries = []
         self.remove_buttons = []
 
         pos = tk.Label(scrollable_frame, text='X and Y positions must be set in plot coordinates.',bg='#E4E4E4')
@@ -1481,7 +1483,7 @@ class MainWindow(tk.Frame):
         for i in range(len(self.plot_text)):
             frame = tk.Frame(scrollable_frame,bg='#E4E4E4')
 
-            self.text_entries.append(tk.Entry(frame,width=40))
+            self.text_entries.append(tk.Entry(frame,width=60))
             self.text_entries[i].insert(0,self.plot_text[i])
 
             label = tk.Label(frame, text='Text %d' % (i+1),bg='#E4E4E4')
@@ -1498,6 +1500,12 @@ class MainWindow(tk.Frame):
 
             self.y_entries.append(tk.Entry(frame,width=7))
             self.y_entries[i].insert(0,self.text_pos[i][1])
+
+            font_label = tk.Label(frame, text='fontsize', bg='#E4E4E4')
+            font_label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+
+            self.fontsize_entries.append(tk.Entry(frame,width=10))
+            self.fontsize_entries[i].insert(0,self.text_size[i])
 
             self.remove_buttons.append(tk.Button(frame,
                                     text='REMOVE',
@@ -1518,6 +1526,8 @@ class MainWindow(tk.Frame):
             self.x_entries[i].pack(side='left',padx=5)
             y_label.pack(side='left',padx=5)
             self.y_entries[i].pack(side='left',padx=5)
+            font_label.pack(side='left',padx=5)
+            self.fontsize_entries[i].pack(side='left',padx=5)
             self.remove_buttons[i].pack(side='left',padx=10)
             frame.pack(side='top',pady=10)
 
@@ -1560,12 +1570,14 @@ class MainWindow(tk.Frame):
         else:
             self.plot_text.pop(pos)
             self.text_pos.pop(pos)
+            self.text_size.pop(pos)
             self.text()
 
     def new_text(self):
         self.save_text()
         self.plot_text.append('')
         self.text_pos.append([0,0])
+        self.text_size.append(10)
         self.text()
 
     def save_text(self):
@@ -1581,8 +1593,14 @@ class MainWindow(tk.Frame):
                 except:
                     tk.messagebox.showwarning('ERROR', 'Non-numerical input found in Y position for text %d.' % (i+1))
                     continue
+                try:
+                    float(self.fontsize_entries[i].get())
+                except:
+                    tk.messagebox.showwarning('ERROR', 'Non-numerical input found in fontsize for text %d.' % (i+1))
+                    continue
                 self.plot_text[i] = self.text_entries[i].get()
                 self.text_pos[i] = [float(self.x_entries[i].get()), float(self.y_entries[i].get())]
+                self.text_size[i] = float(self.fontsize_entries[i].get())
         self.text_window.destroy()
 
     def labels(self):
@@ -2000,10 +2018,6 @@ class MainWindow(tk.Frame):
         else:
             self.datalist.append("dataset " + str(len(self.datalist)+1))
         self.datasetselector.config(values=self.datalist)
-        # self.datasetselector.destroy()
-        # self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
-        # self.datasetselector.place(relx = 0, relheight = 1, relwidth=0.15)
-        # self.datasetselector.bind("<<ComboboxSelected>>", self.update_databox)
 
         self.datasettext.append(string)
 
@@ -2723,7 +2737,7 @@ class MainWindow(tk.Frame):
 
         # Escrever os textos no gráfico
         for i in range(len(self.plot_text)):
-            self.a.text(self.text_pos[i][0],self.text_pos[i][1],self.plot_text[i],fontsize='x-large')
+            self.a.text(self.text_pos[i][0],self.text_pos[i][1],self.plot_text[i],fontsize=self.text_size[i])
 
         if np.any(np.array(self.data_labels)!='') or np.any(np.array(self.plot_labels)!='') or np.any(np.array(self.fit_labels)!=''):
             self.a.legend()
