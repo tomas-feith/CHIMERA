@@ -2182,7 +2182,7 @@ class MainWindow(tk.Frame):
         self.selecteddataset = 0
         self.currentselection = 0
 
-        self.datalistvariable.set("dataset 1")
+        self.datalistvariable.set(self.datalist[0])
 
         self.datasetselector.destroy()
         self.datasetselector = ttk.Combobox(self.plotbuttonframe, textvariable = self.datalistvariable, values = self.datalist)
@@ -2717,21 +2717,21 @@ class MainWindow(tk.Frame):
                             self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], label=self.fit_labels[i], lw = self.funcfitwidth[i].get(), ls = str(self.funcfitoptiontranslater[i]), color = self.funcfitcolorvar[i])
                         else:
                             self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], lw = self.funcfitwidth[i].get(), ls = str(self.funcfitoptiontranslater[i]), color = self.funcfitcolorvar[i])
+                        if i == self.selecteddataset:
+                            for x in range (len(self.paramresboxes)):
+                                self.paramresboxes[x].config(state = 'normal')
+                                self.paramresboxes[x].delete(0, tk.END)
+                                self.paramresboxes[x].insert(0, '{0:.7e}'.format(self.fit_params[self.selecteddataset][x]))
+                                self.paramresboxes[x].config(state = 'readonly')
+                                self.paramerrboxes[x].config(state = 'normal')
+                                self.paramerrboxes[x].delete(0, tk.END)
+                                self.paramerrboxes[x].insert(0, '{0:.7e}'.format(self.fit_uncert[self.selecteddataset][x]))
+                                self.paramerrboxes[x].config(state = 'readonly')
 
-                        for x in range (len(self.paramresboxes)):
-                            self.paramresboxes[x].config(state = 'normal')
-                            self.paramresboxes[x].delete(0, tk.END)
-                            self.paramresboxes[x].insert(0, '{0:.7e}'.format(self.fit_params[self.selecteddataset][x]))
-                            self.paramresboxes[x].config(state = 'readonly')
-                            self.paramerrboxes[x].config(state = 'normal')
-                            self.paramerrboxes[x].delete(0, tk.END)
-                            self.paramerrboxes[x].insert(0, '{0:.7e}'.format(self.fit_uncert[self.selecteddataset][x]))
-                            self.paramerrboxes[x].config(state = 'readonly')
-
-                        self.chisqentry.config(state = 'normal')
-                        self.chisqentry.delete(0, tk.END)
-                        self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
-                        self.chisqentry.config(state = 'readonly')
+                            self.chisqentry.config(state = 'normal')
+                            self.chisqentry.delete(0, tk.END)
+                            self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
+                            self.chisqentry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
 
@@ -2844,14 +2844,14 @@ class MainWindow(tk.Frame):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
                     self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
-                    try: self.paramerrboxes[x].insert(0,self.fit_uncert[self.selecteddataset][x])
+                    try: self.paramerrboxes[x].insert(0,"{0:.7e}".format(self.fit_uncert[self.selecteddataset][x]))
                     except: pass
                     self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
                     self.paramerrboxes[x].config(state = 'readonly')
                     self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
                     self.paramresboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
-                    try: self.paramresboxes[x].insert(0,self.fit_params[self.selecteddataset][x])
+                    try: self.paramresboxes[x].insert(0,"{0:.7e}".format(self.fit_params[self.selecteddataset][x]))
                     except: pass
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramresboxes[x].config(state = 'readonly')
@@ -2933,14 +2933,14 @@ class MainWindow(tk.Frame):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
                     self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
-                    try: self.paramerrboxes[x].insert(0,self.fit_uncert[self.selecteddataset][x])
+                    try: self.paramerrboxes[x].insert(0,"{0:.7e}".format(self.fit_uncert[self.selecteddataset][x]))
                     except: pass
                     self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
                     self.paramerrboxes[x].config(state = 'readonly')
                     self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
                     self.paramresboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
-                    try: self.paramresboxes[x].insert(0,self.fit_params[self.selecteddataset][x])
+                    try: self.paramresboxes[x].insert(0,"{0:.7e}".format(self.fit_params[self.selecteddataset][x]))
                     except: pass
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramresboxes[x].config(state = 'readonly')
