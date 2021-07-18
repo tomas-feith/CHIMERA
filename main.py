@@ -1128,9 +1128,14 @@ class MainWindow(tk.Frame):
         self.functionentry.focus_set()
 
         self.autoscalex = tk.BooleanVar()
-        self.autoscalex.set(0)
-        self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale')
-        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = -0.03)
+        self.autoscalex.set(1)
+        self.xaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.autoscalex, text = 'Autoscale', anchor = 'w')
+        self.xaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.05, rely = 0.4, relx = 0.05)
+
+        self.log_x = tk.BooleanVar()
+        self.log_x.set(0)
+        self.log_x_button = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.log_x, text = 'Log Scale', anchor = 'w')
+        self.log_x_button.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.05, rely = 0.45, relx = 0.05)
 
         self.xaxislabel = tk.Label(self.subframeright3, text="X Axis", bg='#E4E4E4')
         self.xaxislabel.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0)
@@ -1163,13 +1168,18 @@ class MainWindow(tk.Frame):
         self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx=0.175, rely= 0.4)
 
         self.xaxistickspentry = tk.Entry(self.subframeright3)
-        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.15, relheight = 0.1, relx = 0.35, rely=0.4)
+        self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0.35, rely=0.45, anchor="w")
         self.xaxistickspentry.insert(0, "1")
 
         self.autoscaley = tk.BooleanVar()
-        self.autoscaley.set(0)
-        self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale')
-        self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.1, rely = 0.4, relx = 0.47)
+        self.autoscaley.set(1)
+        self.yaxisautoscale = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.autoscaley, text = 'Autoscale', anchor = 'w')
+        self.yaxisautoscale.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.05, rely = 0.4, relx = 0.55)
+
+        self.log_y = tk.BooleanVar()
+        self.log_y.set(0)
+        self.log_y_button = tk.Checkbutton(self.subframeright3, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.log_y, text = 'Log Scale', anchor = 'w')
+        self.log_y_button.place(in_ = self.subframeright3, relwidth = 0.295, relheight = 0.05, rely = 0.45, relx = 0.55)
 
         self.yaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#E4E4E4')
         self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.2, relheight=0.1, relx = 0.50, rely = 0.1)
@@ -1196,7 +1206,7 @@ class MainWindow(tk.Frame):
         self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx = 0.675, rely= 0.4)
 
         self.yaxistickspentry = tk.Entry(self.subframeright3)
-        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.125, relheight = 0.1, relx=0.85, rely=0.4)
+        self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx=0.85, rely=0.45, anchor = "w")
         self.yaxistickspentry.insert(0, "1")
 
         self.linewidth = []
@@ -2724,11 +2734,9 @@ class MainWindow(tk.Frame):
             self.xaxismaxentry.insert(0, "{0:.3e}".format(maxabc))
             self.xaxisminentry.insert(0, "{0:.3e}".format(minabc))
 
-            ampx = ampx/10
+            ampx = ampx/8
             self.xaxistickspentry.delete(0,'end')
             self.xaxistickspentry.insert(0, "{0:.3e}".format(ampx))
-
-            self.autoscalex.set(1)
 
         if not self.autoscaley.get():
             maxord = float(self.yaxismaxentry.get().replace(',','.').replace(' ',''))
@@ -2764,11 +2772,10 @@ class MainWindow(tk.Frame):
             self.yaxismaxentry.insert(0, "{0:.3e}".format(maxord))
             self.yaxisminentry.insert(0, "{0:.3e}".format(minord))
 
-            ampy = ampy/10
+            ampy = ampy/8
             self.yaxistickspentry.delete(0,'end')
             self.yaxistickspentry.insert(0, "{0:.3e}".format(ampy))
 
-            self.autoscaley.set(1)
 
         x_ticks = []
         y_ticks = []
@@ -2830,6 +2837,20 @@ class MainWindow(tk.Frame):
         self.subframeleft1.destroy()
         self.subframeleft1=tk.Frame(self.frameleft, bg='#E4E4E4')
         self.subframeleft1.place(in_ = self.frameleft, relwidth=1, relheight=0.5, relx=0, rely=0)
+
+        # first we see what scale we are using
+        if self.log_x.get():
+            if float(self.xaxisminentry.get().replace(',','.').replace(' ','')) > 0:
+                self.a.set_xscale('log')
+            else:
+                self.a.set_xscale('symlog')
+            self.a.set_xticks(x_ticks)
+        if self.log_y.get():
+            if float(self.yaxisminentry.get().replace(',','.').replace(' ','')) > 0:
+                self.a.set_yscale('log')
+            else:
+                self.a.set_yscale('symlog')
+            self.a.set_yticks(y_ticks)
 
         if self.check_databox():
             for i in range(self.numberdatasets):
