@@ -24,7 +24,7 @@ import webbrowser
 import requests
 
 def check_version():
-    current_version = '1.0.1'
+    current_version = '1.1.0'
     try:
         latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
     except:
