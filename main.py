@@ -24,8 +24,7 @@ import webbrowser
 import requests
 
 def check_version():
-
-    current_version = '1.0.0'
+    current_version = '1.0.1'
     try:
         latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
     except:
@@ -847,6 +846,9 @@ class MainWindow(tk.Frame):
 
         self.full_output = ['']
 
+        self.x_ticks_ref = []
+        self.y_ticks_ref = []
+
         self.master.configure(background='#E4E4E4')
 
         # Criação da estrutura de frames da janela
@@ -1086,12 +1088,17 @@ class MainWindow(tk.Frame):
 
         self.datasetstoplot.add_checkbutton(label = "Plot Dataset 1", onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[0] )
 
+        # criação do dropdown menu para as opções mais avançadas
+        self.advanced = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label = 'Advanced', menu = self.advanced)
+        self.advanced.add_command(label='Tick Placement', command = self.set_ticks)
+
+        # criação do dropdown menu para as ajudas
         self.help = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label = 'Help', menu = self.help)
         self.help.add_command(label='Documentation', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/docs'))
         self.help.add_command(label='FAQs', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/faq'))
         self.help.add_command(label='About', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/about'))
-
 
         # Criação da zona para inserir a variável independente
         self.independentlabel = tk.Label(self.subframeright1,text="Independent Var", bg='#E4E4E4')
@@ -1439,6 +1446,104 @@ class MainWindow(tk.Frame):
     def restart(self):
         if tk.messagebox.askyesno('START NEW', 'Starting new will erase all progess in your current session. Are you sure you want to start new?'):
             self.create_new()
+
+    def set_ticks(self):
+        try:
+            self.ticks_window.destroy()
+        except:
+            pass
+
+        def hover(button):
+            return lambda e: button.config(bg='white', fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112', fg='white')
+
+        self.ticks_window = tk.Toplevel(self.master)
+        self.ticks_window .title('Ticks Placement')
+        self.ticks_window.geometry('500x400')
+        self.ticks_window.configure(background='#E4E4E4')
+        self.ticks_window.resizable(False,False)
+
+        text = """
+        Ticks are, by default, set equally spaced starting at the left-most (for
+        x-axis) or bottom-most (for y-axis) edge of the graph. Here you can
+        customize that.\n
+        There are two ways to customize the ticks placement:
+            - If you insert only one value, then they will remain equally spaced
+              but will be forced to pass on that value
+            - If you insert more than one value, separated by commas or spaces,
+              then they will only pass on the values you write
+        """
+        intro = tk.Label(self.ticks_window,text=text,bg='#E4E4E4',justify='left')
+        intro["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
+        intro.pack(side='top')
+
+        frame_x = tk.Frame(self.ticks_window,bg='#E4E4E4')
+
+        x_axis = tk.Label(frame_x,text='X-Axis',bg='#E4E4E4',anchor='w')
+        x_axis['font'] = ('Roboto', int(15*1000/self.master.winfo_width()))
+        x_axis.pack(side='left',padx=20)
+
+        self.x_ticks = tk.Entry(frame_x,width=50)
+        x_content = ''
+        for val in self.x_ticks_ref:
+            x_content += '{0:.2f} '.format(val)
+        self.x_ticks.insert(0, x_content)
+        self.x_ticks.pack(side='right',padx=20)
+
+        frame_x.pack(side='top',pady=20)
+
+        frame_y = tk.Frame(self.ticks_window,bg='#E4E4E4')
+
+        y_axis = tk.Label(frame_y,text='Y-Axis',bg='#E4E4E4',anchor='w')
+        y_axis['font'] = ('Roboto', int(15*1000/self.master.winfo_width()))
+        y_axis.pack(side='left',padx=20)
+
+        self.y_ticks = tk.Entry(frame_y,width=50)
+        y_content = ''
+        for val in self.y_ticks_ref:
+            y_content += '{0:.2f} '.format(val)
+        self.y_ticks.insert(0, y_content)
+        self.y_ticks.pack(side='right',padx=20)
+
+        frame_y.pack(side='top',pady=20)
+
+        save_button = tk.Button(self.ticks_window,
+                                text="SAVE",
+                                fg='white',
+                                bg='#F21112',
+                                activebackground='white',
+                                activeforeground='#F21112')
+        save_button["command"] = self.save_ticks
+        save_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        # Alterar as cores quando entra e sai
+        save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
+        save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
+        save_button.pack(side='top',padx=20)
+
+    def save_ticks(self):
+        x_temp = [val for val in self.x_ticks.get().replace(',',' ').split(' ') if val]
+        y_temp = [val for val in self.y_ticks.get().replace(',',' ').split(' ') if val]
+
+        print(x_temp)
+
+        for val in x_temp:
+            try:
+                float(val)
+            except:
+                tk.messagebox.showwarning('ERROR','Non-numerical input found in x-axis ticks. Please correct it.')
+                return
+        for val in y_temp:
+            try:
+                float(val)
+            except:
+                tk.messagebox.showwarning('ERROR','Non-numerical input found in y-axis ticks. Please correct it.')
+                return
+
+        self.x_ticks_ref = [float(val) for val in x_temp]
+        self.y_ticks_ref = [float(val) for val in y_temp]
+
+        self.ticks_window.destroy()
 
     def text(self):
         try:
@@ -2570,7 +2675,7 @@ class MainWindow(tk.Frame):
                 self.ord[x] = np.array(self.ordenadas[x])
                 self.erord[x] = np.array(self.erordenadas[x])
 
-        self.fig = Figure(figsize=(10,10))
+        self.fig = Figure(figsize=(5,10),tight_layout=True)
 
         dataforfit = []
         for x in range(self.numberdatasets):
@@ -2675,14 +2780,47 @@ class MainWindow(tk.Frame):
         y_min  = minord
         y_space = ampy
 
-        xticknumber = 1+int((x_max-x_min)/x_space)
-        yticknumber = 1+int((y_max-y_min)/y_space)
+        # determine the ticks for the x-axis
+        if len(self.x_ticks_ref) == 0:
+            xticknumber = 1+int((x_max-x_min)/x_space)
+            for x in range(xticknumber):
+                x_ticks.append(x*x_space + x_min)
 
-        for x in range(xticknumber):
-            x_ticks.append(x*x_space + x_min)
+        if len(self.x_ticks_ref) == 1:
+            xticknumber = 1+int((x_max-x_min)/x_space)
+            temp = self.x_ticks_ref[0]
+            if self.x_ticks_ref[0] < x_min:
+                while temp < x_min:
+                    temp += x_space
+            if self.x_ticks_ref[0] > x_min:
+                while temp - x_space > x_min:
+                    temp -= x_space
+            for x in range(xticknumber):
+                x_ticks.append(x*x_space + temp)
 
-        for x in range(yticknumber):
-            y_ticks.append(x*y_space + y_min)
+        if len(self.x_ticks_ref) > 1:
+            x_ticks = self.x_ticks_ref
+
+        # determine the ticks for the y-axis
+        if len(self.y_ticks_ref) == 0:
+            yticknumber = 1+int((y_max-y_min)/y_space)
+            for y in range(yticknumber):
+                y_ticks.append(y*y_space + y_min)
+
+        if len(self.y_ticks_ref) == 1:
+            yticknumber = 1+int((y_max-y_min)/y_space)
+            temp = self.y_ticks_ref[0]
+            if self.y_ticks_ref[0] < y_min:
+                while temp < y_min:
+                    temp += y_space
+            if self.y_ticks_ref[0] > y_min:
+                while temp - y_space > y_min:
+                    temp -= y_space
+            for y in range(yticknumber):
+                y_ticks.append(y*y_space + temp)
+
+        if len(self.y_ticks_ref) > 1:
+            y_ticks = self.y_ticks_ref
 
         self.a = self.fig.add_subplot(111 ,projection = None,
                                  xlim = (x_min,x_max), ylim = (y_min, y_max),
