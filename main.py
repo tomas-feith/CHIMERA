@@ -24,7 +24,7 @@ import webbrowser
 import requests
 
 def check_version():
-    current_version = '1.2.0'
+    current_version = '1.3.0'
     try:
         latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
     except:
@@ -691,7 +691,6 @@ class MainWindow(tk.Frame):
         global count
         # Para garantir que os widgets e imagens mudam de tamanho
         self.master.bind('<Configure>', self.resize_window)
-
         check_version()
 
     def place_item(self, src, ratio, canvas):
@@ -706,58 +705,15 @@ class MainWindow(tk.Frame):
         canvas.image = img
 
     def resize_window(self, event):
-        # Isto serve para quê? Pra so chamar estas cenas quando ainda tas no ecra inicial
-        if(count == 0):
-            self.title_canvas.delete("all")
-            self.logo_canvas.delete("all")
-            self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
-            self.place_item(resource_path("img/Logo.png"), 0.26, self.logo_canvas)
-            #Define novas posicoes relativas a janela
-            # self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
-            self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
-            #define novos tamanhos relativos a janela
-            self.new["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
-            # self.old["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
-            self.new.configure(height = 1)
-            # self.old.configure(height = 1)
-
-        if(count == 1 or count == 2):
-            for button in self.buttons:
-                button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
-                self.functionlabel["font"] = ("Roboto",int(0.013*self.master.winfo_width()))
-                self.parameterlabel["font"] = ("Roboto",int(0.013*self.master.winfo_width()))
-                self.independentlabel["font"] = ("Roboto",int(0.012*self.master.winfo_width()))
-                self.independententry.configure(font=("Roboto", int(0.02*self.master.winfo_height())))
-                self.parameterentry.configure(font=("Roboto", int(0.02*self.master.winfo_height())))
-                self.functionentry.configure(font=("Roboto", int(0.02*self.master.winfo_height())))
-                self.funcplotlabel.configure(font = ("Roboto",int(0.012*self.master.winfo_width())))
-                self.initialguesslabel.configure(font = ("Roboto",int(0.012*self.master.winfo_width())))
-                for x in range(self.boxnumber):
-                    self.plotparamboxes[x].configure(width=int(0.014*self.master.winfo_width()))
-                    self.paramerrboxes[x].configure(width=int(0.014*self.master.winfo_width()))
-                    self.paramresboxes[x].configure(width=int(0.014*self.master.winfo_width()))
-                    self.paramboxes[x].configure(width=int(0.014*self.master.winfo_width()))
-
-                self.xaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
-                self.xaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
-                self.yaxisrangelabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
-                self.yaxistolabel.configure(font=("Roboto", int(0.012*self.master.winfo_width())))
-                self.resultlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
-                self.errorlabel['font'] = ("Roboto", int(0.012*self.master.winfo_width()))
-
-                self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
-                self.errorscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
-                self.markerscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
-                self.linescalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
-                self.funcplotscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
-                self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.011*self.master.winfo_width()))
-
-            if(self.linewidthscale['state'] != tk.ACTIVE and self.errorsizescale['state'] != tk.ACTIVE and self.markersizescale['state'] != tk.ACTIVE and self.funcplotwidthscale['state'] != tk.ACTIVE and self.funcfitwidthscale['state'] != tk.ACTIVE):
-                self.linewidthscale['width'] = 0.025*self.master.winfo_height()
-                self.errorsizescale['width'] = 0.025*self.master.winfo_height()
-                self.markersizescale['width'] = 0.025*self.master.winfo_height()
-                self.funcfitwidthscale['width'] = 0.025*self.master.winfo_height()
-                self.funcplotwidthscale['width'] = 0.025*self.master.winfo_height()
+        self.title_canvas.delete("all")
+        self.logo_canvas.delete("all")
+        self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
+        self.place_item(resource_path("img/Logo.png"), 0.26, self.logo_canvas)
+        #Define novas posicoes relativas a janela
+        self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
+        #define novos tamanhos relativos a janela
+        self.new["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
+        self.new.configure(height = 1)
 
     def create_widgets(self):
         # Criar botão para um novo fit
@@ -805,7 +761,7 @@ class MainWindow(tk.Frame):
         # self.master.configure(background='#E4E4E4')
 
     def create_new(self):
-
+        self.master.unbind('<Configure>')
         self.selecteddataset = 0
 
         self.countplots = 0
@@ -855,7 +811,7 @@ class MainWindow(tk.Frame):
         self.frameleft = tk.Frame(self.master,  bg='#E4E4E4')
         self.frameleft.place(in_=self.master, relwidth=0.5, relheight=1, relx=0, rely=0)
 
-        #Frameright, contem tudo na parte direita da janela
+        # Frameright, contem tudo na parte direita da janela
         self.frameright = tk.Frame(self.master,  bg='#E4E4E4')
         self.frameright.place( in_ = self.master, relwidth=0.5, relheight=1,relx=0.5, rely=0)
 
@@ -1080,7 +1036,7 @@ class MainWindow(tk.Frame):
         self.choosecolor.add_command(label = 'Fit Function Color', command = self.funcfitcolorpick)
 
         self.datasetstoplot = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
+        self.menubar.add_cascade(label = "Choose Datasets", menu = self.datasetstoplot)
 
         self.datasetstoplotvar = []
         self.datasetstoplotvar.append(tk.BooleanVar())
@@ -1234,7 +1190,7 @@ class MainWindow(tk.Frame):
         self.linescalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
         self.linescalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.56)
         self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.lineslider, showvalue = False, variable = self.linewidth[0])
-        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.575)
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.56, relheight=0.06)
         self.linewidthscale['width'] = 0.025*self.master.winfo_width()
         self.linewidthscale['state'] = tk.DISABLED
 
@@ -1245,7 +1201,7 @@ class MainWindow(tk.Frame):
         self.markerscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
         self.markerscalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.64)
         self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.markerslider,showvalue =False, variable = self.markersize[0])
-        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.655)
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.64, relheight=0.06)
         self.markersizescale['width'] = 0.025*self.master.winfo_width()
         self.markersizescale['state'] = tk.DISABLED
 
@@ -1256,7 +1212,7 @@ class MainWindow(tk.Frame):
         self.errorscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
         self.errorscalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.88)
         self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.errorslider, showvalue = False, variable = self.errorwidth[0])
-        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.895)
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.88, relheight=0.06)
         self.errorsizescale['width'] = 0.025*self.master.winfo_width()
         self.errorsizescale['state'] = tk.DISABLED
 
@@ -1267,7 +1223,7 @@ class MainWindow(tk.Frame):
         self.funcplotscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
         self.funcplotscalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.72)
         self.funcplotwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.funcplotslider, showvalue = False, variable = self.funcplotwidth[0])
-        self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.735)
+        self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.72, relheight=0.06)
         self.funcplotwidthscale['width'] = 0.025*self.master.winfo_width()
         self.funcplotwidthscale['state'] = tk.DISABLED
 
@@ -1278,7 +1234,7 @@ class MainWindow(tk.Frame):
         self.funcfitscalelabelvalue['font'] = ("Roboto",int(0.009*self.master.winfo_width()))
         self.funcfitscalelabelvalue.place(in_ = self.subframeright3, relx = 0.55, rely=0.80)
         self.funcfitwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.funcfitslider, showvalue = False, variable = self.funcfitwidth[0])
-        self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.815)
+        self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.80, relheight=0.06)
         self.funcfitwidthscale['width'] = 0.025*self.master.winfo_width()
         self.funcfitwidthscale['state'] = tk.DISABLED
 
@@ -1298,30 +1254,30 @@ class MainWindow(tk.Frame):
         self.funcfitoptiontranslater = []
 
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
-            'Triangle', 'Square', 'Circle'], textvariable = self.markeroption)
+            'Triangle', 'Square', 'Circle', 'Star', 'Diamond', 'X'], textvariable = self.markeroption)
         self.markersizecombo.current(2)
         self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.64, relheight=0.065)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
         self.markeroptiontranslater.append('o')
 
         self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
-            'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
+            'Solid', 'Dashed', 'Dotted', 'DashDot'], textvariable = self.lineoption)
         self.linestylecombo.current(0)
-        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.57, relheight=0.065)
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.56, relheight=0.065)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
         self.lineoptiontranslater.append('-')
 
         self.funcplotstylecombo = ttk.Combobox(self.subframeright3, values=[
-            'Solid', 'Dashed', 'Dotted'], textvariable = self.funcplotoption)
+            'Solid', 'Dashed', 'Dotted', 'DashDot'], textvariable = self.funcplotoption)
         self.funcplotstylecombo.current(0)
-        self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.71, relheight=0.065)
+        self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.72, relheight=0.065)
         self.funcplotstylecombo.bind("<<ComboboxSelected>>", self.funcplotselector)
         self.funcplotoptiontranslater.append('-')
 
         self.funcfitstylecombo = ttk.Combobox(self.subframeright3, values=[
-            'Solid', 'Dashed', 'Dotted'], textvariable = self.funcfitoption)
+            'Solid', 'Dashed', 'Dotted', 'DashDot'], textvariable = self.funcfitoption)
         self.funcfitstylecombo.current(0)
-        self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.79, relheight=0.065)
+        self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.8, relheight=0.065)
         self.funcfitstylecombo.bind("<<ComboboxSelected>>", self.funcfitselector)
         self.funcfitoptiontranslater.append('-')
 
@@ -1407,41 +1363,58 @@ class MainWindow(tk.Frame):
         if(self.markeroption.get() == 'Triangle'):
             self.markeroptiontranslater[self.selecteddataset] = '^'
 
+        if self.markeroption.get() == 'Star':
+            self.markeroptiontranslater[self.selecteddataset] = '*'
+
+        if self.markeroption.get() == 'Diamond':
+            self.markeroptiontranslater[self.selecteddataset] = 'D'
+        if self.markeroption.get() == 'X':
+            self.markeroptiontranslater[self.selecteddataset] = 'x'
+
         self.plot_dataset()
 
     def lineselector(self,event):
-        if(self.lineoption.get() == 'Solid'):
+        if self.lineoption.get() == 'Solid':
             self.lineoptiontranslater[self.selecteddataset] = '-'
 
-        if(self.lineoption.get() == 'Dashed'):
+        if self.lineoption.get() == 'Dashed':
             self.lineoptiontranslater[self.selecteddataset] = '--'
 
-        if(self.lineoption.get() == 'Dotted'):
+        if self.lineoption.get() == 'Dotted':
             self.lineoptiontranslater[self.selecteddataset] = ':'
+
+        if self.lineoption.get() == 'DashDot':
+            self.lineoptiontranslater[self.selecteddataset] = '-.'
 
         self.plot_dataset()
 
     def funcplotselector(self,event):
-        if(self.funcplotoption.get() == 'Solid'):
+        if self.funcplotoption.get() == 'Solid':
             self.funcplotoptiontranslater[self.selecteddataset] = '-'
 
-        if(self.funcplotoption.get() == 'Dashed'):
+        if self.funcplotoption.get() == 'Dashed':
             self.funcplotoptiontranslater[self.selecteddataset] = '--'
 
-        if(self.funcplotoption.get() == 'Dotted'):
+        if self.funcplotoption.get() == 'Dotted':
             self.funcplotoptiontranslater[self.selecteddataset] = ':'
+
+        if self.funcplotoption.get() == 'DashDot':
+            self.funcplotoptiontranslater[self.selecteddataset] = '-.'
 
         self.plot_dataset()
 
     def funcfitselector(self,event):
-        if(self.funcfitoption.get() == 'Solid'):
+        if self.funcfitoption.get() == 'Solid':
             self.funcfitoptiontranslater[self.selecteddataset] = '-'
 
-        if(self.funcfitoption.get() == 'Dashed'):
+        if self.funcfitoption.get() == 'Dashed':
             self.funcfitoptiontranslater[self.selecteddataset] = '--'
 
-        if(self.funcfitoption.get() == 'Dotted'):
+        if self.funcfitoption.get() == 'Dotted':
             self.funcfitoptiontranslater[self.selecteddataset] = ':'
+
+        if self.funcfitoption.get() == 'DashDot':
+            self.funcfitoptiontranslater[self.selecteddataset] = '-.'
 
         self.plot_dataset()
 
@@ -1535,8 +1508,6 @@ class MainWindow(tk.Frame):
         x_temp = [val for val in self.x_ticks.get().replace(',',' ').split(' ') if val]
         y_temp = [val for val in self.y_ticks.get().replace(',',' ').split(' ') if val]
 
-        print(x_temp)
-
         for val in x_temp:
             try:
                 float(val)
@@ -1552,6 +1523,16 @@ class MainWindow(tk.Frame):
 
         self.x_ticks_ref = [float(val) for val in x_temp]
         self.y_ticks_ref = [float(val) for val in y_temp]
+
+        if len(self.x_ticks_ref) > 1:
+            self.xaxistickspentry.config(state='disabled')
+        else:
+            self.xaxistickspentry.config(state='normal')
+
+        if len(self.y_ticks_ref) > 1:
+            self.yaxistickspentry.config(state='disabled')
+        else:
+            self.yaxistickspentry.config(state='normal')
 
         self.ticks_window.destroy()
 
@@ -2287,10 +2268,10 @@ class MainWindow(tk.Frame):
         self.funcfitwidth.pop(self.selecteddataset)
         self.funcplotwidth.pop(self.selecteddataset)
 
-        self.menubar.delete("Plot Datasets")
+        self.menubar.delete("Choose Datasets")
 
         self.datasetstoplot = tk.Menu(self.menubar)
-        self.menubar.add_cascade(label = "Plot Datasets", menu = self.datasetstoplot)
+        self.menubar.add_cascade(label = "Choose Datasets", menu = self.datasetstoplot)
 
         self.datasetstoplotvar.pop(self.selecteddataset)
 
@@ -2395,17 +2376,26 @@ class MainWindow(tk.Frame):
         self.funcplotstylecombo.destroy()
 
         self.linestylecombo = ttk.Combobox(self.subframeright3, values=[
-            'Solid', 'Dashed', 'Dotted'], textvariable = self.lineoption)
+            'Solid', 'Dashed', 'Dotted', 'DashDot'], textvariable = self.lineoption)
 
         self.funcfitstylecombo = ttk.Combobox(self.subframeright3, values=[
-            'Solid', 'Dashed', 'Dotted'], textvariable = self.funcfitoption)
+            'Solid', 'Dashed', 'Dotted', 'DashDot'], textvariable = self.funcfitoption)
 
         self.funcplotstylecombo = ttk.Combobox(self.subframeright3, values=[
-            'Solid', 'Dashed', 'Dotted'], textvariable = self.funcplotoption)
+            'Solid', 'Dashed', 'Dotted', 'DashDot'], textvariable = self.funcplotoption)
 
         self.markersizecombo = ttk.Combobox(self.subframeright3, values=[
-            'Triangle', 'Square', 'Circle'], textvariable = self.markeroption )
+            'Triangle', 'Square', 'Circle', 'Star', 'Diamond', 'X'], textvariable = self.markeroption )
 
+        if self.markeroptiontranslater[self.selecteddataset] == 'x':
+            self.markersizecombo.current(5)
+            self.markeroption.set('X')
+        if self.markeroptiontranslater[self.selecteddataset] == 'D':
+            self.markersizecombo.current(4)
+            self.markeroption.set('Diamond')
+        if self.markeroptiontranslater[self.selecteddataset] == '*':
+            self.markersizecombo.current(3)
+            self.markeroption.set('Star')
         if(self.markeroptiontranslater[self.selecteddataset] == 'o'):
             self.markersizecombo.current(2)
             self.markeroption.set('Circle')
@@ -2416,67 +2406,76 @@ class MainWindow(tk.Frame):
             self.markersizecombo.current(0)
             self.markeroption.set('Triangle')
 
-        if(self.lineoptiontranslater[self.selecteddataset] == '-'):
+        if self.lineoptiontranslater[self.selecteddataset] == '-':
             self.linestylecombo.current(0)
             self.lineoption.set('Solid')
-        if(self.lineoptiontranslater[self.selecteddataset] == '--'):
+        if self.lineoptiontranslater[self.selecteddataset] == '--':
             self.linestylecombo.current(1)
             self.lineoption.set('Dashed')
-        if(self.lineoptiontranslater[self.selecteddataset] == ':'):
+        if self.lineoptiontranslater[self.selecteddataset] == ':':
             self.linestylecombo.current(2)
             self.lineoption.set('Dotted')
+        if self.lineoptiontranslater[self.selecteddataset] == '-.':
+            self.linestylecombo.current(3)
+            self.lineoption.set('DashDot')
 
-        if(self.funcfitoptiontranslater[self.selecteddataset] == '-'):
+        if self.funcfitoptiontranslater[self.selecteddataset] == '-':
             self.funcfitstylecombo.current(0)
             self.funcfitoption.set('Solid')
-        if(self.funcfitoptiontranslater[self.selecteddataset] == '--'):
+        if self.funcfitoptiontranslater[self.selecteddataset] == '--':
             self.funcfitstylecombo.current(1)
             self.funcfitoption.set('Dashed')
-        if(self.funcfitoptiontranslater[self.selecteddataset] == ':'):
+        if self.funcfitoptiontranslater[self.selecteddataset] == ':':
             self.funcfitstylecombo.current(2)
             self.funcfitoption.set('Dotted')
+        if self.funcfitoptiontranslater[self.selecteddataset] == '-.':
+            self.funcfitstylecombo.current(3)
+            self.funcfitoption.set('DashDot')
 
-        if(self.funcplotoptiontranslater[self.selecteddataset] == '-'):
+        if self.funcplotoptiontranslater[self.selecteddataset] == '-':
             self.funcplotstylecombo.current(0)
             self.funcplotoption.set('Solid')
-        if(self.funcplotoptiontranslater[self.selecteddataset] == '--'):
+        if self.funcplotoptiontranslater[self.selecteddataset] == '--':
             self.funcplotstylecombo.current(1)
             self.funcplotoption.set('Dashed')
-        if(self.funcplotoptiontranslater[self.selecteddataset] == ':'):
+        if self.funcplotoptiontranslater[self.selecteddataset] == ':':
             self.funcplotstylecombo.current(2)
             self.funcplotoption.set('Dotted')
+        if self.funcplotoptiontranslater[self.selecteddataset] == '-.':
+            self.funcplotstylecombo.current(3)
+            self.funcplotoption.set('DashDot')
 
         self.markersizecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.64, relheight=0.05)
         self.markersizecombo.bind("<<ComboboxSelected>>", self.markerselector)
 
-        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.57, relheight=0.05)
+        self.linestylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.56, relheight=0.05)
         self.linestylecombo.bind("<<ComboboxSelected>>", self.lineselector)
 
-        self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.71, relheight=0.05)
+        self.funcplotstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.72, relheight=0.05)
         self.funcplotstylecombo.bind("<<ComboboxSelected>>", self.funcplotselector)
 
-        self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.79, relheight=0.05)
+        self.funcfitstylecombo.place(in_ = self.subframeright3, relwidth = 0.15, relx = 0.63, rely=0.80, relheight=0.05)
         self.funcfitstylecombo.bind("<<ComboboxSelected>>", self.funcfitselector)
 
         # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
         self.linewidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.lineslider, showvalue = False, variable = self.linewidth[self.selecteddataset])
-        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.575)
+        self.linewidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.56, relheight=0.06)
         self.linewidthscale['width'] = 0.025*self.master.winfo_width()
 
         self.markersizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.markerslider,showvalue =False, variable = self.markersize[self.selecteddataset])
-        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.655)
+        self.markersizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.64, relheight=0.06)
         self.markersizescale['width'] = 0.025*self.master.winfo_width()
 
         self.funcplotwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.funcplotslider, showvalue = False, variable = self.funcplotwidth[self.selecteddataset])
-        self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.735)
+        self.funcplotwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.72, relheight=0.06)
         self.funcplotwidthscale['width'] = 0.025*self.master.winfo_width()
 
         self.funcfitwidthscale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.funcfitslider,showvalue =False, variable = self.funcfitwidth[self.selecteddataset])
-        self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.815)
+        self.funcfitwidthscale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.80, relheight=0.06)
         self.funcfitwidthscale['width'] = 0.025*self.master.winfo_width()
 
         self.errorsizescale = tk.Scale(self.subframeright3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.errorslider, showvalue = False, variable = self.errorwidth[self.selecteddataset])
-        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.895)
+        self.errorsizescale.place(in_ = self.subframeright3, relwidth = 0.17, relx = 0.34, rely=0.88, relheight=0.06)
         self.errorsizescale['width'] = 0.025*self.master.winfo_width()
 
         self.errorscalelabelvalue['text'] = self.errorwidth[self.selecteddataset].get()
@@ -2742,6 +2741,7 @@ class MainWindow(tk.Frame):
             maxord = float(self.yaxismaxentry.get().replace(',','.').replace(' ',''))
             minord = float(self.yaxisminentry.get().replace(',','.').replace(' ',''))
             ampy   = float(self.yaxistickspentry.get().replace(',','.').replace(' ',''))
+
         if self.autoscaley.get():
             allord = []
             for x in range(len(a)):
@@ -3000,7 +3000,7 @@ class MainWindow(tk.Frame):
                 except: pass
                 self.chisqentry.config(state = 'readonly')
                 for x in range(self.boxnumber):
-                    self.paramerrlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
+                    self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
                     self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
                     try: self.paramerrboxes[x].insert(0,"{0:.7e}".format(self.fit_uncert[self.selecteddataset][x]))
@@ -3019,7 +3019,7 @@ class MainWindow(tk.Frame):
                     except: pass
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
-                    self.paramlabel[x].grid(column = 2, row = x, pady=10, sticky= tk.E)
+                    self.paramlabel[x].grid(column = 2, row = x, pady=10, padx=(15,0), sticky= tk.E)
                     self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#E4E4E4'))
                     self.plotparamlabel[x].grid(column=0, row=x, pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
@@ -3108,7 +3108,7 @@ class MainWindow(tk.Frame):
                     except: pass
                     self.paramboxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramlabel.append(tk.Label(self.anotherframe, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
-                    self.paramlabel[x].grid(column = 2, row = x, pady=10, sticky= tk.E)
+                    self.paramlabel[x].grid(column = 2, row = x, pady=10, padx=(15,0), sticky= tk.E)
                     self.plotparamlabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg = '#E4E4E4'))
                     self.plotparamlabel[x].grid(column=0, row=x, pady=10, sticky = tk.E)
                     self.plotparamboxes.append(tk.Entry(self.anotherframe))
