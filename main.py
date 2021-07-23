@@ -24,7 +24,7 @@ import webbrowser
 import requests
 
 def check_version():
-    current_version = '1.3.0'
+    current_version = '1.4.0'
     try:
         latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
     except:
@@ -792,6 +792,7 @@ class MainWindow(tk.Frame):
         self.fit_params = [['']]
         self.fit_uncert = [['']]
         self.fit_chi = ['']
+        self.fit_r2 = ['']
         self.init_values = [[1.0,1.0,1.0,1.0]]
 
         self.x_func = [[]]
@@ -1007,7 +1008,7 @@ class MainWindow(tk.Frame):
         self.plotoptions.add_checkbutton(label = "Plot points", onvalue = 1, offvalue = 0, variable = self.wantpoints[self.selecteddataset])
         self.plotoptions.add_checkbutton(label = "Connect points", onvalue = 1, offvalue = 0, variable = self.wantline[self.selecteddataset])
         self.plotoptions.add_checkbutton(label = "Error bars", onvalue = 1, offvalue = 0, variable = self.wanterror[self.selecteddataset])
-        self.plotoptions.add_checkbutton(label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit[self.selecteddataset] )
+        self.plotoptions.add_checkbutton(label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit[self.selecteddataset])
         self.plotoptions.add_checkbutton(label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction[self.selecteddataset])
 
         # Estes 3 menus na self.menubar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
@@ -1284,13 +1285,20 @@ class MainWindow(tk.Frame):
         sty = ttk.Style(self.subframeright3)
         sty.configure("TSeparator", background="#F21112")
 
-        self.chisqlabel = tk.Label(self.frameright, text = u'\u03C7'+'\N{SUPERSCRIPT TWO}'+'/'+'\u03BD', bg= '#E4E4E4')
-        self.chisqlabel.place(in_ = self.frameright, rely=0.46, relx = 0.425)
+        self.chisqlabel = tk.Label(self.frameright, text = u'\u03C7'+'\N{SUPERSCRIPT TWO}'+'/'+'\u03BD', bg='#E4E4E4')
+        self.chisqlabel.place(rely=0.46, relx = 0.7)
         self.chisqentry = tk.Entry(self.frameright, justify='center')
+        self.r2label = tk.Label(self.frameright, text=u'R\u00B2', bg='#E4E4E4')
+        self.r2label.place(rely=0.46, relx=0.2)
+        self.r2entry = tk.Entry(self.frameright, justify='center')
         try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
         except: pass
-        self.chisqentry.place( in_ = self.frameright, rely = 0.46, relx=0.475, relwidth = 0.1)
+        try: self.r2entry.insert(0, "{0:.6e}".format(self.fit_chi[self.selecteddataset]))
+        except: pass
+        self.chisqentry.place(rely = 0.46, relx=0.75, relwidth=0.08)
         self.chisqentry.config(state = 'readonly')
+        self.r2entry.place(rely=0.46, relx=0.24, relwidth=0.08)
+        self.r2entry.config(state='readonly')
 
         sep = ttk.Separator(self.subframeright3, orient = tk.VERTICAL)
         sep.place(in_ = self.subframeright3, relx=0.5, relheight = 0.5, rely=0.05)
@@ -2129,6 +2137,7 @@ class MainWindow(tk.Frame):
         self.fit_params.append([])
         self.fit_uncert.append([])
         self.fit_chi.append('')
+        self.fit_r2.append('')
         self.init_values.append([1.0]*len(self.paramboxes))
 
         self.x_func.append([])
@@ -2221,6 +2230,7 @@ class MainWindow(tk.Frame):
         self.fit_params.pop(self.selecteddataset)
         self.fit_uncert.pop(self.selecteddataset)
         self.fit_chi.pop(self.selecteddataset)
+        self.fit_r2.pop(self.selecteddataset)
         self.init_values.pop(self.selecteddataset)
 
         self.x_func.pop(self.selecteddataset)
@@ -2340,6 +2350,7 @@ class MainWindow(tk.Frame):
         self.independententry.delete(0,tk.END)
         self.independententry.insert(0,self.indeps[self.selecteddataset])
         self.chisqentry.delete(0,tk.END)
+        self.r2entry.delete(0,tk.END)
 
         self.update_parameter()
 
@@ -2492,6 +2503,27 @@ class MainWindow(tk.Frame):
             self.funcplotwidthscale['state'] = tk.DISABLED
 
     def compile_function(self):
+        # clean the fit parameters
+        for x in range(self.boxnumber):
+            self.paramerrboxes[x].config(state = 'normal')
+            self.paramerrboxes[x].delete(0, tk.END)
+            self.paramerrboxes[x].config(state = 'readonly')
+
+            self.paramresboxes[x].config(state = 'normal')
+            self.paramresboxes[x].delete(0, tk.END)
+            self.paramresboxes[x].config(state = 'readonly')
+        # clean r2 and chisq
+        self.chisqentry.config(state = 'normal')
+        self.chisqentry.delete(0, tk.END)
+        self.chisqentry.config(state = 'readonly')
+        self.r2entry.config(state='normal')
+        self.r2entry.delete(0, tk.END)
+        self.r2entry.config(state = 'readonly')
+        # erase the graph
+        self.wantfit[self.selecteddataset].set(0)
+        try: self.canvas.get_tk_widget().pack_forget()
+        except: pass
+
         parsed_input = parser(self.functionentry.get(),
                               self.parameterentry.get(),
                               self.independententry.get())
@@ -2870,7 +2902,7 @@ class MainWindow(tk.Frame):
                         else:
                             self.a.plot(self.x_func[i], self.y_func[i], lw = self.funcplotwidth[0].get(), ls = str(self.funcplotoptiontranslater[i]), color = self.funcplotcolorvar[i])
                     if self.wantfit[i].get():
-                        (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i]) = self.fit_data(dataforfit[i], self.init_values[i], 2000, i)
+                        (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i], self.fit_r2[i]) = self.fit_data(dataforfit[i], self.init_values[i], 2000, i)
                         self.plot_fittedfunction(i)
                         if self.fit_labels[i]:
                             self.a.plot(self.xfittedfunc[i], self.yfittedfunc[i], label=self.fit_labels[i], lw = self.funcfitwidth[i].get(), ls = str(self.funcfitoptiontranslater[i]), color = self.funcfitcolorvar[i])
@@ -2891,6 +2923,10 @@ class MainWindow(tk.Frame):
                             self.chisqentry.delete(0, tk.END)
                             self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
                             self.chisqentry.config(state = 'readonly')
+                            self.r2entry.config(state='normal')
+                            self.r2entry.delete(0, tk.END)
+                            self.r2entry.insert(0, "{0:.6f}".format(self.fit_r2[self.selecteddataset]))
+                            self.r2entry.config(state = 'readonly')
         # Se calhar por também uma condição para ver se o utilizador quer grid
         self.a.grid(True)
 
@@ -2907,6 +2943,9 @@ class MainWindow(tk.Frame):
         self.canvas.draw()
 
     def update_parameter(self):
+        self.wantfit[self.selecteddataset].set(0)
+        try: self.canvas.get_tk_widget().pack_forget()
+        except: pass
         #Mesmo raciocinio de destruir a caixa onde se poem os parametros e inicial guesses para por as novas
         global count
         self.params[self.selecteddataset] = self.parameterentry.get()
@@ -2945,7 +2984,7 @@ class MainWindow(tk.Frame):
         else:
             self.process_params = process[1]
             clean_split = process[1]
-            if (count==2) :
+            if count==2:
 
                 self.subframeright2.destroy()
 
@@ -2996,22 +3035,28 @@ class MainWindow(tk.Frame):
 
                 self.chisqentry.config(state = 'normal')
                 self.chisqentry.delete(0, tk.END)
-                try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
-                except: pass
+                # try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
+                # except: pass
                 self.chisqentry.config(state = 'readonly')
+
+                self.r2entry.config(state = 'normal')
+                self.r2entry.delete(0, tk.END)
+                # try: self.r2entry.insert(0, "{0:.6f}".format(self.fit_r2[self.selecteddataset]))
+                # except: pass
+                self.r2entry.config(state = 'readonly')
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
                     self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
-                    try: self.paramerrboxes[x].insert(0,"{0:.7e}".format(self.fit_uncert[self.selecteddataset][x]))
-                    except: pass
+                    # try: self.paramerrboxes[x].insert(0,"{0:.7e}".format(self.fit_uncert[self.selecteddataset][x]))
+                    # except: pass
                     self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
                     self.paramerrboxes[x].config(state = 'readonly')
                     self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
                     self.paramresboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
-                    try: self.paramresboxes[x].insert(0,"{0:.7e}".format(self.fit_params[self.selecteddataset][x]))
-                    except: pass
+                    # try: self.paramresboxes[x].insert(0,"{0:.7e}".format(self.fit_params[self.selecteddataset][x]))
+                    # except: pass
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
@@ -3088,6 +3133,12 @@ class MainWindow(tk.Frame):
                 try: self.chisqentry.insert(0, "{0:.3e}".format(self.fit_chi[self.selecteddataset]))
                 except: pass
                 self.chisqentry.config(state = 'readonly')
+
+                self.r2entry.config(state = 'normal')
+                self.r2entry.delete(0, tk.END)
+                try: self.r2entry.insert(0, "{0:.6f}".format(self.fit_r2[self.selecteddataset]))
+                except: pass
+                self.r2entry.config(state = 'readonly')
                 for x in range(self.boxnumber):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
@@ -3171,6 +3222,7 @@ class MainWindow(tk.Frame):
         fit.beta: parametros de ajustamento
         fit.sd_beta: incertezas dos parametros
         fit.res_var: chi quadrado reduzido
+        r2: R^2 para o fit
 
         """
         self.dataset_to_fit = dataset_number
@@ -3225,7 +3277,11 @@ class MainWindow(tk.Frame):
         for r in fit.stopreason:
             self.full_output[dataset_number] += str(r) + '\n'
 
-        return (fit.beta, fit.sd_beta, fit.res_var)
+        # calcular o R^2
+        ss_tot = sum([(y - np.average(y_points))**2 for y in y_points])
+        ss_res =sum([(y_points[i] - self.fit_function(fit.beta,x_points[i]))**2 for i in range(len(y_points))])
+
+        return (fit.beta, fit.sd_beta, fit.res_var, 1 - ss_res/ss_tot)
 
     def fit_function(self, B, _x):
         # try:
