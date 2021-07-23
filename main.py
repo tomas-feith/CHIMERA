@@ -41,7 +41,7 @@ def check_version():
             clean_version += char
 
     if clean_version != current_version:
-        if tk.messagebox.askyesno('UPDATE AVAILABLE','There is a new version available! Do you want to be redirected to download it now?'):
+        if tk.messagebox.askyesno('UPDATE AVAILABLE','There is a new version available (%s -> %s)! Do you want to be redirected to download it now?' % (current_version, clean_version)):
             webbrowser.open('https://sites.google.com/view/chimera-fit/install')
 
 def resource_path(relative_path):
@@ -760,15 +760,24 @@ class MainWindow(tk.Frame):
         # count = 1
         # self.master.configure(background='#E4E4E4')
 
-    def create_new(self):
+    def create_new(self, event=None):
+        # bindings for hotkeys
+        # Remove the image size adjustements
         self.master.unbind('<Configure>')
+        # Export Image
+        self.master.bind('<Control-Shift-E>', self.export_image)
+        self.master.bind('<Control-Shift-e>', self.export_image)
+        # New Project
+        self.master.bind('<Control-N>', self.create_new)
+        self.master.bind('<Control-n>', self.create_new)
+
+
         self.selecteddataset = 0
 
         self.countplots = 0
         # Destruir tudo o que estava na janela
         self.title_canvas.delete("all")
         self.logo_canvas.delete("all")
-        # self.old.destroy()
         self.new.destroy()
         global count
         count = 1
@@ -805,6 +814,10 @@ class MainWindow(tk.Frame):
 
         self.x_ticks_ref = []
         self.y_ticks_ref = []
+
+        # Definir o ratio da figura
+        self.width_ratio = 1
+        self.height_ratio = 1
 
         self.master.configure(background='#E4E4E4')
 
@@ -984,9 +997,9 @@ class MainWindow(tk.Frame):
 
         # Este é o botão file na self.menubar
         self.file_options = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label="File", menu=self.file_options)
-        self.file_options.add_command(label='Start New', command = self.restart)
-        self.file_options.add_command(label='Export Image', command=self.export_image)
+        self.menubar.add_cascade(label="File", underline=0, menu=self.file_options)
+        self.file_options.add_command(label='Start New', command = self.restart, accelerator="Ctrl+N")
+        self.file_options.add_command(label='Export Image', command=self.export_image, accelerator="Ctrl+Shift+E")
         # self.file_options.add_command(label='Save Project', command=self.save_everything)
         # self.file_options.add_command(label='Import Project', command=self.import_project)
 
@@ -1049,6 +1062,7 @@ class MainWindow(tk.Frame):
         self.advanced = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label = 'Advanced', menu = self.advanced)
         self.advanced.add_command(label='Tick Placement', command = self.set_ticks)
+        self.advanced.add_command(label='Figure Ratio', command = self.set_ratio)
 
         # criação do dropdown menu para as ajudas
         self.help = tk.Menu(self.menubar, tearoff=0)
@@ -1103,14 +1117,26 @@ class MainWindow(tk.Frame):
         self.xaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#E4E4E4')
         self.xaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.2, relheight=0.1, relx = 0, rely = 0.1)
 
-        self.xaxisminentry = tk.Entry(self.subframeright3, justify='center')
+        self.remove_autoscale = True
+        def remove_auto_x(event):
+            if count == 2 and self.remove_autoscale:
+                self.autoscalex.set(0)
+        def remove_auto_y(event):
+            if count == 2 and self.remove_autoscale:
+                self.autoscaley.set(0)
+
+        x_min = tk.StringVar()
+        x_min.trace("w", lambda name, index, mode, x_min=x_min: remove_auto_x(x_min))
+        self.xaxisminentry = tk.Entry(self.subframeright3, justify='center', textvariable=x_min)
         self.xaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0.1)
         self.xaxisminentry.insert(0, "0")
 
         self.xaxistolabel = tk.Label(self.subframeright3, text = "to", bg='#E4E4E4')
         self.xaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.3, rely=0.1)
 
-        self.xaxismaxentry = tk.Entry(self.subframeright3, justify='center')
+        x_max = tk.StringVar()
+        x_max.trace('w', lambda name, index, mode, x_min=x_min: remove_auto_x(x_max))
+        self.xaxismaxentry = tk.Entry(self.subframeright3, justify='center', textvariable=x_max)
         self.xaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.35, rely=0.1)
         self.xaxismaxentry.insert(0, "10")
 
@@ -1124,7 +1150,9 @@ class MainWindow(tk.Frame):
         self.xaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#E4E4E4')
         self.xaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx=0.175, rely= 0.4)
 
-        self.xaxistickspentry = tk.Entry(self.subframeright3)
+        x_space = tk.StringVar()
+        x_space.trace('w', lambda name, index, mode, x_space=x_space: remove_auto_x(x_space))
+        self.xaxistickspentry = tk.Entry(self.subframeright3, textvariable=x_space)
         self.xaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx = 0.35, rely=0.45, anchor="w")
         self.xaxistickspentry.insert(0, "1")
 
@@ -1141,14 +1169,18 @@ class MainWindow(tk.Frame):
         self.yaxisrangelabel = tk.Label(self.subframeright3, text = "Range: from", bg='#E4E4E4')
         self.yaxisrangelabel.place(in_ = self.subframeright3, relwidth=0.2, relheight=0.1, relx = 0.50, rely = 0.1)
 
-        self.yaxisminentry = tk.Entry(self.subframeright3, justify='center')
+        y_min = tk.StringVar()
+        y_min.trace('w', lambda name, index, mode, y_min=y_min: remove_auto_y(y_min))
+        self.yaxisminentry = tk.Entry(self.subframeright3, justify='center', textvariable=y_min)
         self.yaxisminentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.70, rely=0.1)
         self.yaxisminentry.insert(0, "0")
 
         self.yaxistolabel = tk.Label(self.subframeright3, text = "to", bg='#E4E4E4')
         self.yaxistolabel.place(in_ = self.subframeright3, relwidth=0.05, relheight=0.1, relx=0.80, rely=0.1)
 
-        self.yaxismaxentry = tk.Entry(self.subframeright3, justify='center')
+        y_max = tk.StringVar()
+        y_max.trace('w', lambda name, index, mode, y_max=y_max: remove_auto_y(y_max))
+        self.yaxismaxentry = tk.Entry(self.subframeright3, justify='center', textvariable=y_max)
         self.yaxismaxentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight=0.1, relx=0.85, rely=0.1)
         self.yaxismaxentry.insert(0, "10")
 
@@ -1162,7 +1194,9 @@ class MainWindow(tk.Frame):
         self.yaxisticksplabel = tk.Label(self.subframeright3, text = "Tick Spacing", bg='#E4E4E4')
         self.yaxisticksplabel.place(in_=self.subframeright3, relwidth = 0.22, relheight = 0.1, relx = 0.675, rely= 0.4)
 
-        self.yaxistickspentry = tk.Entry(self.subframeright3)
+        y_space = tk.StringVar()
+        y_space.trace('w', lambda name, index, mode, y_space=y_space: remove_auto_y(y_space))
+        self.yaxistickspentry = tk.Entry(self.subframeright3, textvariable=y_space)
         self.yaxistickspentry.place(in_ = self.subframeright3, relwidth = 0.1, relheight = 0.1, relx=0.85, rely=0.45, anchor = "w")
         self.yaxistickspentry.insert(0, "1")
 
@@ -1438,6 +1472,91 @@ class MainWindow(tk.Frame):
         if tk.messagebox.askyesno('START NEW', 'Starting new will erase all progess in your current session. Are you sure you want to start new?'):
             self.create_new()
 
+    def set_ratio(self):
+        try:
+            self.ratio_window.destroy()
+        except:
+            pass
+
+        def hover(button):
+            return lambda e: button.config(bg='white', fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112', fg='white')
+
+        self.ratio_window = tk.Toplevel(self.master)
+        self.ratio_window.title('Figure Ratio')
+        self.ratio_window.geometry('500x250')
+        self.ratio_window.configure(background='#E4E4E4')
+        self.ratio_window.resizable(False,False)
+
+        text = """
+        Here you can set the figure ratio for the graph. Keep in mind that the
+        actual values you insert don't matter, only the ratio between them, i.e.
+        1:1 is the same as 5:5, or 1:5 is the same as 2:10.'
+        """
+        intro = tk.Label(self.ratio_window,text=text,bg='#E4E4E4',justify='left')
+        intro['font'] = ('Roboto', int(15*1000/self.master.winfo_width()))
+        intro.pack(side='top')
+
+        frame_ratio = tk.Frame(self.ratio_window, bg='#E4E4E4')
+
+        label1 = tk.Label(frame_ratio,text='Figure Ratio',bg='#E4E4E4',anchor='w')
+        label1['font'] = ('Roboto',int(15*1000/self.master.winfo_width()))
+        label1.pack(side='left',padx=20)
+
+        self.width_ratio_entry = tk.Entry(frame_ratio,width=4,justify='center')
+        self.width_ratio_entry.insert(0, self.width_ratio)
+        self.width_ratio_entry.pack(side='left')
+
+        label2 = tk.Label(frame_ratio,text=':',bg='#E4E4E4')
+        label2['font'] = ('Roboto',int(15*1000/self.master.winfo_width()))
+        label2.pack(side='left')
+
+        self.height_ratio_entry = tk.Entry(frame_ratio,width=4,justify='center')
+        self.height_ratio_entry.insert(0, self.height_ratio)
+        self.height_ratio_entry.pack(side='left')
+
+        frame_ratio.pack(side='top', pady=20)
+
+        save_button = tk.Button(self.ratio_window,
+                                text="SAVE",
+                                fg='white',
+                                bg='#F21112',
+                                activebackground='white',
+                                activeforeground='#F21112')
+        save_button["command"] = self.save_ratio
+        save_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        # Alterar as cores quando entra e sai
+        save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
+        save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
+        save_button.pack(side='top',pady=20)
+
+    def save_ratio(self):
+        temp_width = self.width_ratio_entry.get().replace(' ','')
+        temp_height = self.height_ratio_entry.get().replace(' ','')
+
+        try:
+            float(temp_width)
+        except:
+            tk.messagebox.showwarning('ERROR','Non-numerical input found ({}) in width entry. Please correct it.'.format(temp_width))
+            return
+
+        try:
+            float(temp_height)
+        except:
+            tk.messagebox.showwarning('ERROR','Non-numerical input found ({}) in height entry. Please correct it.'.format(temp_height))
+            return
+
+        self.width_ratio = float(temp_width)
+        self.height_ratio = float(temp_height)
+
+        self.ratio_window.destroy()
+
+        if not hasattr(self, 'fig'):
+            return
+
+        self.plot_dataset()
+
     def set_ticks(self):
         try:
             self.ticks_window.destroy()
@@ -1450,7 +1569,7 @@ class MainWindow(tk.Frame):
             return lambda e: button.config(bg='#F21112', fg='white')
 
         self.ticks_window = tk.Toplevel(self.master)
-        self.ticks_window .title('Ticks Placement')
+        self.ticks_window.title('Ticks Placement')
         self.ticks_window.geometry('500x400')
         self.ticks_window.configure(background='#E4E4E4')
         self.ticks_window.resizable(False,False)
@@ -1510,7 +1629,7 @@ class MainWindow(tk.Frame):
         # Alterar as cores quando entra e sai
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
-        save_button.pack(side='top',padx=20)
+        save_button.pack(side='top',pady=20)
 
     def save_ticks(self):
         x_temp = [val for val in self.x_ticks.get().replace(',',' ').split(' ') if val]
@@ -1784,16 +1903,14 @@ class MainWindow(tk.Frame):
             self.fit_labels[i]  = self.label_entries[i][2].get()
         self.labels_window.destroy()
 
-    def export_image(self):
-        try:
-            print(self.fig)
-        except:
+    def export_image(self, event=None):
+        if not hasattr(self, 'fig'):
             tk.messagebox.showwarning('ERROR', 'The plot does not yet exist')
         else:
             file = tk.filedialog.asksaveasfilename(filetypes=(("PNG Image", "*.png"),("All Files", "*.*")),defaultextension='.png')
             if file:
                 self.fig.tight_layout()
-                self.fig.savefig(file,dpi=600)
+                self.fig.savefig(file,dpi=500)
 
     # def save_everything(self):
     #     file = tk.filedialog.asksaveasfilename(filetypes=(("*Text File (.txt)", "*.txt"),),defaultextension='.txt')
@@ -1931,11 +2048,11 @@ class MainWindow(tk.Frame):
     def export_function(self):
         # Se a função já tiver sido compilada
         try:
-            print(self.functions[self.selecteddataset])
+            self.functions[self.selecteddataset]
         except:
             tk.messagebox.showwarning('ERROR', 'The function has not been compiled yet! Compile before exporting.')
             self.export_window.destroy()
-            return 0
+            return
         if self.functions[self.selecteddataset]:
             # Algumas operações de estética
             self.function_button.configure(text='COPIED!',fg='#F21112',bg='white')
@@ -2521,7 +2638,10 @@ class MainWindow(tk.Frame):
         self.r2entry.config(state = 'readonly')
         # erase the graph
         self.wantfit[self.selecteddataset].set(0)
-        try: self.canvas.get_tk_widget().pack_forget()
+        try:
+            self.canvas.get_tk_widget().pack_forget()
+            del self.canvas
+            del self.fig
         except: pass
 
         parsed_input = parser(self.functionentry.get(),
@@ -2607,6 +2727,9 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
 
     def plot_dataset(self):
+
+        # we don't want to remove autoscale while in here
+        self.remove_autoscale = False
 
         # Testar se os limites estão bem definidos. Se não estiverem podemos saltar isto tudo
         info_x = [(self.xaxismaxentry, 'Max value of x'), (self.xaxisminentry, 'Min value of x'), (self.xaxistickspentry, 'X axis tick spacing')]
@@ -2716,7 +2839,12 @@ class MainWindow(tk.Frame):
                 self.ord[x] = np.array(self.ordenadas[x])
                 self.erord[x] = np.array(self.erordenadas[x])
 
-        self.fig = Figure(figsize=(5,10),tight_layout=True)
+        if 5.5*self.width_ratio/self.height_ratio > 10.5:
+            figsize=(10.5,10.5*self.height_ratio/self.width_ratio)
+        else:
+            figsize=(5.5*self.width_ratio/self.height_ratio,5.5)
+
+        self.fig = Figure(figsize=figsize,tight_layout=True)
 
         dataforfit = []
         for x in range(self.numberdatasets):
@@ -2942,19 +3070,21 @@ class MainWindow(tk.Frame):
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
 
+        # we don't want to remove autoscale while in here
+        self.remove_autoscale = True
+
     def update_parameter(self):
         self.wantfit[self.selecteddataset].set(0)
-        try: self.canvas.get_tk_widget().pack_forget()
-        except: pass
+        if hasattr(self, 'canvas'):
+            self.canvas.get_tk_widget().pack_forget()
+            del self.canvas
+            del self.fig
         #Mesmo raciocinio de destruir a caixa onde se poem os parametros e inicial guesses para por as novas
         global count
         self.params[self.selecteddataset] = self.parameterentry.get()
         self.indeps[self.selecteddataset] = self.independententry.get()
-        try:
-            print(self.paramboxes)
-        except:
-            pass
-        else:
+
+        if hasattr(self, 'paramboxes'):
             for x in range(len(self.paramboxes)):
                 try:
                     self.init_values[self.selecteddataset][x] = float(self.paramboxes[x].get())
