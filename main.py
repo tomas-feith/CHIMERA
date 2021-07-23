@@ -31,8 +31,8 @@ def check_version():
         return
     latest_version = latest_version.text.split(' ')
     for elem in latest_version:
-        if 'Versão' in elem:
-            pos = latest_version.index(elem)
+        if 'Current' in elem:
+            pos = latest_version.index(elem) + 1
     clean_version = ''
     for char in latest_version[pos+1]:
         if char == '<':
