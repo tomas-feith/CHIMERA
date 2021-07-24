@@ -24,7 +24,7 @@ import webbrowser
 import requests
 
 def check_version():
-    current_version = '1.5.0'
+    current_version = '1.6.0'
     try:
         latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
     except:
@@ -490,7 +490,6 @@ def parser(expr, params, indep):
 
     # Vamos finalmente testar se a função funciona
     # Valores de teste só porque sim
-
     B = [np.pi/2]*len(clean_split)
     _x=-1
 
@@ -726,41 +725,28 @@ class MainWindow(tk.Frame):
                              activeforeground='#F21112')
         self.new["text"] = "NEW FIT"
         self.new["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
-        self.new["command"] = self.create_new
-        self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
+        self.new["command"] = self.create_scatter
+        self.new.grid(column = 3, row = 0, padx = (int(self.master.winfo_width()/10),20))
         # Alterar as cores quando entra e sai
         self.new.bind("<Enter>", func=lambda e: self.new.config(bg='white',fg='#F21112'))
         self.new.bind("<Leave>", func=lambda e: self.new.config(bg='#F21112',fg='white'))
 
         # Criar botão para importar um fit
-        # self.old = tk.Button(self.bottom,
-        #                      width = int(0.011*self.master.winfo_width()),
-        #                      height=1,
-        #                      fg='white',
-        #                      bg='#F21112',
-        #                      activebackground='white',
-        #                      activeforeground='#F21112')
-        # self.old["text"] = "IMPORT FIT"
-        # self.old["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
-        # self.old["command"] = self.create_import
-        # self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
-        # self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='#F21112'))
-        # self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
+        self.old = tk.Button(self.bottom,
+                              width = int(0.011*self.master.winfo_width()),
+                              height=1,
+                              fg='white',
+                              bg='#F21112',
+                              activebackground='white',
+                              activeforeground='#F21112')
+        self.old["text"] = "OPEN FIT"
+        self.old["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
+        self.old["command"] = self.open_project
+        self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
+        self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='#F21112'))
+        self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
 
-    # def create_import(self):
-    #     tk.messagebox.showwarning('SORRY', 'Feature still in development...')
-
-        # ISTO AINDA NÃO ESTÁ FUNCIONAL
-        # Destruir tudo o que estava na janela
-        # self.title_canvas.delete("all")
-        # self.logo_canvas.delete("all")
-        # self.old.destroy()
-        # self.new.destroy()
-        # global count
-        # count = 1
-        # self.master.configure(background='#E4E4E4')
-
-    def create_new(self, event=None):
+    def create_scatter(self):
         # bindings for hotkeys
         # Remove the image size adjustements
         self.master.unbind('<Configure>')
@@ -768,8 +754,14 @@ class MainWindow(tk.Frame):
         self.master.bind('<Control-Shift-E>', self.export_image)
         self.master.bind('<Control-Shift-e>', self.export_image)
         # New Project
-        self.master.bind('<Control-N>', self.create_new)
-        self.master.bind('<Control-n>', self.create_new)
+        self.master.bind('<Control-N>', self.restart)
+        self.master.bind('<Control-n>', self.restart)
+        # Save Project
+        self.master.bind('<Control-S>', self.save_everything)
+        self.master.bind('<Control-s>', self.save_everything)
+        # Import Project
+        self.master.bind('<Control-O>', self.open_project)
+        self.master.bind('<Control-o>', self.open_project)
 
 
         self.selecteddataset = 0
@@ -999,9 +991,9 @@ class MainWindow(tk.Frame):
         self.file_options = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="File", underline=0, menu=self.file_options)
         self.file_options.add_command(label='Start New', command = self.restart, accelerator="Ctrl+N")
+        self.file_options.add_command(label='Save Project', command=self.save_everything, accelerator="Ctrl+S")
+        self.file_options.add_command(label='Open Project', command=self.open_project, accelerator="Ctrl+O")
         self.file_options.add_command(label='Export Image', command=self.export_image, accelerator="Ctrl+Shift+E")
-        # self.file_options.add_command(label='Save Project', command=self.save_everything)
-        # self.file_options.add_command(label='Import Project', command=self.import_project)
 
         # Botao na self.menubar para escolher as opçoes do plot
         self.plotoptions = tk.Menu(self.menubar, tearoff=0)
@@ -1014,7 +1006,7 @@ class MainWindow(tk.Frame):
         # Valores default para as ditas variáveis
         self.wantpoints[0].set(1)
         self.wantline[0].set(0)
-        self.wanterror[0].set(0)
+        self.wanterror[0].set(1)
 
         # Aqui adicionam-se os 3 checkbuttons da dita checklist do que o utilizador quer ler,
         # as variáveis definidas anteriormente servem para registar se o utilizador tem o dito setting selecionado ou nao
@@ -1468,9 +1460,9 @@ class MainWindow(tk.Frame):
             self.datalist[self.selecteddataset] = self.datasetselector.get()
             self.datasetselector.config(values = self.datalist)
 
-    def restart(self):
+    def restart(self, event=None):
         if tk.messagebox.askyesno('START NEW', 'Starting new will erase all progess in your current session. Are you sure you want to start new?'):
-            self.create_new()
+            self.create_scatter()
 
     def set_ratio(self):
         try:
@@ -1912,69 +1904,285 @@ class MainWindow(tk.Frame):
                 self.fig.tight_layout()
                 self.fig.savefig(file,dpi=500)
 
-    # def save_everything(self):
-    #     file = tk.filedialog.asksaveasfilename(filetypes=(("*Text File (.txt)", "*.txt"),),defaultextension='.txt')
-    #     if file:
-    #         file = open(file, 'w')
-    #     else:
-    #         return
+    def save_everything(self, event=None):
+        file = tk.filedialog.asksaveasfilename(filetypes=(("*Text File (.txt)", "*.txt"),),defaultextension='.txt')
+        if file:
+            file = open(file, 'w')
+        else:
+            return
 
-    #     for text in self.plot_text:
-    #         file.write(text)
-    #     file.write('\nSECTION\n')
-    #     for pos in self.text_pos:
-    #         file.write('%s\n' % str(pos[0]))
-    #         file.write('%s\n' % str(pos[1]))
-    #     for i in range(len(self.datasettext)):
-    #         file.write('DATASET\n')
-    #         file.write(self.datasettext[i])
-    #         file.write('\nSECTION\n')
-    #         file.write(self.indeps[i])
-    #         file.write('\nSECTION\n')
-    #         file.write(self.params[i])
-    #         file.write('\nSECTION\n')
-    #         file.write(self.functions[i])
-    #         file.write('\nSECTION\n')
-    #         for value in self.init_values[i]:
-    #             file.write('%s\n' % value)
-    #         # file.write(self.init_values[i])
-    #         file.write('SECTION\n')
-    #         for param in self.fit_params[i]:
-    #             file.write('%s\n' % param)
-    #         # file.write(self.fit_params[i])
-    #         file.write('SECTION\n')
-    #         for uncert in self.fit_uncert[i]:
-    #             file.write('%s\n' % uncert)
-    #         # file.write(self.fit_uncert[i])
-    #         file.write('SECTION\n')
-    #         file.write(str(self.fit_chi[i]))
-    #         file.write('\nSECTION\n')
-    #         file.write('%s\n' % self.data_labels[i])
-    #         file.write('%s\n' % self.plot_labels[i])
-    #         file.write('%s\n' % self.fit_labels[i])
+        # write the text entries
+        for text in self.plot_text:
+            file.write(text + '\n')
+        file.write('SECTION\n')
+        # write the text positions
+        for pos in self.text_pos:
+            file.write('%s\n' % str(pos[0]))
+            file.write('%s\n' % str(pos[1]))
+        file.write('SECTION\n')
+        # write the text fonts
+        for size in self.text_size:
+            file.write('%s\n' % str(size))
+        file.write('SECTION\n')
+        # write the figure ratio
+        file.write(str(self.width_ratio))
+        file.write('\nSECTION\n')
+        file.write(str(self.height_ratio))
+        file.write('\nSECTION\n')
+        # write the ticks placement
+        for tick in self.x_ticks_ref:
+            file.write('%s\n' % str(tick))
+        file.write('SECTION\n')
+        for tick in self.y_ticks_ref:
+            file.write('%s\n' % str(tick))
+        file.write('SECTION\n')
+        # write the information for the axes
+        # X-AXIS
+        file.write(self.xaxismaxentry.get())
+        file.write('\nSECTION\n')
+        file.write(self.xaxisminentry.get())
+        file.write('\nSECTION\n')
+        file.write(self.xaxistickspentry.get())
+        file.write('\nSECTION\n')
+        file.write(self.xaxistitleentry.get())
+        file.write('\nSECTION\n')
+        # Y-AXIS
+        file.write(self.yaxismaxentry.get())
+        file.write('\nSECTION\n')
+        file.write(self.yaxisminentry.get())
+        file.write('\nSECTION\n')
+        file.write(self.yaxistickspentry.get())
+        file.write('\nSECTION\n')
+        file.write(self.yaxistitleentry.get())
 
-    #     file.close()
+        for i in range(len(self.datasettext)):
+            file.write('DATASET\n')
+            file.write(self.datalist[i])
+            file.write('\nSECTION\n')
+            file.write(self.datasettext[i])
+            file.write('\nSECTION\n')
+            file.write(self.indeps[i])
+            file.write('\nSECTION\n')
+            file.write(self.params[i])
+            file.write('\nSECTION\n')
+            file.write(self.functions[i])
+            file.write('\nSECTION\n')
+            file.write(self.clean_functions[i])
+            file.write('\nSECTION\n')
+            file.write(self.data_labels[i])
+            file.write('\nSECTION\n')
+            file.write(self.plot_labels[i])
+            file.write('\nSECTION\n')
+            file.write(self.fit_labels[i])
+            file.write('\nSECTION\n')
+            for value in self.init_values[i]:
+                file.write('%s\n' % value)
+            file.write('SECTION\n')
+            file.write('%s\n' % self.markercolorvar[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.linecolorvar[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.errorcolorvar[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.funcfitcolorvar[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.funcplotcolorvar[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.markeroptiontranslater[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.lineoptiontranslater[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.funcfitoptiontranslater[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.funcplotoptiontranslater[i])
+            file.write('SECTION\n')
+            file.write('%s\n' % self.markersize[i].get())
+            file.write('SECTION\n')
+            file.write('%s\n' % self.linewidth[i].get())
+            file.write('SECTION\n')
+            file.write('%s\n' % self.errorwidth[i].get())
+            file.write('SECTION\n')
+            file.write('%s\n' % self.funcfitwidth[i].get())
+            file.write('SECTION\n')
+            file.write('%s\n' % self.funcplotwidth[i].get())
 
-    # def import_project(self):
+        file.close()
 
-    #     file = tk.filedialog.askopenfilename()
-    #     if not file:
-    #         return
-    #     try:
-    #         file = open(file, 'r')
-    #         data = file.read().split('\nDATASET\n')
-    #         print(data)
-    #         first = data[0].split('\nSECTION\n')
-    #         self.plot_text = [text for text in first[0].split('\n')]
-    #         print(first[1].split('\n'))
-    #         self.text_pos = [[float(first[1].split('\n')[i]),float(first[1].split('\n')[i+1])] for i in range(0,len(first[1].split('\n')),2)]
-    #         self.datasettext = []
-    #         for dataset in data[1:]:
-    #             split_data = dataset.set('\nSECTION\n')
-    #             self.datasettext.append(split_data[0])
-    #     except:
-    #         tk.showwarning('ERROR','Unable to open. File corrupted.')
-    #         return
+    def open_project(self, event=None):
+
+        file = tk.filedialog.askopenfilename()
+        if not file:
+            return
+        self.create_scatter()
+        try:
+            file = open(file, 'r')
+            data = file.read().split('\nDATASET\n')
+            first = data[0].split('\nSECTION\n')
+
+            self.plot_text = first[0].split('\n')
+            self.text_pos = [[float(first[1].split('\n')[i]),float(first[1].split('\n')[i+1])] for i in range(0,len(first[1].split('\n')),2)]
+            self.text_size = [float(size) for size in first[2].split('\n')]
+
+            self.width_ratio = float(first[3])
+            self.height_ratio = float(first[4])
+
+            self.x_ticks_ref = [float(tick) for tick in first[5].split('\n')]
+            self.y_ticks_ref = [float(tick) for tick in first[6].split('\n')]
+
+            self.xaxismaxentry.delete(0, tk.END)
+            self.xaxismaxentry.insert(0, first[7])
+            self.xaxisminentry.delete(0, tk.END)
+            self.xaxisminentry.insert(0, first[8])
+            self.xaxistickspentry.delete(0, tk.END)
+            self.xaxistickspentry.insert(0, first[9])
+            self.xaxistitleentry.delete(0, tk.END)
+            self.xaxistitleentry.insert(0, first[10])
+
+            self.yaxismaxentry.delete(0, tk.END)
+            self.yaxismaxentry.insert(0, first[11])
+            self.yaxisminentry.delete(0, tk.END)
+            self.yaxisminentry.insert(0, first[12])
+            self.yaxistickspentry.delete(0, tk.END)
+            self.yaxistickspentry.insert(0, first[13])
+            self.yaxistitleentry.delete(0, tk.END)
+            self.yaxistitleentry.insert(0, first[14])
+
+            self.datasettext = []
+            self.indeps = []
+            self.params = []
+            self.functions = []
+            self.clean_functions = []
+            self.data_labels = []
+            self.plot_labels = []
+            self.fit_labels = []
+            self.init_values = []
+            self.datalist = []
+
+            self.fit_params = []
+            self.fit_uncert = []
+            self.fit_chi = []
+            self.fit_r2 = []
+            self.x_func = []
+            self.y_func = []
+            self.yfittedfunc = []
+            self.xfittedfunc = []
+            self.full_output = []
+
+            self.wantfit = []
+            self.wantpoints = []
+            self.wantline = []
+            self.wanterror = []
+            self.wantfunction = []
+
+            self.abcissas = []
+            self.erabcissas = []
+            self.ordenadas = []
+            self.erordenadas = []
+            self.abc = []
+            self.erabc = []
+            self.ord = []
+            self.erord = []
+
+            self.markercolorvar = []
+            self.linecolorvar = []
+            self.errorcolorvar = []
+            self.funcfitcolorvar = []
+            self.funcplotcolorvar = []
+
+            self.markeroptiontranslater = []
+            self.lineoptiontranslater = []
+            self.funcfitoptiontranslater = []
+            self.funcplotoptiontranslater = []
+
+            self.linewidth = []
+            self.markersize = []
+            self.errorwidth = []
+            self.funcfitwidth = []
+            self.funcplotwidth = []
+
+            self.datasetstoplotvar = []
+
+            self.numberdatasets = len(data[1:])
+
+            for dataset in data[1:]:
+                # We start by adding all the empty lists
+                self.fit_params.append([])
+                self.fit_uncert.append([])
+                self.fit_chi.append('')
+                self.fit_r2.append('')
+                self.x_func.append([])
+                self.y_func.append([])
+                self.yfittedfunc.append([])
+                self.xfittedfunc.append([])
+                self.full_output.append('')
+                self.wantfit.append(tk.BooleanVar())
+                self.wantfit[-1].set(0)
+                self.wantpoints.append(tk.BooleanVar())
+                self.wantpoints[-1].set(1)
+                self.wantline.append(tk.BooleanVar())
+                self.wantline[-1].set(0)
+                self.wanterror.append(tk.BooleanVar())
+                self.wanterror[-1].set(1)
+                self.wantfunction.append(tk.BooleanVar())
+                self.wantfunction[-1].set(0)
+                self.abcissas.append([0, 0, 0, 0])
+                self.erabcissas.append([0, 0, 0, 0])
+                self.ordenadas.append([0, 0, 0, 0])
+                self.erordenadas.append([0, 0, 0, 0])
+                self.abc.append(np.array(self.abcissas[-1]))
+                self.erabc.append(np.array(self.erabcissas[-1]))
+                self.ord.append(np.array(self.ordenadas[-1]))
+                self.erord.append(np.array(self.erordenadas[-1]))
+                self.linewidth.append(tk.DoubleVar())
+                self.markersize.append(tk.DoubleVar())
+                self.errorwidth.append(tk.DoubleVar())
+                self.funcfitwidth.append(tk.DoubleVar())
+                self.funcplotwidth.append(tk.DoubleVar())
+                self.datasetstoplotvar.append(tk.BooleanVar())
+                self.datasetstoplotvar[-1].set(1)
+                if id(dataset) != id(data[1]): self.datasetstoplot.add_checkbutton(label = "Plot Dataset " + str(len(self.datalist)), onvalue = 1, offvalue = 0, variable = self.datasetstoplotvar[-1] )
+
+                # And then we pass on to the information in the saved file
+                split_data = dataset.split('\nSECTION\n')
+                self.datalist.append(split_data[0])
+                self.datasettext.append(split_data[1])
+                self.indeps.append(split_data[2])
+                self.params.append(split_data[3])
+                self.functions.append(split_data[4])
+                self.clean_functions.append(split_data[5])
+                self.data_labels.append(split_data[6])
+                self.plot_labels.append(split_data[7])
+                self.fit_labels.append(split_data[8])
+                self.init_values.append([float(val) for val in split_data[9].split('\n')])
+
+                # FETCH THIS FROM FILE
+                self.markercolorvar.append(split_data[10])
+                self.linecolorvar.append(split_data[11])
+                self.errorcolorvar.append(split_data[12])
+                self.funcfitcolorvar.append(split_data[13])
+                self.funcplotcolorvar.append(split_data[14])
+                self.markeroptiontranslater.append(split_data[15])
+                self.lineoptiontranslater.append(split_data[16])
+                self.funcfitoptiontranslater.append(split_data[17])
+                self.funcplotoptiontranslater.append(split_data[18])
+                self.markersize[-1].set(float(split_data[19]))
+                self.linewidth[-1].set(float(split_data[20]))
+                self.errorwidth[-1].set(float(split_data[21]))
+                self.funcfitwidth[-1].set(float(split_data[22]))
+                self.funcplotwidth[-1].set(float(split_data[23]))
+
+            del self.paramboxes
+            self.dataentry.delete('1.0', tk.END)
+            self.dataentry.insert(tk.INSERT,self.datasettext[0])
+            self.datalistvariable.set(self.datalist[0])
+            self.datasetselector.config(values=self.datalist)
+            self.update_databox('')
+            self.update_parameter()
+        except:
+            import traceback
+            traceback.print_exc()
+            tk.messagebox.showwarning('ERROR','Unable to open. File corrupted.')
+            return
 
     def latexify(self):
         try:
@@ -2273,7 +2481,7 @@ class MainWindow(tk.Frame):
         self.wantline.append(tk.BooleanVar())
         self.wantline[-1].set(0)
         self.wanterror.append(tk.BooleanVar())
-        self.wanterror[-1].set(0)
+        self.wanterror[-1].set(1)
         self.wantfunction.append(tk.BooleanVar())
         self.wantfunction[-1].set(0)
 
@@ -2478,7 +2686,6 @@ class MainWindow(tk.Frame):
         self.plotoptions.add_checkbutton(label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.wantfit[self.selecteddataset] )
         self.plotoptions.add_checkbutton(label = "Plot function", onvalue =1, offvalue = 0, variable=self.wantfunction[self.selecteddataset])
 
-
         self.subframeleft2.destroy()
         self.dataentry.destroy()
 
@@ -2679,10 +2886,7 @@ class MainWindow(tk.Frame):
         for j in range(10000):
             _x = x_min + j*amp/9999
             self.xfittedfunc[dataset][j] = _x
-            # try:
             self.yfittedfunc[dataset][j] = eval(expr)
-            # except FloatingPointError:
-                # self.yfittedfunc[dataset][j] = 0
 
     def plot_function(self):
 
@@ -2834,7 +3038,7 @@ class MainWindow(tk.Frame):
                         self.ordenadas[x].append(data_sets[0][i][1])
                         self.erordenadas[x].append(data_sets[0][i][2])
 
-                self.abc[x] =np.array(self.abcissas[x])
+                self.abc[x] = np.array(self.abcissas[x])
                 self.erabc[x] = np.array(self.erabcissas[x])
                 self.ord[x] = np.array(self.ordenadas[x])
                 self.erord[x] = np.array(self.erordenadas[x])
@@ -3178,15 +3382,11 @@ class MainWindow(tk.Frame):
                     self.paramerrlabel.append(tk.Label(self.anotherframe, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
                     self.paramerrlabel[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
                     self.paramerrboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
-                    # try: self.paramerrboxes[x].insert(0,"{0:.7e}".format(self.fit_uncert[self.selecteddataset][x]))
-                    # except: pass
                     self.paramerrboxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
                     self.paramerrboxes[x].config(state = 'readonly')
                     self.paramreslabel.append(tk.Label(self.anotherframe, text = clean_split[x], bg='#E4E4E4'))
                     self.paramreslabel[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
                     self.paramresboxes.append(tk.Entry(self.anotherframe, cursor="arrow", takefocus=0))
-                    # try: self.paramresboxes[x].insert(0,"{0:.7e}".format(self.fit_params[self.selecteddataset][x]))
-                    # except: pass
                     self.paramresboxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.paramresboxes[x].config(state = 'readonly')
                     self.paramboxes.append(tk.Entry(self.anotherframe))
