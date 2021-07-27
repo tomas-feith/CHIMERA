@@ -1358,7 +1358,7 @@ class MainWindow(tk.Frame):
         self.data_list = ['dataset 1']
 
         # Criação do botão seletor de data-sets, ligalo à função update_databox
-        self.dataset_selector = ttk.Combobox(self.plot_button_frame, textvariable = self.data_list_var, values = self.data_list, postcommand = self.update_combobox_values)
+        self.dataset_selector = ttk.Combobox(self.plot_button_frame, textvariable = self.data_list_var, values = self.data_list, postcommand = self.update_combobox_values,font=("Roboto", 8))
         self.dataset_selector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.dataset_selector.bind("<<ComboboxSelected>>", self.update_databox)
 
@@ -1659,7 +1659,45 @@ class MainWindow(tk.Frame):
         self.ticks_window.destroy()
 
     def create_residue_data(self, event=None):
-        print('RESIDUE PLOT')
+        try:
+            B = [float(val) for val in self.fit_params[self.selected_dataset]]
+            expr = self.clean_functions[self.selected_dataset]
+            y = self.ordenadas[self.selected_dataset]
+            for i in range(len(B)):
+                expr = expr.replace('B[%d]' % i, str(B[i]))
+
+            residues = [eval(expr) for _x in self.abcissas[self.selected_dataset]]
+            residues = [y[i] - residues[i] for i in range(len(residues))]
+        except:
+            tk.messagebox.showwarning('ERROR', 'Can only generate residue data after fit.')
+        # apagamos o gráfico
+        try:
+            self.canvas.get_tk_widget().pack_forget()
+            del self.canvas
+            del self.fig
+        except: pass
+        data_string = ''
+        if self.err_abcissas[self.selected_dataset][0] == 0:
+            for i in range(len(self.abcissas[self.selected_dataset])):
+                data_string += str(self.abcissas[self.selected_dataset][i]) + ' '
+                data_string += str(residues[i]) + ' '
+                data_string += str(self.err_ordenadas[self.selected_dataset][i]) + '\n'
+        else:
+            for i in range(len(self.abcissas[self.selected_dataset])):
+                data_string += str(self.abcissas[self.selected_dataset][i]) + ' '
+                data_string += str(self.err_abcissas[self.selected_dataset][i]) + ' '
+                data_string += str(residues[i]) + ' '
+                data_string += str(self.err_ordenadas[self.selected_dataset][i]) + '\n'
+
+        self.add_dataset(data_string[:-1])
+        self.datasets_to_plot_var[self.selected_dataset].set(0)
+        self.data_list[-1] = 'Residues - %s' % self.data_list[self.selected_dataset]
+        self.want_error[-1].set(0)
+        # self.data_entry.delete('1.0', tk.END)
+        # self.data_entry.insert(tk.INSERT,data_string[:-1])
+        self.dataset_selector.set(self.data_list[-1])
+        self.update_databox('')
+        self.plot_dataset()
 
     def text(self):
         try:
@@ -2826,6 +2864,8 @@ class MainWindow(tk.Frame):
             self.func_fit_width_scale['state'] = tk.DISABLED
             self.func_plot_width_scale['state'] = tk.DISABLED
 
+
+
     def compile_function(self):
         # clean the fit parameters
         for x in range(self.box_number):
@@ -2873,7 +2913,7 @@ class MainWindow(tk.Frame):
             self.clean_functions[self.selected_dataset] = ''
 
     # Função para plottar a funçao com parametros numericos dados pelo utilizador
-    def plot_fittedfunction(self, dataset):
+    def plot_fitted_function(self, dataset):
         self.x_fitted_func[dataset]=[0]*10000
         self.y_fitted_func[dataset]=[0]*10000
 
@@ -2930,7 +2970,7 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
 
     def plot_dataset(self):
-        # we don't want_ to remove autoscale while in here
+        # we don't want to remove autoscale while in here
         self.remove_autoscale = False
 
         # Testar se os limites estão bem definidos. Se não estiverem podemos saltar isto tudo
@@ -3055,6 +3095,8 @@ class MainWindow(tk.Frame):
                 data = StringIO(self.datastring)
                 data_sets = read_file(data, float, False, 0)
                 data_for_fit.append(data_sets[0])
+            else:
+                data_for_fit.append('')
         a = []
         for dataset in data_for_fit:
             for point in dataset:
@@ -3232,8 +3274,9 @@ class MainWindow(tk.Frame):
                         else:
                             self.a.plot(self.x_func[i], self.y_func[i], lw = self.func_plot_width[0].get(), ls = str(self.func_plot_option_translater[i]), color = self.func_plot_color_var[i])
                     if self.want_fit[i].get():
+                        print(len(self.fit_params),len(self.fit_uncert),len(self.fit_chi),len(self.fit_r2),len(data_for_fit),len(self.init_values))
                         (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i], self.fit_r2[i]) = self.fit_data(data_for_fit[i], self.init_values[i], 2000, i)
-                        self.plot_fittedfunction(i)
+                        self.plot_fitted_function(i)
                         if self.fit_labels[i]:
                             self.a.plot(self.x_fitted_func[i], self.y_fitted_func[i], label=self.fit_labels[i], lw = self.func_fit_width[i].get(), ls = str(self.func_fit_option_translater[i]), color = self.func_fit_color_var[i])
                         else:
