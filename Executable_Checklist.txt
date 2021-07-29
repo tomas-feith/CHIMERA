@@ -8,4 +8,4 @@ pyinstaller --noconfirm --onedir --windowed --icon "C:/Users/tsfei/anaconda3/CHI
 
 UBUNTU
 3 - run
-pyinstaller --noconfirm --onedir --windowed --icon "/home/tsfeith/anaconda3/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "/home/tsfeith/anaconda3/CHIMERA:CHIMERA/" --hidden-import "cmath" --hidden-import "PIL._tkinter_finder"  "/home/tsfeith/anaconda3/CHIMERA/main.py"
+pyinstaller --noconfirm --onedir --windowed --icon "/home/tsfeith/anaconda3/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "/home/tsfeith/anaconda3/CHIMERA/img:img/" --hidden-import "cmath"  "/home/tsfeith/anaconda3/CHIMERA/main.py"
