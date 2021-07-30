@@ -22,9 +22,10 @@ import pyperclip
 import sys, os
 import webbrowser
 import requests
+import pymongo
 
 def check_version():
-    current_version = '1.7.0'
+    current_version = '1.7.1'
     try:
         latest_version = requests.get('https://sites.google.com/view/chimera-fit/install', timeout=1)
     except:
@@ -746,6 +747,7 @@ class MainWindow(tk.Frame):
         self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='#F21112'))
         self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
 
+
     def create_scatter(self):
         # bindings for hotkeys
         # Remove the image size adjustements
@@ -759,6 +761,9 @@ class MainWindow(tk.Frame):
         # Save Project
         self.master.bind('<Control-S>', self.save_everything)
         self.master.bind('<Control-s>', self.save_everything)
+        # Save Project As...
+        self.master.bind('<Control-Shift-S>', self.save_as)
+        self.master.bind('<Control-Shift-s>', self.save_as)
         # Import Project
         self.master.bind('<Control-O>', self.open_project)
         self.master.bind('<Control-o>', self.open_project)
@@ -994,6 +999,7 @@ class MainWindow(tk.Frame):
         self.menu_bar.add_cascade(label="File", underline=0, menu=self.file_options)
         self.file_options.add_command(label='Start New', command = self.restart, accelerator="Ctrl+N")
         self.file_options.add_command(label='Save Project', command=self.save_everything, accelerator="Ctrl+S")
+        self.file_options.add_command(label='Save As', command=self.save_as, accelerator="Ctrl+Shift+S")
         self.file_options.add_command(label='Open Project', command=self.open_project, accelerator="Ctrl+O")
         self.file_options.add_command(label='Export Image', command=self.export_image, accelerator="Ctrl+Shift+E")
 
@@ -1693,8 +1699,6 @@ class MainWindow(tk.Frame):
         self.datasets_to_plot_var[self.selected_dataset].set(0)
         self.data_list[-1] = 'Residues - %s' % self.data_list[self.selected_dataset]
         self.want_error[-1].set(0)
-        # self.data_entry.delete('1.0', tk.END)
-        # self.data_entry.insert(tk.INSERT,data_string[:-1])
         self.dataset_selector.set(self.data_list[-1])
         self.update_databox('')
         self.plot_dataset()
@@ -1948,11 +1952,19 @@ class MainWindow(tk.Frame):
                 self.fig.tight_layout()
                 self.fig.savefig(file,dpi=500)
 
+    def save_as(self, event=None):
+        new_file = tk.filedialog.asksaveasfilename(filetypes=(("*CHIMERA Project (.chi)", "*.chi"),),defaultextension='.chi')
+        if new_file:
+            self.file = new_file
+            self.save_everything()
+
     def save_everything(self, event=None):
-        file = tk.filedialog.asksaveasfilename(filetypes=(("*Text File (.txt)", "*.txt"),),defaultextension='.txt')
-        if file:
-            file = open(file, 'w')
+        if not hasattr(self, 'file'):
+            self.file = tk.filedialog.asksaveasfilename(filetypes=(("*CHIMERA Project (.chi)", "*.chi"),),defaultextension='.chi')
+        if self.file:
+            file = open(self.file, 'w')
         else:
+            del self.file
             return
 
         # write the text entries
@@ -1976,10 +1988,16 @@ class MainWindow(tk.Frame):
         # write the ticks placement
         for tick in self.x_ticks_ref:
             file.write('%s\n' % str(tick))
-        file.write('SECTION\n')
+        if len(self.x_ticks_ref) == 0:
+            file.write('\nSECTION\n')
+        else:
+            file.write('SECTION\n')
         for tick in self.y_ticks_ref:
             file.write('%s\n' % str(tick))
-        file.write('SECTION\n')
+        if len(self.y_ticks_ref) == 0:
+            file.write('\nSECTION\n')
+        else:
+            file.write('SECTION\n')
         # write the information for the axes
         # X-AXIS
         file.write(self.x_axis_max_entry.get())
@@ -2052,16 +2070,18 @@ class MainWindow(tk.Frame):
 
         file.close()
 
-    def open_project(self, event=None):
+        tk.messagebox.showinfo('File Saved','File {} has been saved'.format(self.file.split('/')[-1]))
 
-        file = tk.filedialog.askopenfilename()
-        if not file:
+    def open_project(self, event=None):
+        self.file = tk.filedialog.askopenfilename(filetypes=(("*CHIMERA Project (.chi)", "*.chi"),),defaultextension='.chi')
+        if not self.file:
+            del self.file
             return
         self.create_scatter()
         try:
-            file = open(file, 'r')
-            data = file.read().split('\nDATASET\n')
-            first = data[0].split('\nSECTION\n')
+            file = open(self.file, 'r')
+            data = file.read().split('DATASET')
+            first = [val for val in data[0].split('\nSECTION\n') if val!='SECTION']
 
             self.plot_text = first[0].split('\n')
             self.text_pos = [[float(first[1].split('\n')[i]),float(first[1].split('\n')[i+1])] for i in range(0,len(first[1].split('\n')),2)]
@@ -2070,8 +2090,8 @@ class MainWindow(tk.Frame):
             self.width_ratio = float(first[3])
             self.height_ratio = float(first[4])
 
-            self.x_ticks_ref = [float(tick) for tick in first[5].split('\n')]
-            self.y_ticks_ref = [float(tick) for tick in first[6].split('\n')]
+            self.x_ticks_ref = [float(tick) for tick in first[5].split('\n') if tick]
+            self.y_ticks_ref = [float(tick) for tick in first[6].split('\n') if tick]
 
             self.x_axis_max_entry.delete(0, tk.END)
             self.x_axis_max_entry.insert(0, first[7])
@@ -2198,8 +2218,6 @@ class MainWindow(tk.Frame):
                 self.plot_labels.append(split_data[7])
                 self.fit_labels.append(split_data[8])
                 self.init_values.append([float(val) for val in split_data[9].split('\n')])
-
-                # FETCH THIS FROM FILE
                 self.marker_color_var.append(split_data[10])
                 self.line_color_var.append(split_data[11])
                 self.error_color_var.append(split_data[12])
@@ -2220,11 +2238,16 @@ class MainWindow(tk.Frame):
             self.data_entry.insert(tk.INSERT,self.dataset_text[0])
             self.data_list_var.set(self.data_list[0])
             self.dataset_selector.config(values=self.data_list)
+            self.autoscale_x.set(1)
+            self.autoscale_y.set(1)
             self.update_databox('')
             self.update_parameter()
         except:
+            # import traceback
+            # traceback.print_exc()
             self.create_scatter()
             tk.messagebox.showwarning('ERROR','Unable to open. File corrupted.')
+            del self.file
             return
 
     def latexify(self):
