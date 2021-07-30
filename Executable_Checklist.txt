@@ -1,5 +1,12 @@
 1 - Change version in code and in the site to current version
 2 - Activate CHIMERA environment
+
+WINDOWS
 3 - run 
 pyinstaller --noconfirm --onedir --windowed --icon "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/img;img/"  "C:/Users/tsfei/anaconda3/CHIMERA/CHIMERA/main.py"
 4 - Copy the file libiomp5md.dll to output folder
+
+UBUNTU
+3 - run
+pyinstaller --noconfirm --onedir --windowed --icon "/home/tsfeith/anaconda3/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "/home/tsfeith/anaconda3/CHIMERA/img:img/" --hidden-import "cmath" --hidden-import "PIL._tkinter_finder" "/home/tsfeith/anaconda3/CHIMERA/main.py"
+4 - Copy the files libiomp5.so, libiomp5_db.so, libiompstubs5.so to output folder
