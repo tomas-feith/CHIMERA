@@ -8,5 +8,6 @@ pyinstaller --noconfirm --onedir --windowed --icon "C:/Users/tsfei/anaconda3/CHI
 
 UBUNTU
 3 - run
-pyinstaller --noconfirm --onedir --windowed --icon "/home/tsfeith/anaconda3/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "/home/tsfeith/anaconda3/CHIMERA/img:img/" --hidden-import "cmath" --hidden-import "PIL._tkinter_finder" "/home/tsfeith/anaconda3/CHIMERA/main.py"
+pyinstaller --noconfirm --onedir --windowed --icon "/home/tsfeith/anaconda3/CHIMERA/CHIMERA/img/favicon.ico" --name "CHIMERA" --add-data "/home/tsfeith/anaconda3/CHIMERA/CHIMERA/img:img/" --hidden-import "cmath" --hidden-import "PIL._tkinter_finder" "/home/tsfeith/anaconda3/CHIMERA/CHIMERA/main.py"
 4 - Copy the files libiomp5.so, libiomp5_db.so, libiompstubs5.so to output folder
+
