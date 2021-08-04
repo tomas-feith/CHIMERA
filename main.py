@@ -23,6 +23,9 @@ import sys, os
 import webbrowser
 import requests
 import pymongo
+import re
+import secrets
+import hashlib
 
 def check_version():
     current_version = '1.7.1'
@@ -770,7 +773,9 @@ class MainWindow(tk.Frame):
         # Create Residue Plot
         self.master.bind('<Control-Shift-R>', self.create_residue_data)
         self.master.bind('<Control-Shift-r>', self.create_residue_data)
-
+        # Login to online mode
+        self.master.bind('<Control-L>', self.create_login)
+        self.master.bind('<Control-l>', self.create_login)
 
         self.selected_dataset = 0
 
@@ -859,7 +864,8 @@ class MainWindow(tk.Frame):
                                        fg='white',
                                        bg='#F21112',
                                        activebackground='white',
-                                       activeforeground='#F21112')
+                                       activeforeground='#F21112',
+                                       justify='center')
         self.compile_button.place(relwidth=0.2,relx=0.8, rely=0.2,relheight=0.1 )
         self.compile_button["command"] = self.compile_function
 
@@ -1064,6 +1070,12 @@ class MainWindow(tk.Frame):
         self.advanced.add_command(label='Tick Placement', command = self.set_ticks)
         self.advanced.add_command(label='Figure Ratio', command = self.set_ratio)
         self.advanced.add_command(label='Generate Residue Plot', command = self.create_residue_data, accelerator = 'Ctrl+Shift+R')
+
+        # criação da secção para aceder ao modo online
+        self.online = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label='CHIMERA Online', menu = self.online)
+        self.online.add_command(label='Login', command = self.create_login, accelerator = 'Ctrl + L')
+        self.online.add_command(label='Create Account', command = self.setup_account)
 
         # criação do dropdown menu para as ajudas
         self.help = tk.Menu(self.menu_bar, tearoff=0)
@@ -1473,11 +1485,32 @@ class MainWindow(tk.Frame):
         if tk.messagebox.askyesno('START NEW', 'Starting new will erase all progess in your current session. Are you sure you want_ to start new?'):
             self.create_scatter()
 
+    def erase_all_windows(self):
+        try: self.ratio_window.destroy()
+        except: pass
+        try: self.ticks_window.destroy()
+        except: pass
+        try: self.text_window.destroy()
+        except: pass
+        try: self.labels_window.destroy()
+        except: pass
+        try: self.export_window.destroy()
+        except: pass
+        try: self.import_window.destroy()
+        except: pass
+        try: self.login_window.destroy()
+        except: pass
+        try: self.new_account_window.destroy()
+        except: pass
+        try: self.edit_account_window.destroy()
+        except: pass
+        try: self.connections_window.destroy()
+        except: pass
+        try:self.new_connect_window.destroy()
+        except: pass
+
     def set_ratio(self):
-        try:
-            self.ratio_window.destroy()
-        except:
-            pass
+        self.erase_all_windows()
 
         def hover(button):
             return lambda e: button.config(bg='white', fg='#F21112')
@@ -1493,16 +1526,16 @@ class MainWindow(tk.Frame):
         text = """
         Here you can set the figure ratio for the graph. Keep in mind that the
         actual values you insert don't matter, only the ratio between them, i.e.
-        1:1 is the same as 5:5, or 1:5 is the same as 2:10.'
+        1:1 is the same as 5:5, or 1:5 is the same as 2:10.
         """
         intro = tk.Label(self.ratio_window,text=text,bg='#E4E4E4',justify='left')
-        intro['font'] = ('Roboto', int(15*1000/self.master.winfo_width()))
+        intro['font'] = ('Roboto', int(15*self.master.winfo_width()/2350))
         intro.pack(side='top')
 
         frame_ratio = tk.Frame(self.ratio_window, bg='#E4E4E4')
 
         label1 = tk.Label(frame_ratio,text='Figure Ratio',bg='#E4E4E4',anchor='w')
-        label1['font'] = ('Roboto',int(15*1000/self.master.winfo_width()))
+        label1['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
         label1.pack(side='left',padx=20)
 
         self.width_ratio_entry = tk.Entry(frame_ratio,width=4,justify='center')
@@ -1510,7 +1543,7 @@ class MainWindow(tk.Frame):
         self.width_ratio_entry.pack(side='left')
 
         label2 = tk.Label(frame_ratio,text=':',bg='#E4E4E4')
-        label2['font'] = ('Roboto',int(15*1000/self.master.winfo_width()))
+        label2['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
         label2.pack(side='left')
 
         self.height_ratio_entry = tk.Entry(frame_ratio,width=4,justify='center')
@@ -1526,7 +1559,7 @@ class MainWindow(tk.Frame):
                                 activebackground='white',
                                 activeforeground='#F21112')
         save_button["command"] = self.save_ratio
-        save_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
@@ -1559,10 +1592,7 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
 
     def set_ticks(self):
-        try:
-            self.ticks_window.destroy()
-        except:
-            pass
+        self.erase_all_windows()
 
         def hover(button):
             return lambda e: button.config(bg='white', fg='#F21112')
@@ -1586,13 +1616,13 @@ class MainWindow(tk.Frame):
               then they will only pass on the values you write
         """
         intro = tk.Label(self.ticks_window,text=text,bg='#E4E4E4',justify='left')
-        intro["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
+        intro["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
         intro.pack(side='top')
 
         frame_x = tk.Frame(self.ticks_window,bg='#E4E4E4')
 
         x_axis = tk.Label(frame_x,text='X-Axis',bg='#E4E4E4',anchor='w')
-        x_axis['font'] = ('Roboto', int(15*1000/self.master.winfo_width()))
+        x_axis['font'] = ('Roboto', int(15*self.master.winfo_width()/2350))
         x_axis.pack(side='left',padx=20)
 
         self.x_ticks = tk.Entry(frame_x,width=50)
@@ -1607,7 +1637,7 @@ class MainWindow(tk.Frame):
         frame_y = tk.Frame(self.ticks_window,bg='#E4E4E4')
 
         y_axis = tk.Label(frame_y,text='Y-Axis',bg='#E4E4E4',anchor='w')
-        y_axis['font'] = ('Roboto', int(15*1000/self.master.winfo_width()))
+        y_axis['font'] = ('Roboto', int(15*self.master.winfo_width()/2350))
         y_axis.pack(side='left',padx=20)
 
         self.y_ticks = tk.Entry(frame_y,width=50)
@@ -1626,7 +1656,7 @@ class MainWindow(tk.Frame):
                                 activebackground='white',
                                 activeforeground='#F21112')
         save_button["command"] = self.save_ticks
-        save_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
@@ -1704,10 +1734,7 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
 
     def text(self):
-        try:
-            self.text_window.destroy()
-        except:
-            pass
+        self.erase_all_windows()
 
         def hover(button):
             return lambda e: button.config(bg='white',fg='#F21112')
@@ -1740,7 +1767,7 @@ class MainWindow(tk.Frame):
         self.remove_buttons = []
 
         pos = tk.Label(scrollable_frame, text='X and Y positions must be set in plot coordinates.',bg='#E4E4E4')
-        pos["font"] = ("Roboto",int(15*1000/self.master.winfo_width()))
+        pos["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
         pos.pack(side='top')
 
         for i in range(len(self.plot_text)):
@@ -1750,22 +1777,22 @@ class MainWindow(tk.Frame):
             self.text_entries[i].insert(0,self.plot_text[i])
 
             label = tk.Label(frame, text='Text %d' % (i+1),bg='#E4E4E4')
-            label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            label["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
 
             x_label = tk.Label(frame, text='x', bg='#E4E4E4')
-            x_label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            x_label["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
 
             self.x_entries.append(tk.Entry(frame,width=7))
             self.x_entries[i].insert(0,self.text_pos[i][0])
 
             y_label = tk.Label(frame, text='y', bg='#E4E4E4')
-            y_label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            y_label["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
 
             self.y_entries.append(tk.Entry(frame,width=7))
             self.y_entries[i].insert(0,self.text_pos[i][1])
 
             font_label = tk.Label(frame, text='fontsize', bg='#E4E4E4')
-            font_label["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            font_label["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
 
             self.fontsize_entries.append(tk.Entry(frame,width=10))
             self.fontsize_entries[i].insert(0,self.text_size[i])
@@ -1778,7 +1805,7 @@ class MainWindow(tk.Frame):
                                     activeforeground='#F21112')
                                        )
             self.remove_buttons[i]["command"] = lambda pos=i: self.remove_text(pos)
-            self.remove_buttons[i]["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            self.remove_buttons[i]["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
             # Alterar as cores quando entra e sai
             self.remove_buttons[i].bind("<Enter>", hover(self.remove_buttons[i]))
             self.remove_buttons[i].bind("<Leave>", unhover(self.remove_buttons[i]))
@@ -1804,7 +1831,7 @@ class MainWindow(tk.Frame):
                                 activebackground='white',
                                 activeforeground='#F21112')
         save_button["command"] = self.save_text
-        save_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
@@ -1817,7 +1844,7 @@ class MainWindow(tk.Frame):
                                activebackground='white',
                                activeforeground='#F21112')
         add_button["command"] = self.new_text
-        add_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        add_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         add_button.bind("<Enter>", func=lambda e: add_button.config(bg='white',fg='#F21112'))
         add_button.bind("<Leave>", func=lambda e: add_button.config(bg='#F21112',fg='white'))
         add_button.pack(side='right',padx=20)
@@ -1867,10 +1894,8 @@ class MainWindow(tk.Frame):
         self.text_window.destroy()
 
     def labels(self):
-        try:
-            self.labels_window.destroy()
-        except:
-            pass
+        self.erase_all_windows()
+
         self.labels_window = tk.Toplevel(self.master)
         self.labels_window.title('Add Labels')
         self.labels_window.geometry('400x400')
@@ -1902,21 +1927,21 @@ class MainWindow(tk.Frame):
                                        tk.Entry(frame3,width=35)])
 
             label1 = tk.Label(frame1, text='Label for Dataset %d' % (i+1),bg='#E4E4E4')
-            label1["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            label1["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
             self.label_entries[i][0].insert(0,self.data_labels[i])
             label1.pack(side='left')
             self.label_entries[i][0].pack(side='right')
             frame1.pack(side='top',pady=10)
 
             label2 = tk.Label(frame2, text='Label for Plotted Function %d' % (i+1),bg='#E4E4E4')
-            label2["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            label2["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
             self.label_entries[i][1].insert(0,self.plot_labels[i])
             label2.pack(side='left')
             self.label_entries[i][1].pack(side='right')
             frame2.pack(side='top',pady=10)
 
             label3 = tk.Label(frame3, text='Label for Fitted Function %d' % (i+1),bg='#E4E4E4')
-            label3["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+            label3["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
             self.label_entries[i][2].insert(0,self.fit_labels[i])
             label3.pack(side='left')
             self.label_entries[i][2].pack(side='right')
@@ -1930,7 +1955,7 @@ class MainWindow(tk.Frame):
                                 activebackground='white',
                                 activeforeground='#F21112')
         save_button["command"] = self.save_labels
-        save_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
@@ -2251,10 +2276,8 @@ class MainWindow(tk.Frame):
             return
 
     def latexify(self):
-        try:
-            self.export_window.destroy()
-        except:
-            pass
+        self.erase_all_windows()
+
         self.export_window = tk.Toplevel(self.master)
         self.export_window.title('LaTeX-ify')
         self.export_window.geometry('400x200')
@@ -2263,15 +2286,15 @@ class MainWindow(tk.Frame):
 
         # Colocação das várias opções de exportação
         function = tk.Label(self.export_window, text='Fitting Function')
-        function["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        function["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         function.configure(background='#E4E4E4')
 
         data_same_x = tk.Label(self.export_window, text='Datasets (share x)')
-        data_same_x["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        data_same_x["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         data_same_x.configure(background='#E4E4E4')
 
         data_diff_x = tk.Label(self.export_window, text='Datasets (split x)')
-        data_diff_x["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        data_diff_x["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         data_diff_x.configure(background='#E4E4E4')
 
         # Colocação dos botões para copiar o texto
@@ -2282,7 +2305,7 @@ class MainWindow(tk.Frame):
                                     activebackground='white',
                                     activeforeground='#F21112')
         self.function_button["command"] = self.export_function
-        self.function_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        self.function_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
         self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
@@ -2294,7 +2317,7 @@ class MainWindow(tk.Frame):
                                            activebackground='white',
                                            activeforeground='#F21112')
         self.data_same_x_button["command"] = self.export_data_same_x
-        self.data_same_x_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        self.data_same_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         self.data_same_x_button.bind("<Enter>", func=lambda e: self.data_same_x_button.config(bg='white',fg='#F21112'))
         self.data_same_x_button.bind("<Leave>", func=lambda e: self.data_same_x_button.config(bg='#F21112',fg='white'))
@@ -2306,7 +2329,7 @@ class MainWindow(tk.Frame):
                                            activebackground='white',
                                            activeforeground='#F21112')
         self.data_diff_x_button["command"] = self.export_data_diff_x
-        self.data_diff_x_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        self.data_diff_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         self.data_diff_x_button.bind("<Enter>", func=lambda e: self.data_diff_x_button.config(bg='white',fg='#F21112'))
         self.data_diff_x_button.bind("<Leave>", func=lambda e: self.data_diff_x_button.config(bg='#F21112',fg='white'))
@@ -2434,6 +2457,8 @@ class MainWindow(tk.Frame):
         self.plot_dataset()
 
     def import_window(self):
+        self.erase_all_windows()
+
         self.import_window = tk.Toplevel(self.master)
         self.import_window.title('File Format')
         self.import_window.geometry('400x250')
@@ -2451,7 +2476,7 @@ class MainWindow(tk.Frame):
         self.same_x_button = tk.Checkbutton(self.import_window, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.same_x, text = 'All datasets have same x', command = self.same_xfunction)
         self.same_x_button.place(in_ = self.import_window, relwidth = 0.7, relheight = 0.1, rely = 0.05, relx = 0.15)
 
-        self.same_x_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        self.same_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
 
         self.same_x_text =tk.Label(self.import_window, bg = '#E4E4E4', text = 'First column will be x.\nSubsequencial columns will be (y1, ey1, y2, ey2,...)')
         self.same_x_text.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.15, rely = 0.15, relx = 0.05)
@@ -2459,7 +2484,7 @@ class MainWindow(tk.Frame):
         self.dif_x_button = tk.Checkbutton(self.import_window, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.dif_x, text = 'All datasets have their own x',  command = self.dif_xfunction)
         self.dif_x_button.place(in_ = self.import_window, relwidth = 0.8, relheight = 0.15, rely = 0.35, relx = 0.1)
 
-        self.dif_x_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        self.dif_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
 
         self.dif_x_text =tk.Label(self.import_window, bg = '#E4E4E4', text = 'Columns will be (x1, y1, ey1, x2, y2, ey2,...)')
         self.dif_x_text.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.1, rely = 0.46, relx = 0.05)
@@ -2472,7 +2497,7 @@ class MainWindow(tk.Frame):
                                   activebackground='white',
                                   activeforeground='#F21112')
         import_button.place(in_ = self.import_window, relwidth =0.5, relheight = 0.15, relx=0.25, rely=0.8)
-        import_button["font"] = ("Roboto",int(20*1000/self.master.winfo_width()))
+        import_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         import_button.bind("<Enter>", func=lambda e: import_button.config(bg='white',fg='#F21112'))
         import_button.bind("<Leave>", func=lambda e: import_button.config(bg='#F21112',fg='white'))
@@ -2887,8 +2912,6 @@ class MainWindow(tk.Frame):
             self.func_fit_width_scale['state'] = tk.DISABLED
             self.func_plot_width_scale['state'] = tk.DISABLED
 
-
-
     def compile_function(self):
         # clean the fit parameters
         for x in range(self.box_number):
@@ -3297,7 +3320,6 @@ class MainWindow(tk.Frame):
                         else:
                             self.a.plot(self.x_func[i], self.y_func[i], lw = self.func_plot_width[0].get(), ls = str(self.func_plot_option_translater[i]), color = self.func_plot_color_var[i])
                     if self.want_fit[i].get():
-                        print(len(self.fit_params),len(self.fit_uncert),len(self.fit_chi),len(self.fit_r2),len(data_for_fit),len(self.init_values))
                         (self.fit_params[i], self.fit_uncert[i], self.fit_chi[i], self.fit_r2[i]) = self.fit_data(data_for_fit[i], self.init_values[i], 2000, i)
                         self.plot_fitted_function(i)
                         if self.fit_labels[i]:
@@ -3466,7 +3488,7 @@ class MainWindow(tk.Frame):
                                    activebackground='white',
                                    activeforeground='#F21112')
                 output['command'] = self.show_output
-                output['font'] = ('Roboto',int(20*1000/self.master.winfo_width()))
+                output['font'] = ('Roboto',int(20*self.master.winfo_width()/2350))
                 output.bind("<Enter>", func=lambda e: output.config(bg='white',fg='#F21112'))
                 output.bind("<Leave>", func=lambda e: output.config(bg='#F21112',fg='white'))
                 output.grid(row = x+1, column = 5)
@@ -3561,7 +3583,7 @@ class MainWindow(tk.Frame):
                                    activebackground='white',
                                    activeforeground='#F21112')
                 output['command'] = self.show_output
-                output['font'] = ('Roboto',int(20*1000/self.master.winfo_width()))
+                output['font'] = ('Roboto',int(20*self.master.winfo_width()/2350))
                 output.bind("<Enter>", func=lambda e: output.config(bg='white',fg='#F21112'))
                 output.bind("<Leave>", func=lambda e: output.config(bg='#F21112',fg='white'))
                 output.grid(row = x+1, column = 5)
@@ -3677,7 +3699,7 @@ class MainWindow(tk.Frame):
         return eval(self.clean_functions[self.dataset_to_fit])
 
     def open_file(self):
-        self.import_window.destroy()
+        self.erase_all_windows()
 
         file = tk.filedialog.askopenfilename()
 
@@ -3694,6 +3716,601 @@ class MainWindow(tk.Frame):
             new_data = read_file(file,str,True,2)
         for x in range(len(new_data)):
             self.add_dataset(new_data[x])
+
+    def create_login(self, event=None):
+        self.erase_all_windows()
+
+        if hasattr(self, 'username_entry'):
+            del self.username_entry
+        if hasattr(self, 'password_entry'):
+            del self.password_entry
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
+        self.login_window = tk.Toplevel(self.master)
+        self.login_window.title('Login CHIMERA Online')
+        self.login_window.geometry('500x300')
+        self.login_window.configure(background='#E4E4E4')
+        self.login_window.resizable(False,False)
+
+        text = """
+        Welcome to CHIMERA Online! Before you can access our database you need
+        to login below. Don't have an account yet? You can create one through
+        the button at the bottom of the page.
+        Please insert your username and password below.
+        """
+        intro = tk.Label(self.login_window,text=text,bg='#E4E4E4',justify='left')
+        intro['font'] = ('Roboto', int(15*self.master.winfo_width()/2350))
+        intro.place(relwidth=0.9,relx=0.05,rely=0.02)
+
+        frame_username = tk.Frame(self.login_window, bg='#E4E4E4')
+
+        label_username = tk.Label(frame_username,text='Username:',bg='#E4E4E4',anchor='w')
+        label_username['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_username.place(relx=0.32,rely=0.0)
+
+        self.username_entry = tk.Entry(frame_username,width=20,justify='left')
+        self.username_entry.place(relx=0.48,rely=0.0)
+
+        frame_username.place(relwidth=1,relheight=0.2,relx=0,rely=0.35)
+
+        frame_password = tk.Frame(self.login_window, bg='#E4E4E4')
+
+        label_password = tk.Label(frame_password, text='Password:',bg='#E4E4E4',anchor='w')
+        label_password['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_password.place(relx=0.32,rely=0)
+
+        self.password_entry = tk.Entry(frame_password,show="*",width=20,justify='left')
+        self.password_entry.place(relx=0.48,rely=0)
+
+        self.button_show = tk.Button(frame_password,
+                               text='Show',
+                               bg='#E4E4E4',
+                               activebackground='#E4E4E4',
+                               highlightthickness=0,
+                               borderwidth=0,
+                               command = self.toggle_pass,
+                               cursor="hand2")
+        self.button_show['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        self.button_show.place(relx=0.75, rely=0)
+
+        frame_password.place(relwidth=1,relheight=0.2,relx=0,rely=0.55)
+
+        login_button = tk.Button(self.login_window,
+                                text="LOGIN",
+                                fg='white',
+                                bg='#F21112',
+                                activebackground='white',
+                                activeforeground='#F21112')
+        login_button["command"] = self.login
+        login_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
+        # Alterar as cores quando entra e sai
+        login_button.bind("<Enter>", func=lambda e: login_button.config(bg='white',fg='#F21112'))
+        login_button.bind("<Leave>", func=lambda e: login_button.config(bg='#F21112',fg='white'))
+        login_button.place(rely=0.7,relx=0.45)
+
+        new_account_button = tk.Button(self.login_window,
+                                       text='Create new account',
+                                       bg='#E4E4E4',
+                                       fg='blue',
+                                       activebackground='#E4E4E4',
+                                       activeforeground='blue',
+                                       highlightthickness = 0,
+                                       borderwidth=0,
+                                       cursor="hand2")
+        new_account_button['command'] = self.setup_account
+        new_account_button['font'] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        new_account_button.place(rely=0.85,relx=0.4)
+
+        # self.password_entry.bind('<Return>', lambda e: self.login_button.invoke())
+
+    def login(self, event=None):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+
+        self.database_username = os.environ['CHIMERA_USERNAME']
+        self.database_password = os.environ['CHIMERA_PASSWORD']
+
+        if not hasattr(self,'client'):
+            try:
+                self.client = pymongo.MongoClient("mongodb+srv://" + self.database_username + ":" + self.database_password + "@chimera-data.gbqbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",connectTimeoutMS=5000)
+            except:
+                tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out after 5 seconds. Make sure you have a stable internet connection.')
+                self.login_window.destroy()
+                return
+            self.db = self.client.CHIMERA
+
+        users = self.db.users
+        try:
+            temp_user = users.find_one({"username": username},max_time_ms=5000)
+        except:
+            tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out after 5 seconds. Make sure you have a stable internet connection.')
+            self.login_window.destroy()
+            return
+
+        # first we check if the user exists
+        if temp_user == None:
+            tk.messagebox.showwarning('INVALID LOGIN','The username and/or the password are incorrect.')
+            self.create_login()
+            return
+
+        # now we check if the password matches
+        salt = temp_user['password'][:32]
+        key = hashlib.pbkdf2_hmac('sha256',password.encode('utf-8'),salt,100000)
+        if key != temp_user['password'][32:]:
+            tk.messagebox.showwarning('INVALID LOGIN','The username and/or the password are incorrect.')
+            self.create_login()
+            return
+
+        self.user = temp_user
+        self.user['password'] = password
+        self.login_window.destroy()
+        tk.messagebox.showinfo('LOGIN SUCCESSFUL', 'Welcome to CHIMERA, {}!'.format(self.user['username']))
+        self.online.delete('Login')
+        self.master.unbind('<Control-L>')
+        self.master.unbind('<Control-l>')
+        self.online.delete('Create Account')
+        self.online.add_command(label='Manage Connections', command = self.view_connections)
+        self.online.add_command(label='Manage Groups', command = self.view_groups)
+        self.online.add_command(label='Manage Account', command = self.edit_account)
+        self.online.add_command(label='Logout', command = self.logout)
+
+    def toggle_pass(self):
+        if self.button_show['text'] == 'Show':
+            self.button_show.config(text = 'Hide')
+            self.password_entry.config(show='')
+        else:
+            self.button_show.config(text = 'Show')
+            self.password_entry.config(show='*')
+
+    def view_connections(self):
+        self.erase_all_windows()
+
+        print(self.user)
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
+        self.connections_window = tk.Toplevel(self.master)
+        self.connections_window.title('Manage CHIMERA Connections')
+        self.connections_window.geometry('600x500')
+        self.connections_window.configure(background='#E4E4E4')
+        self.connections_window.resizable(False,False)
+
+        # frame_username = tk.Frame(self.login_window, bg='#E4E4E4')
+
+        # label_username = tk.Label(frame_username,text='Username:',bg='#E4E4E4',anchor='w')
+        # label_username['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        # label_username.place(relx=0.32,rely=0.0)
+
+        # self.username_entry = tk.Entry(frame_username,width=20,justify='left')
+        # self.username_entry.place(relx=0.48,rely=0.0)
+
+        # frame_username.place(relwidth=1,relheight=0.2,relx=0,rely=0.35)
+
+        # frame_password = tk.Frame(self.login_window, bg='#E4E4E4')
+
+        # label_password = tk.Label(frame_password, text='Password:',bg='#E4E4E4',anchor='w')
+        # label_password['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        # label_password.place(relx=0.32,rely=0)
+
+        # self.password_entry = tk.Entry(frame_password,show="*",width=20,justify='left')
+        # self.password_entry.place(relx=0.48,rely=0)
+
+        # self.button_show = tk.Button(frame_password,
+        #                        text='Show',
+        #                        bg='#E4E4E4',
+        #                        activebackground='#E4E4E4',
+        #                        highlightthickness=0,
+        #                        borderwidth=0,
+        #                        command = self.toggle_pass,
+        #                        cursor="hand2")
+        # self.button_show['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        # self.button_show.place(relx=0.75, rely=0)
+
+        # frame_password.place(relwidth=1,relheight=0.2,relx=0,rely=0.55)
+
+        new_connection_button = tk.Button(self.connections_window,
+                                text="ADD CONNECTION",
+                                fg='white',
+                                bg='#F21112',
+                                activebackground='white',
+                                activeforeground='#F21112')
+        new_connection_button["command"] = self.add_connection
+        new_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
+        # Alterar as cores quando entra e sai
+        new_connection_button.bind("<Enter>", func=lambda e: new_connection_button.config(bg='white',fg='#F21112'))
+        new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
+        new_connection_button.pack(side='top')
+
+    def view_groups(self):
+        print('BBB')
+
+    def add_connection(self):
+        self.erase_all_windows()
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
+        self.new_connect_window = tk.Toplevel(self.master)
+        self.new_connect_window.title('Add CHIMERA Connections')
+        self.new_connect_window.geometry('600x300')
+        self.new_connect_window.configure(background='#E4E4E4')
+        self.new_connect_window.resizable(False,False)
+
+        text = """
+        To add a connection, insert their username and their connection code.
+        This connection code can be found under 'CHIMERA Online > Manage
+        Account > Connection Code'.
+        Only one person needs to perform this connection. Once it is done, the
+        connection has been established for both users.
+        """
+        intro = tk.Label(self.new_connect_window,text=text,bg='#E4E4E4',justify='left')
+        intro['font'] = ('Roboto', int(15*self.master.winfo_width()/2350))
+        intro.place(relwidth=0.9,relx=0.05,rely=0.01)
+
+        frame_username = tk.Frame(self.new_connect_window, bg='#E4E4E4')
+        label_username = tk.Label(frame_username,text='Username:',bg='#E4E4E4',anchor='w')
+        label_username['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_username.place(relx=0.30,rely=0.0)
+        self.username_entry = tk.Entry(frame_username,width=20,justify='left')
+        self.username_entry.place(relx=0.50,rely=0.0)
+        frame_username.place(relwidth=1,relheight=0.2,relx=0,rely=0.35)
+
+        frame_code = tk.Frame(self.new_connect_window, bg='#E4E4E4')
+        label_code = tk.Label(frame_code, text='Connection Code:',bg='#E4E4E4',anchor='w')
+        label_code['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_code.place(relx=0.30,rely=0)
+        self.code_entry = tk.Entry(frame_code,width=20,justify='left')
+        self.code_entry.place(relx=0.50,rely=0)
+        frame_code.place(relwidth=1,relheight=0.2,relx=0,rely=0.55)
+
+        save_connection_button = tk.Button(self.new_connect_window,
+                                text="ADD CONNECTION",
+                                fg='white',
+                                bg='#F21112',
+                                activebackground='white',
+                                activeforeground='#F21112')
+        save_connection_button["command"] = self.finish_connection
+        save_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
+        # Alterar as cores quando entra e sai
+        save_connection_button.bind("<Enter>", func=lambda e: save_connection_button.config(bg='white',fg='#F21112'))
+        save_connection_button.bind("<Leave>", func=lambda e: save_connection_button.config(bg='#F21112',fg='white'))
+        save_connection_button.place(relx=0.4,rely=0.8)
+
+    def finish_connection(self):
+        username = self.username_entry.get()
+        connect_code = self.code_entry.get()
+
+        users = self.db.users
+        # finally we just check for repeated usernames
+        try:
+            other_user = users.find_one({'username': username, 'connect_code': connect_code}, max_time_ms=5000)
+        except:
+            tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
+            self.new_connect_window.destroy()
+            return
+        if other_user == None:
+            tk.messagebox.showwarning('INVALID CONNECTION', 'The username and/or the connection code provided are incorrect.')
+            self.add_connection()
+            return
+        if username in self.user['connections']:
+            tk.messagebox.showwarning('REPEATED CONNECTION', 'A connection between you and {} already exists.'.format(username))
+            self.new_connect_window.destroy()
+            return
+
+        try:
+            # update my account
+            users.update_one({'username': self.user['username']}, {'$push': {'connections': username}})
+            # update the other person's account
+            users.update_one({'username': username}, {'$push': {'connections': self.user['username']}})
+        except:
+            tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
+            self.new_connect_window.destroy()
+            return
+
+        tk.messagebox.showinfo('CONNECTION ESTABLISHED', 'Your connection with {} has been stablished successfully.'.format(username))
+        self.new_connect_window.destroy()
+
+    def logout(self):
+        del self.user
+        tk.messagebox.showinfo('LOGOUT SUCCESSFUL', 'You have been successfully logged out.')
+        self.online.delete('Logout')
+        self.online.delete('Manage Account')
+        self.online.delete('Manage Connections')
+        self.online.delete('Manage Groups')
+        self.online.add_command(label='Login', command=self.create_login,accelerator='Ctrl+L')
+        self.master.bind('<Control-L>', self.create_login)
+        self.master.bind('<Control-l>', self.create_login)
+        self.online.add_command(label='Create Account', command=self.setup_account)
+
+    def setup_account(self,event=None):
+        self.erase_all_windows()
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
+        self.new_account_window = tk.Toplevel(self.master)
+        self.new_account_window.title('Create CHIMERA Account')
+        self.new_account_window.geometry('500x300')
+        self.new_account_window.configure(background='#E4E4E4')
+        self.new_account_window.resizable(False,False)
+
+        text = """
+        Welcome to CHIMERA Online! In order to access the database where you can
+        store your projects you first need to create an account.
+        Please fill in the fields below.
+        """
+        intro = tk.Label(self.new_account_window,text=text,bg='#E4E4E4',justify='left')
+        intro['font'] = ('Roboto', int(15*self.master.winfo_width()/2350))
+        intro.place(relwidth=0.9,relx=0.05,rely=0.02)
+
+        frame_username = tk.Frame(self.new_account_window, bg='#E4E4E4')
+        label_username = tk.Label(frame_username,text='Username:',bg='#E4E4E4',anchor='w')
+        label_username['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_username.place(relx=0.32,rely=0.0)
+        self.username_entry = tk.Entry(frame_username,width=20,justify='left')
+        self.username_entry.place(relx=0.48,rely=0.0)
+        frame_username.place(relwidth=1,relheight=0.15,relx=0,rely=0.25)
+
+        frame_email = tk.Frame(self.new_account_window, bg='#E4E4E4')
+        label_email = tk.Label(frame_email, text='Email:', bg='#E4E4E4',anchor='w')
+        label_email['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_email.place(relx=0.32,rely=0)
+        self.email_entry = tk.Entry(frame_email,width=20,justify='left')
+        self.email_entry.place(relx=0.48,rely=0)
+        frame_email.place(relwidth=1, relheight=0.15,relx=0,rely=0.4)
+
+        frame_password = tk.Frame(self.new_account_window, bg='#E4E4E4')
+        label_password = tk.Label(frame_password, text='Password:',bg='#E4E4E4',anchor='w')
+        label_password['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_password.place(relx=0.32,rely=0)
+        self.password_entry = tk.Entry(frame_password,show="*",width=20,justify='left')
+        self.password_entry.place(relx=0.48,rely=0)
+        self.button_show = tk.Button(frame_password,
+                               text='Show',
+                               bg='#E4E4E4',
+                               activebackground='#E4E4E4',
+                               highlightthickness=0,
+                               borderwidth=0,
+                               command = self.toggle_pass,
+                               cursor="hand2")
+        self.button_show['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        self.button_show.place(relx=0.75, rely=0)
+        frame_password.place(relwidth=1,relheight=0.15,relx=0,rely=0.55)
+
+        create_account_button = tk.Button(self.new_account_window,
+                                          text="CREATE ACCOUNT",
+                                          fg='white',
+                                          bg='#F21112',
+                                          activebackground='white',
+                                          activeforeground='#F21112')
+        create_account_button["command"] = self.save_account
+        create_account_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
+        # Alterar as cores quando entra e sai
+        create_account_button.bind("<Enter>", func=lambda e: create_account_button.config(bg='white',fg='#F21112'))
+        create_account_button.bind("<Leave>", func=lambda e: create_account_button.config(bg='#F21112',fg='white'))
+        create_account_button.place(rely=0.7,relx=0.36)
+
+    def save_account(self, event=None):
+        self.database_username = os.environ['CHIMERA_USERNAME']
+        self.database_password = os.environ['CHIMERA_PASSWORD']
+
+        # first we need to do some tests
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        email = self.email_entry.get()
+
+        # regular expression to validate email
+        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+
+        # tests on the username
+        if ' ' in username or '\t' in username:
+            tk.messagebox.showwarning('INVALID USERNAME','Username cannot contain whitespace (spaces, tabs,...).')
+            if not hasattr(self, 'user'):
+                self.setup_account()
+            else:
+                self.edit_account()
+            return
+        elif len(username)==0:
+            tk.messagebox.showwarning('INVALID USERNAME','Username needs to have at least one character.')
+            if not hasattr(self, 'user'):
+                self.setup_account()
+            else:
+                self.edit_account()
+            return
+
+        # tests on the password
+        elif ' ' in password or '\t' in password:
+            tk.messagebox.showwarning('INVALID PASSWORD','Password cannot contain whitespace (spaces, tabs,...).')
+            if not hasattr(self, 'user'):
+                self.setup_account()
+            else:
+                self.edit_account()
+            return
+        elif len(password)==0:
+            tk.messagebox.showwarning('INVALID PASSWORD','Password needs to have at least one character.')
+            if not hasattr(self, 'user'):
+                self.setup_account()
+            else:
+                self.edit_account()
+            return
+
+        # tests on the email
+        elif not re.match(regex, email):
+            tk.messagebox.showwarning('INVALID EMAIL','Please provide a valid email address.')
+            if not hasattr(self, 'user'):
+                self.setup_account()
+            else:
+                self.edit_account()
+            return
+
+        if hasattr(self, 'user'):
+            update = True
+        else:
+            update = False
+            # if we passed all of these tests, then we can send the new account to the data_base
+            # now we just need to hash the password
+            salt = os.urandom(32)
+            key = hashlib.pbkdf2_hmac('sha256',password.encode('utf-8'),salt,100000)
+            hashed_pass = salt + key
+
+            if update:
+                user = {'username': username,
+                    'password': hashed_pass, # first 32 chars are the salt, last 32 chars are the pass
+                    'email': email,
+                    'connect_code': self.user['connect_code'],
+                    'connections': []
+                    }
+            else:
+                # but before that we create the connection code
+                characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+                connect_code = ''
+                for i in range(10):
+                    connect_code += secrets.choice(characters)
+                user = {'username': username,
+                        'password': hashed_pass, # first 32 chars are the salt, last 32 chars are the pass
+                        'email': email,
+                        'connect_code': connect_code,
+                        'connections': []
+                        }
+
+
+        if not hasattr(self,'client'):
+            try:
+                self.client = pymongo.MongoClient("mongodb+srv://" + self.database_username + ":" + self.database_password + "@chimera-data.gbqbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",connectTimeoutMS=5000)
+            except:
+                tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out after 5 seconds. Make sure you have a stable internet connection.')
+                self.new_account_window.destroy()
+                return
+            self.db = self.client.CHIMERA
+
+        users = self.db.users
+        # finally we just check for repeated usernames
+        try:
+            temp = users.find_one({'username': user['username']}, max_time_ms=5000)
+        except:
+            tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
+            self.new_account_window.destroy()
+            return
+        if temp != None:
+            tk.messagebox.showwarning('INVALID USERNAME', 'The username provided is already connected to an existing account. Please select a different, unique username.')
+            self.setup_account()
+            return
+
+        if update:
+            try:
+                users.update_one({'username': self.user['username']}, {'$set': user})
+            except:
+                tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
+                self.edit_account_window.destroy()
+                return
+
+            tk.messagebox.showinfo('ACCOUNT EDITED', 'The account has been edited successfully!')
+            self.edit_account_window.destroy()
+            self.logout()
+        else:
+            try:
+                users.insert_one(user)
+            except:
+                tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
+                self.new_account_window.destroy()
+                return
+            tk.messagebox.showinfo('ACCOUNT CREATED', 'The account has been created successfully!')
+            self.new_account_window.destroy()
+
+    def edit_account(self, event=None):
+        self.erase_all_windows()
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
+        self.edit_account_window = tk.Toplevel(self.master)
+        self.edit_account_window.title('Edit CHIMERA Account')
+        self.edit_account_window.geometry('600x300')
+        self.edit_account_window.configure(background='#E4E4E4')
+        self.edit_account_window.resizable(False,False)
+
+        text = """
+        Here you can manage your account. All changes are immediate and
+        after performing them you will have to login again. Just correct
+        the entries below to the updated values to edit your account.
+        """
+        intro = tk.Label(self.edit_account_window,text=text,bg='#E4E4E4',justify='left')
+        intro['font'] = ('Roboto', int(15*self.master.winfo_width()/2350))
+        intro.place(relwidth=0.9,relx=0.05,rely=0.01)
+
+        frame_username = tk.Frame(self.edit_account_window, bg='#E4E4E4')
+        label_username = tk.Label(frame_username,text='Username:',bg='#E4E4E4',anchor='w')
+        label_username['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_username.place(relx=0.30,rely=0.0)
+        self.username_entry = tk.Entry(frame_username,width=20,justify='left')
+        self.username_entry.place(relx=0.50,rely=0.0)
+        self.username_entry.insert(0, self.user['username'])
+        frame_username.place(relwidth=1,relheight=0.15,relx=0,rely=0.25)
+
+        frame_email = tk.Frame(self.edit_account_window, bg='#E4E4E4')
+        label_email = tk.Label(frame_email, text='Email:', bg='#E4E4E4',anchor='w')
+        label_email['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_email.place(relx=0.30,rely=0)
+        self.email_entry = tk.Entry(frame_email,width=20,justify='left')
+        self.email_entry.place(relx=0.50,rely=0)
+        self.email_entry.insert(0, self.user['email'])
+        frame_email.place(relwidth=1, relheight=0.15,relx=0,rely=0.4)
+
+        frame_password = tk.Frame(self.edit_account_window, bg='#E4E4E4')
+        label_password = tk.Label(frame_password, text='Password:',bg='#E4E4E4',anchor='w')
+        label_password['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_password.place(relx=0.30,rely=0)
+        self.password_entry = tk.Entry(frame_password,show="*",width=20,justify='left')
+        self.password_entry.place(relx=0.50,rely=0)
+        self.password_entry.insert(0, self.user['password'])
+        self.button_show = tk.Button(frame_password,
+                               text='Show',
+                               bg='#E4E4E4',
+                               activebackground='#E4E4E4',
+                               highlightthickness=0,
+                               borderwidth=0,
+                               command = self.toggle_pass,
+                               cursor="hand2")
+        self.button_show['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        self.button_show.place(relx=0.75, rely=0)
+        frame_password.place(relwidth=1,relheight=0.15,relx=0,rely=0.55)
+
+        frame_connection = tk.Frame(self.edit_account_window, bg='#E4E4E4')
+        label_connection = tk.Label(frame_connection, text='Connection Code:', bg='#E4E4E4', anchor = 'w')
+        label_connection['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label_connection.place(relx=0.30,rely=0)
+        connection_entry = tk.Entry(frame_connection,width=20,justify='left',cursor="arrow",takefocus=0)
+        connection_entry.place(relx=0.50, rely=0)
+        connection_entry.insert(0, self.user['connect_code'])
+        connection_entry.config(state='readonly')
+        frame_connection.place(relwidth=1,relheight=0.15,relx=0,rely=0.7)
+
+        create_account_button = tk.Button(self.edit_account_window,
+                                          text="EDIT ACCOUNT",
+                                          fg='white',
+                                          bg='#F21112',
+                                          activebackground='white',
+                                          activeforeground='#F21112')
+        create_account_button["command"] = self.save_account
+        create_account_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
+        # Alterar as cores quando entra e sai
+        create_account_button.bind("<Enter>", func=lambda e: create_account_button.config(bg='white',fg='#F21112'))
+        create_account_button.bind("<Leave>", func=lambda e: create_account_button.config(bg='#F21112',fg='white'))
+        create_account_button.place(rely=0.85,relx=0.40)
+
 
 root = tk.Tk()
 app = MainWindow(master=root)
