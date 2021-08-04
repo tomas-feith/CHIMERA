@@ -3773,7 +3773,8 @@ class MainWindow(tk.Frame):
                                highlightthickness=0,
                                borderwidth=0,
                                command = self.toggle_pass,
-                               cursor="hand2")
+                               cursor="hand2",
+                               takefocus=0)
         self.button_show['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
         self.button_show.place(relx=0.75, rely=0)
 
@@ -3800,7 +3801,8 @@ class MainWindow(tk.Frame):
                                        activeforeground='blue',
                                        highlightthickness = 0,
                                        borderwidth=0,
-                                       cursor="hand2")
+                                       cursor="hand2",
+                                       takefocus=0)
         new_account_button['command'] = self.setup_account
         new_account_button['font'] = ("Roboto",int(15*self.master.winfo_width()/2350))
         new_account_button.place(rely=0.85,relx=0.4)
@@ -3869,8 +3871,6 @@ class MainWindow(tk.Frame):
     def view_connections(self):
         self.erase_all_windows()
 
-        print(self.user)
-
         def hover(button):
             return lambda e: button.config(bg='white',fg='#F21112')
         def unhover(button):
@@ -3882,38 +3882,56 @@ class MainWindow(tk.Frame):
         self.connections_window.configure(background='#E4E4E4')
         self.connections_window.resizable(False,False)
 
-        # frame_username = tk.Frame(self.login_window, bg='#E4E4E4')
+        self.connections_window.columnconfigure(0, weight=1)
+        self.connections_window.columnconfigure(1, weight=1)
+        self.connections_window.columnconfigure(2, weight=1)
+        self.connections_window.columnconfigure(3, weight=1)
+        self.connections_window.columnconfigure(4, weight=1)
 
-        # label_username = tk.Label(frame_username,text='Username:',bg='#E4E4E4',anchor='w')
-        # label_username['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
-        # label_username.place(relx=0.32,rely=0.0)
+        frame_data = tk.Frame(self.connections_window, bg='white')
+        frame_data.grid(row=0, column=0, columnspan=5, pady=7, sticky = tk.N + tk.S)
+        label1 = tk.Label(frame_data,text='Username',bg='white',fg='red')
+        label1["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label1.grid(row=0, column=1)
+        label2 = tk.Label(frame_data,text='Shared Groups',bg='white',fg='red')
+        label2["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label2.grid(row=0, column=2)
+        label3 = tk.Label(frame_data,text='Actions',bg='white',fg='red')
+        label3["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label3.grid(row=0, column=3)
+        data_area = tk.Canvas(frame_data, background="white", width=500, height=400)
+        vscroll = tk.Scrollbar(frame_data, orient=tk.VERTICAL, command=data_area.yview)
+        data_area['yscrollcommand'] = vscroll.set
+        scrollable_frame = tk.Frame(data_area,bg='white')
+        scrollable_frame.bind('<Configure>', lambda e: data_area.configure(scrollregion=data_area.bbox('all')))
+        data_area.create_window((0,0), window=scrollable_frame, width=500)
+        data_area.grid(row=1, column=1, columnspan=3, sticky = tk.N + tk.S + tk.E + tk.W)
+        vscroll.grid(row=1, column=4, sticky = tk.N + tk.S + tk.E + tk.W)
 
-        # self.username_entry = tk.Entry(frame_username,width=20,justify='left')
-        # self.username_entry.place(relx=0.48,rely=0.0)
+        scrollable_frame.columnconfigure(0, weight=1)
+        scrollable_frame.columnconfigure(1, weight=1)
+        scrollable_frame.columnconfigure(2, weight=1)
 
-        # frame_username.place(relwidth=1,relheight=0.2,relx=0,rely=0.35)
+        # teste = ['1','2','3','4','5','6','7','1','2','3','4','5','6','7','1','2','3','4','5','6','7']
 
-        # frame_password = tk.Frame(self.login_window, bg='#E4E4E4')
+        action_buttons = [tk.Button(scrollable_frame,text='REMOVE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(self.user['connections']))]
+        # action_buttons = [tk.Button(scrollable_frame,text='REMOVE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(teste))]
 
-        # label_password = tk.Label(frame_password, text='Password:',bg='#E4E4E4',anchor='w')
-        # label_password['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
-        # label_password.place(relx=0.32,rely=0)
 
-        # self.password_entry = tk.Entry(frame_password,show="*",width=20,justify='left')
-        # self.password_entry.place(relx=0.48,rely=0)
+        for i in range(len(self.user['connections'])):
+        # for i in range(len(teste)):
+            label_username = tk.Label(scrollable_frame, text=self.user['connections'][i],bg='white',borderwidth=0)
+            # label_username = tk.Label(scrollable_frame, text=teste[i],bg='white')
+            label_username["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            label_username.grid(row=i+1,column=0,padx=1,pady=1)
 
-        # self.button_show = tk.Button(frame_password,
-        #                        text='Show',
-        #                        bg='#E4E4E4',
-        #                        activebackground='#E4E4E4',
-        #                        highlightthickness=0,
-        #                        borderwidth=0,
-        #                        command = self.toggle_pass,
-        #                        cursor="hand2")
-        # self.button_show['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
-        # self.button_show.place(relx=0.75, rely=0)
+            label_groups = tk.Label(scrollable_frame, text='Add groups later',bg='white',borderwidth=0)
+            label_groups["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            label_groups.grid(row=i+1,column=1,padx=1,pady=1)
 
-        # frame_password.place(relwidth=1,relheight=0.2,relx=0,rely=0.55)
+            action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            action_buttons[i].grid(row=i+1,column=2,padx=1,pady=1)
+
 
         new_connection_button = tk.Button(self.connections_window,
                                 text="ADD CONNECTION",
@@ -3926,7 +3944,7 @@ class MainWindow(tk.Frame):
         # Alterar as cores quando entra e sai
         new_connection_button.bind("<Enter>", func=lambda e: new_connection_button.config(bg='white',fg='#F21112'))
         new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
-        new_connection_button.pack(side='top')
+        new_connection_button.grid(row=2,column=2)
 
     def view_groups(self):
         print('BBB')
@@ -4083,7 +4101,8 @@ class MainWindow(tk.Frame):
                                highlightthickness=0,
                                borderwidth=0,
                                command = self.toggle_pass,
-                               cursor="hand2")
+                               cursor="hand2",
+                               takefocus=0)
         self.button_show['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
         self.button_show.place(relx=0.75, rely=0)
         frame_password.place(relwidth=1,relheight=0.15,relx=0,rely=0.55)
