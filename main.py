@@ -36,9 +36,9 @@ def check_version():
     latest_version = latest_version.text.split(' ')
     for elem in latest_version:
         if 'Current' in elem:
-            pos = latest_version.index(elem)+1
+            pos = latest_version.index(elem) + 1
     clean_version = ''
-    for char in latest_version[pos+1]:
+    for char in latest_version[pos + 1]:
         if char == '<':
             break
         else:
@@ -658,6 +658,10 @@ class MainWindow(tk.Frame):
         if os.name == 'nt':
             self.master.state('zoomed')
         self.master.iconphoto(True, tk.PhotoImage(file=resource_path('img/Logo.png')))
+
+        # Ativar a função custom para fechar a janela
+        self.master.protocol("WM_DELETE_WINDOW", self.close)
+
         # Tirar o título
         self.winfo_toplevel().title("")
 
@@ -749,7 +753,6 @@ class MainWindow(tk.Frame):
         self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
         self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='#F21112'))
         self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
-
 
     def create_scatter(self):
         # bindings for hotkeys
@@ -1506,7 +1509,9 @@ class MainWindow(tk.Frame):
         except: pass
         try: self.connections_window.destroy()
         except: pass
-        try:self.new_connect_window.destroy()
+        try: self.new_connect_window.destroy()
+        except: pass
+        try: self.groups_window.destroy()
         except: pass
 
     def set_ratio(self):
@@ -3882,11 +3887,11 @@ class MainWindow(tk.Frame):
         self.connections_window.configure(background='#E4E4E4')
         self.connections_window.resizable(False,False)
 
-        self.connections_window.columnconfigure(0, weight=1)
-        self.connections_window.columnconfigure(1, weight=1)
-        self.connections_window.columnconfigure(2, weight=1)
-        self.connections_window.columnconfigure(3, weight=1)
-        self.connections_window.columnconfigure(4, weight=1)
+        self.connections_window.columnconfigure(0, weight=1, minsize=50)
+        self.connections_window.columnconfigure(1, weight=1, minsize=167)
+        self.connections_window.columnconfigure(2, weight=1, minsize=167)
+        self.connections_window.columnconfigure(3, weight=1, minsize=167)
+        self.connections_window.columnconfigure(4, weight=1, minsize=50)
 
         frame_data = tk.Frame(self.connections_window, bg='white')
         frame_data.grid(row=0, column=0, columnspan=5, pady=7, sticky = tk.N + tk.S)
@@ -3908,29 +3913,38 @@ class MainWindow(tk.Frame):
         data_area.grid(row=1, column=1, columnspan=3, sticky = tk.N + tk.S + tk.E + tk.W)
         vscroll.grid(row=1, column=4, sticky = tk.N + tk.S + tk.E + tk.W)
 
-        scrollable_frame.columnconfigure(0, weight=1)
-        scrollable_frame.columnconfigure(1, weight=1)
-        scrollable_frame.columnconfigure(2, weight=1)
+        scrollable_frame.columnconfigure(0, weight=1, minsize=167)
+        scrollable_frame.columnconfigure(1, weight=1, minsize=167)
+        scrollable_frame.columnconfigure(2, weight=1, minsize=167)
 
-        # teste = ['1','2','3','4','5','6','7','1','2','3','4','5','6','7','1','2','3','4','5','6','7']
 
         action_buttons = [tk.Button(scrollable_frame,text='REMOVE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(self.user['connections']))]
-        # action_buttons = [tk.Button(scrollable_frame,text='REMOVE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(teste))]
-
 
         for i in range(len(self.user['connections'])):
-        # for i in range(len(teste)):
             label_username = tk.Label(scrollable_frame, text=self.user['connections'][i],bg='white',borderwidth=0)
-            # label_username = tk.Label(scrollable_frame, text=teste[i],bg='white')
             label_username["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            label_username.grid(row=i+1,column=0,padx=1,pady=1)
+            label_username.grid(row=i+1,column=0,pady=5)
 
-            label_groups = tk.Label(scrollable_frame, text='Add groups later',bg='white',borderwidth=0)
+            # now we find shared groups
+            groups = self.db.groups
+            shared_groups = groups.find({ 'members' : { '$all' : [self.user['username'], self.user['connections'][i]] } }, max_time_ms=5000)
+            shared_groups = [group for group in shared_groups]
+
+            groups = ''
+            for group in shared_groups:
+                groups += group['name'] + '\n'
+            groups = groups[:-1]
+
+            label_groups = tk.Label(scrollable_frame, text=groups,bg='white',borderwidth=0)
             label_groups["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            label_groups.grid(row=i+1,column=1,padx=1,pady=1)
+            label_groups.grid(row=i+1,column=1,pady=5)
 
+            action_buttons[i]["command"] = lambda pos=i: self.disconnect_user(self.user['connections'][pos])
+            # Alterar as cores quando entra e sai
+            action_buttons[i].bind("<Enter>", hover(action_buttons[i]))
+            action_buttons[i].bind("<Leave>", unhover(action_buttons[i]))
             action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            action_buttons[i].grid(row=i+1,column=2,padx=1,pady=1)
+            action_buttons[i].grid(row=i+1,column=2,pady=5)
 
 
         new_connection_button = tk.Button(self.connections_window,
@@ -3946,8 +3960,17 @@ class MainWindow(tk.Frame):
         new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
         new_connection_button.grid(row=2,column=2)
 
-    def view_groups(self):
-        print('BBB')
+    def disconnect_user(self,user):
+        users = self.db.users
+        users.update_one({ 'username': self.user['username'] },
+                          { '$pull': { 'connections': user } })
+
+        groups = self.db.groups
+        groups.update_many({ 'owner': self.user['username'], 'members' : { '$in' : [user] } },
+                           { '$pull' : { 'members': user } })
+
+        self.user = users.find_one({"username": self.user['username']},max_time_ms=5000)
+        self.view_connections()
 
     def add_connection(self):
         self.erase_all_windows()
@@ -4029,6 +4052,7 @@ class MainWindow(tk.Frame):
             users.update_one({'username': self.user['username']}, {'$push': {'connections': username}})
             # update the other person's account
             users.update_one({'username': username}, {'$push': {'connections': self.user['username']}})
+            self.user = users.find_one({"username": self.user['username']},max_time_ms=5000)
         except:
             tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
             self.new_connect_window.destroy()
@@ -4037,8 +4061,136 @@ class MainWindow(tk.Frame):
         tk.messagebox.showinfo('CONNECTION ESTABLISHED', 'Your connection with {} has been stablished successfully.'.format(username))
         self.new_connect_window.destroy()
 
+    def view_groups(self):
+        self.erase_all_windows()
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
+        self.groups_window = tk.Toplevel(self.master)
+        self.groups_window.title('Manage CHIMERA Groups')
+        self.groups_window.geometry('800x600')
+        self.groups_window.configure(background='#E4E4E4')
+        self.groups_window.resizable(False,False)
+
+        self.groups_window.columnconfigure(0, weight=1, minsize=100)
+        self.groups_window.columnconfigure(1, weight=1, minsize=150)
+        self.groups_window.columnconfigure(2, weight=1, minsize=150)
+        self.groups_window.columnconfigure(3, weight=1, minsize=150)
+        self.groups_window.columnconfigure(4, weight=1, minsize=150)
+        self.groups_window.columnconfigure(4, weight=1, minsize=100)
+
+        frame_data = tk.Frame(self.groups_window, bg='white')
+        frame_data.grid(row=0, column=0, columnspan=6, pady=7, sticky = tk.N + tk.S)
+        label1 = tk.Label(frame_data,text='Name',bg='white',fg='red')
+        label1["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label1.grid(row=0, column=1)
+        label2 = tk.Label(frame_data,text='Members',bg='white',fg='red')
+        label2["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label2.grid(row=0, column=2)
+        label3 = tk.Label(frame_data,text='Projects',bg='white',fg='red')
+        label3["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label3.grid(row=0, column=3)
+        label4 = tk.Label(frame_data,text='Actions',bg='white',fg='red')
+        label4["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label4.grid(row=0, column=4)
+        data_area = tk.Canvas(frame_data, background="white", width=600, height=500)
+        vscroll = tk.Scrollbar(frame_data, orient=tk.VERTICAL, command=data_area.yview)
+        data_area['yscrollcommand'] = vscroll.set
+        scrollable_frame = tk.Frame(data_area,bg='white')
+        scrollable_frame.bind('<Configure>', lambda e: data_area.configure(scrollregion=data_area.bbox('all')))
+        data_area.create_window((0,0), window=scrollable_frame, width=600)
+        data_area.grid(row=1, column=1, columnspan=4, sticky = tk.N + tk.S + tk.E + tk.W)
+        vscroll.grid(row=1, column=5, sticky = tk.N + tk.S + tk.E + tk.W)
+
+        scrollable_frame.columnconfigure(0, weight=1, minsize=150)
+        scrollable_frame.columnconfigure(1, weight=1, minsize=150)
+        scrollable_frame.columnconfigure(2, weight=1, minsize=150)
+        scrollable_frame.columnconfigure(3, weight=1, minsize=150)
+
+        # now we need to find the all the groups this user is in
+        groups = self.db.groups
+
+        match_groups = groups.find({ 'members' : { '$in' : [self.user['username']] } }, max_time_ms=5000)
+
+        match_groups = [group for group in match_groups]
+
+        action_buttons = []
+        for group in match_groups:
+            if group['owner'] == self.user['username']:
+                action_buttons.append(tk.Button(scrollable_frame, text='GROUP SETTINGS',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
+            else:
+                action_buttons.append(tk.Button(scrollable_frame, text='LEAVE GROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
+
+        for i in range(len(action_buttons)):
+            if action_buttons[i]['text'] == 'LEAVE GROUP':
+                action_buttons[i]['command'] = lambda pos=i: self.leave_group(match_groups[pos]['_id'])
+            if action_buttons[i]['text'] == 'GROUP SETTINGS':
+                action_buttons[i]['command'] = lambda pos=i: self.group_settings(match_groups[pos]['_id'])
+            # Alterar as cores quando entra e sai
+            action_buttons[i].bind("<Enter>", hover(action_buttons[i]))
+            action_buttons[i].bind("<Leave>", unhover(action_buttons[i]))
+            action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+
+        for i in range(len(match_groups)):
+            label_name = tk.Label(scrollable_frame, text=match_groups[i]['name'],bg='white',borderwidth=0)
+            label_name["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            label_name.grid(row=i+1,column=0,pady=5)
+
+            members = ''
+            for member in match_groups[i]['members']:
+                if member == match_groups[i]['owner']:
+                    member += ' (owner)'
+                members += member + '\n'
+            label_members = tk.Label(scrollable_frame, text=members,bg='white',borderwidth=0)
+            label_members["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            label_members.grid(row=i+1,column=1,pady=5)
+
+            projects = ''
+            for project in match_groups[i]['projects']:
+                projects += project
+            if projects == '':
+                projects = 'N/A'
+            label_projects = tk.Label(scrollable_frame, text=projects,bg='white',borderwidth=0)
+            label_projects['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+            label_projects.grid(row=i+1,column=2,pady=5)
+
+
+            action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            action_buttons[i].grid(row=i+1,column=3,pady=5)
+
+
+        new_connection_button = tk.Button(self.groups_window,
+                                text="ADD CONNECTION",
+                                fg='white',
+                                bg='#F21112',
+                                activebackground='white',
+                                activeforeground='#F21112')
+        new_connection_button["command"] = self.add_connection
+        new_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
+        # Alterar as cores quando entra e sai
+        new_connection_button.bind("<Enter>", func=lambda e: new_connection_button.config(bg='white',fg='#F21112'))
+        new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
+        new_connection_button.grid(row=2,column=2)
+
+    def leave_group(self, group_id):
+        print(group_id)
+
+        groups = self.db.groups
+        groups.update_one({'_id': group_id},
+                          {'$pull': {'members': self.user['username']}})
+        self.view_groups()
+
+    def group_settings(self, group_id):
+        print(group_id)
+
     def logout(self):
         del self.user
+        self.client.close()
+        del self.client
+
         tk.messagebox.showinfo('LOGOUT SUCCESSFUL', 'You have been successfully logged out.')
         self.online.delete('Logout')
         self.online.delete('Manage Account')
@@ -4229,6 +4381,7 @@ class MainWindow(tk.Frame):
         if update:
             try:
                 users.update_one({'username': self.user['username']}, {'$set': user})
+                self.user = users.find_one({"username": self.user['username']},max_time_ms=5000)
             except:
                 tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
                 self.edit_account_window.destroy()
@@ -4329,6 +4482,11 @@ class MainWindow(tk.Frame):
         create_account_button.bind("<Enter>", func=lambda e: create_account_button.config(bg='white',fg='#F21112'))
         create_account_button.bind("<Leave>", func=lambda e: create_account_button.config(bg='#F21112',fg='white'))
         create_account_button.place(rely=0.85,relx=0.40)
+
+    def close(self):
+        if hasattr(self,'client'):
+            self.client.close()
+        self.master.destroy()
 
 
 root = tk.Tk()
