@@ -26,6 +26,7 @@ import pymongo
 import re
 import secrets
 import hashlib
+import json
 
 def check_version():
     current_version = '1.7.1'
@@ -1989,109 +1990,49 @@ class MainWindow(tk.Frame):
             del self.file
             return
 
-        # write the text entries
-        for text in self.plot_text:
-            file.write(text + '\n')
-        file.write('SECTION\n')
-        # write the text positions
-        for pos in self.text_pos:
-            file.write('%s\n' % str(pos[0]))
-            file.write('%s\n' % str(pos[1]))
-        file.write('SECTION\n')
-        # write the text fonts
-        for size in self.text_size:
-            file.write('%s\n' % str(size))
-        file.write('SECTION\n')
-        # write the figure ratio
-        file.write(str(self.width_ratio))
-        file.write('\nSECTION\n')
-        file.write(str(self.height_ratio))
-        file.write('\nSECTION\n')
-        # write the ticks placement
-        for tick in self.x_ticks_ref:
-            file.write('%s\n' % str(tick))
-        if len(self.x_ticks_ref) == 0:
-            file.write('\nSECTION\n')
-        else:
-            file.write('SECTION\n')
-        for tick in self.y_ticks_ref:
-            file.write('%s\n' % str(tick))
-        if len(self.y_ticks_ref) == 0:
-            file.write('\nSECTION\n')
-        else:
-            file.write('SECTION\n')
-        # write the information for the axes
-        # X-AXIS
-        file.write(self.x_axis_max_entry.get())
-        file.write('\nSECTION\n')
-        file.write(self.x_axis_min_entry.get())
-        file.write('\nSECTION\n')
-        file.write(self.x_axis_tick_space_entry.get())
-        file.write('\nSECTION\n')
-        file.write(self.x_axis_title_entry.get())
-        file.write('\nSECTION\n')
-        # Y-AXIS
-        file.write(self.y_axis_max_entry.get())
-        file.write('\nSECTION\n')
-        file.write(self.y_axis_min_entry.get())
-        file.write('\nSECTION\n')
-        file.write(self.y_axis_tick_space_entry.get())
-        file.write('\nSECTION\n')
-        file.write(self.y_axis_title_entry.get())
+        data = {}
+        data['plot_text'] = self.plot_text
+        data['text_pos'] = self.text_pos
+        data['text_size'] = self.text_size
+        data['width_ratio'] = self.width_ratio
+        data['height_ratio'] = self.height_ratio
+        data['x_ticks_ref'] = self.x_ticks_ref
+        data['y_ticks_ref'] = self.y_ticks_ref
+        data['x_axis_max'] = self.x_axis_max_entry.get()
+        data['x_axis_min'] = self.x_axis_min_entry.get()
+        data['x_axis_tick_space'] = self.x_axis_tick_space_entry.get()
+        data['x_axis_title'] = self.x_axis_title_entry.get()
+        data['y_axis_max'] = self.y_axis_max_entry.get()
+        data['y_axis_min'] = self.y_axis_min_entry.get()
+        data['y_axis_tick_space'] = self.y_axis_tick_space_entry.get()
+        data['y_axis_title'] = self.y_axis_title_entry.get()
+        data['data_list'] = self.data_list
+        data['dataset_text'] = self.dataset_text
+        data['indeps'] = self.indeps
+        data['params'] = self.params
+        data['functions'] = self.functions
+        data['clean_functions'] = self.clean_functions
+        data['data_labels'] = self.data_labels
+        data['plot_labels'] = self.plot_labels
+        data['fit_labels'] = self.fit_labels
+        data['init_values'] = self.init_values
+        data['marker_color_var'] = self.marker_color_var
+        data['line_color_var'] = self.line_color_var
+        data['error_color_var'] = self.error_color_var
+        data['func_fit_color_var'] = self.func_fit_color_var
+        data['func_plot_color_var'] = self.func_plot_color_var
+        data['marker_option_translater'] = self.marker_option_translater
+        data['line_option_translater'] = self.line_option_translater
+        data['func_fit_option_translater'] = self.func_fit_option_translater
+        data['func_plot_option_translater'] = self.func_plot_option_translater
+        data['marker_size'] = [var.get() for var in self.marker_size]
+        data['line_width'] = [var.get() for var in self.line_width]
+        data['error_width'] = [var.get() for var in self.error_width]
+        data['func_fit_width'] = [var.get() for var in self.func_fit_width]
+        data['func_plot_width'] = [var.get() for var in self.func_plot_width]
 
-        for i in range(len(self.dataset_text)):
-            file.write('DATASET\n')
-            file.write(self.data_list[i])
-            file.write('\nSECTION\n')
-            file.write(self.dataset_text[i])
-            file.write('\nSECTION\n')
-            file.write(self.indeps[i])
-            file.write('\nSECTION\n')
-            file.write(self.params[i])
-            file.write('\nSECTION\n')
-            file.write(self.functions[i])
-            file.write('\nSECTION\n')
-            file.write(self.clean_functions[i])
-            file.write('\nSECTION\n')
-            file.write(self.data_labels[i])
-            file.write('\nSECTION\n')
-            file.write(self.plot_labels[i])
-            file.write('\nSECTION\n')
-            file.write(self.fit_labels[i])
-            file.write('\nSECTION\n')
-            for value in self.init_values[i]:
-                file.write('%s\n' % value)
-            file.write('SECTION\n')
-            file.write('%s\n' % self.marker_color_var[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.line_color_var[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.error_color_var[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.func_fit_color_var[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.func_plot_color_var[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.marker_option_translater[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.line_option_translater[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.func_fit_option_translater[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.func_plot_option_translater[i])
-            file.write('SECTION\n')
-            file.write('%s\n' % self.marker_size[i].get())
-            file.write('SECTION\n')
-            file.write('%s\n' % self.line_width[i].get())
-            file.write('SECTION\n')
-            file.write('%s\n' % self.error_width[i].get())
-            file.write('SECTION\n')
-            file.write('%s\n' % self.func_fit_width[i].get())
-            file.write('SECTION\n')
-            file.write('%s\n' % self.func_plot_width[i].get())
-
+        json.dump(data,file)
         file.close()
-
         tk.messagebox.showinfo('File Saved','File {} has been saved'.format(self.file.split('/')[-1]))
 
     def open_project(self, event=None):
@@ -2102,47 +2043,36 @@ class MainWindow(tk.Frame):
         self.create_scatter()
         try:
             file = open(self.file, 'r')
-            data = file.read().split('DATASET')
-            first = [val for val in data[0].split('\nSECTION\n') if val!='SECTION']
-
-            self.plot_text = first[0].split('\n')
-            self.text_pos = [[float(first[1].split('\n')[i]),float(first[1].split('\n')[i+1])] for i in range(0,len(first[1].split('\n')),2)]
-            self.text_size = [float(size) for size in first[2].split('\n')]
-
-            self.width_ratio = float(first[3])
-            self.height_ratio = float(first[4])
-
-            self.x_ticks_ref = [float(tick) for tick in first[5].split('\n') if tick]
-            self.y_ticks_ref = [float(tick) for tick in first[6].split('\n') if tick]
+            # data = file.read().split('DATASET')
+            data = json.load(file)
+            for entry in data:
+                print(entry, ':', data[entry])
+            file.close()
+            self.plot_text = data['plot_text']
+            self.text_pos = data['text_pos']
+            self.text_size = data['text_size']
+            self.width_ratio = data['width_ratio']
+            self.height_ratio = data['height_ratio']
+            self.x_ticks_ref = data['x_ticks_ref']
+            self.y_ticks_ref = data['y_ticks_ref']
 
             self.x_axis_max_entry.delete(0, tk.END)
-            self.x_axis_max_entry.insert(0, first[7])
+            self.x_axis_max_entry.insert(0, data['x_axis_max'])
             self.x_axis_min_entry.delete(0, tk.END)
-            self.x_axis_min_entry.insert(0, first[8])
+            self.x_axis_min_entry.insert(0, data['x_axis_min'])
             self.x_axis_tick_space_entry.delete(0, tk.END)
-            self.x_axis_tick_space_entry.insert(0, first[9])
+            self.x_axis_tick_space_entry.insert(0, data['x_axis_tick_space'])
             self.x_axis_title_entry.delete(0, tk.END)
-            self.x_axis_title_entry.insert(0, first[10])
+            self.x_axis_title_entry.insert(0, data['x_axis_title'])
 
             self.y_axis_max_entry.delete(0, tk.END)
-            self.y_axis_max_entry.insert(0, first[11])
+            self.y_axis_max_entry.insert(0, data['y_axis_max'])
             self.y_axis_min_entry.delete(0, tk.END)
-            self.y_axis_min_entry.insert(0, first[12])
+            self.y_axis_min_entry.insert(0, data['y_axis_min'])
             self.y_axis_tick_space_entry.delete(0, tk.END)
-            self.y_axis_tick_space_entry.insert(0, first[13])
+            self.y_axis_tick_space_entry.insert(0, data['y_axis_tick_space'])
             self.y_axis_title_entry.delete(0, tk.END)
-            self.y_axis_title_entry.insert(0, first[14])
-
-            self.dataset_text = []
-            self.indeps = []
-            self.params = []
-            self.functions = []
-            self.clean_functions = []
-            self.data_labels = []
-            self.plot_labels = []
-            self.fit_labels = []
-            self.init_values = []
-            self.data_list = []
+            self.y_axis_title_entry.insert(0, data['y_axis_title'])
 
             self.fit_params = []
             self.fit_uncert = []
@@ -2169,17 +2099,6 @@ class MainWindow(tk.Frame):
             self.ord = []
             self.err_ord = []
 
-            self.marker_color_var = []
-            self.line_color_var = []
-            self.error_color_var = []
-            self.func_fit_color_var = []
-            self.func_plot_color_var = []
-
-            self.marker_option_translater = []
-            self.line_option_translater = []
-            self.func_fit_option_translater = []
-            self.func_plot_option_translater = []
-
             self.line_width = []
             self.marker_size = []
             self.error_width = []
@@ -2187,10 +2106,10 @@ class MainWindow(tk.Frame):
             self.func_plot_width = []
 
             self.datasets_to_plot_var = []
+            self.data_list = data['data_list']
+            self.number_datasets = len(self.data_list)
 
-            self.number_datasets = len(data[1:])
-
-            for dataset in data[1:]:
+            for i in range(self.number_datasets):
                 # We start by adding all the empty lists
                 self.fit_params.append([])
                 self.fit_uncert.append([])
@@ -2226,34 +2145,32 @@ class MainWindow(tk.Frame):
                 self.func_plot_width.append(tk.DoubleVar())
                 self.datasets_to_plot_var.append(tk.BooleanVar())
                 self.datasets_to_plot_var[-1].set(1)
-                if id(dataset) != id(data[1]): self.datasets_to_plot.add_checkbutton(label = "Plot Dataset " + str(len(self.data_list)), onvalue = 1, offvalue = 0, variable = self.datasets_to_plot_var[-1] )
+                self.datasets_to_plot.add_checkbutton(label = "Plot Dataset " + str(i + 1), onvalue = 1, offvalue = 0, variable = self.datasets_to_plot_var[-1] )
 
-                # And then we pass on to the information in the saved file
-                split_data = dataset.split('\nSECTION\n')
-                self.data_list.append(split_data[0])
-                self.dataset_text.append(split_data[1])
-                self.indeps.append(split_data[2])
-                self.params.append(split_data[3])
-                self.functions.append(split_data[4])
-                self.clean_functions.append(split_data[5])
-                self.data_labels.append(split_data[6])
-                self.plot_labels.append(split_data[7])
-                self.fit_labels.append(split_data[8])
-                self.init_values.append([float(val) for val in split_data[9].split('\n')])
-                self.marker_color_var.append(split_data[10])
-                self.line_color_var.append(split_data[11])
-                self.error_color_var.append(split_data[12])
-                self.func_fit_color_var.append(split_data[13])
-                self.func_plot_color_var.append(split_data[14])
-                self.marker_option_translater.append(split_data[15])
-                self.line_option_translater.append(split_data[16])
-                self.func_fit_option_translater.append(split_data[17])
-                self.func_plot_option_translater.append(split_data[18])
-                self.marker_size[-1].set(float(split_data[19]))
-                self.line_width[-1].set(float(split_data[20]))
-                self.error_width[-1].set(float(split_data[21]))
-                self.func_fit_width[-1].set(float(split_data[22]))
-                self.func_plot_width[-1].set(float(split_data[23]))
+            self.dataset_text = data['dataset_text']
+            self.indeps = data['indeps']
+            self.params = data['params']
+            self.functions = data['functions']
+            self.clean_functions = data['clean_functions']
+            self.data_labels = data['data_labels']
+            self.plot_labels = data['plot_labels']
+            self.fit_labels = data['fit_labels']
+            self.init_values = data['init_values']
+            self.marker_color_var = data['marker_color_var']
+            self.line_color_var = data['line_color_var']
+            self.error_color_var = data['error_color_var']
+            self.func_fit_color_var = data['func_fit_color_var']
+            self.func_plot_color_var = data['func_plot_color_var']
+            self.marker_option_translater = data['marker_option_translater']
+            self.line_option_translater = data['line_option_translater']
+            self.func_fit_option_translater = data['func_fit_option_translater']
+            self.func_plot_option_translater = data['func_plot_option_translater']
+            for i in range(self.number_datasets):
+                self.marker_size[i].set(data['marker_size'][i])
+                self.line_width[i].set(data['line_width'][i])
+                self.error_width[i].set(data['error_width'][i])
+                self.func_fit_width[i].set(data['error_width'][i])
+                self.func_plot_width[i].set(data['func_plot_width'][i])
 
             del self.param_boxes
             self.data_entry.delete('1.0', tk.END)
@@ -2265,8 +2182,8 @@ class MainWindow(tk.Frame):
             self.update_databox('')
             self.update_parameter()
         except:
-            # import traceback
-            # traceback.print_exc()
+            import traceback
+            traceback.print_exc()
             self.create_scatter()
             tk.messagebox.showwarning('ERROR','Unable to open. File corrupted.')
             del self.file
@@ -2426,7 +2343,6 @@ class MainWindow(tk.Frame):
 
         self.want_fit[self.selected_dataset].set(1)
         self.plot_dataset()
-
 
     def marker_color_pick(self):
         pick_color = tk.colorchooser.askcolor()[1]
@@ -3074,7 +2990,6 @@ class MainWindow(tk.Frame):
                 tk.messagebox.showwarning('ERROR','Having {} ticks will make your plot unreabable. Adjust Y tick spacing.'.format(n_ticks))
                 return False
 
-
         # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo
         self.update_combobox_values()
         select = self.data_list.index(self.data_list_var.get())
@@ -3224,7 +3139,6 @@ class MainWindow(tk.Frame):
             amp_y = amp_y/8
             self.y_axis_tick_space_entry.delete(0,'end')
             self.y_axis_tick_space_entry.insert(0, "{0:.3e}".format(amp_y))
-
 
         x_ticks = []
         y_ticks = []
@@ -3404,7 +3318,6 @@ class MainWindow(tk.Frame):
             self.process_params = process[1]
             clean_split = process[1]
             if count==2:
-
                 self.subframe_right_2.destroy()
 
                 self.subframe_right_2=tk.Frame(self.frame_right, bg='#E4E4E4')
@@ -3495,7 +3408,6 @@ class MainWindow(tk.Frame):
                 self.windows_item = self.param_canvas.create_window((0,0), window=self.another_frame, anchor="nw")
 
             if (count == 1):
-
                 self.param_label = []
                 self.param_boxes = []
                 self.param_res_boxes = []
@@ -3634,7 +3546,6 @@ class MainWindow(tk.Frame):
         fit.sd_beta: incertezas dos parametros
         fit.res_var: chi quadrado reduzido
         r2: R^2 para o fit
-
         """
         self.dataset_to_fit = dataset_number
         func = odr.Model(self.fit_function)
@@ -3800,7 +3711,6 @@ class MainWindow(tk.Frame):
         new_account_button['command'] = self.setup_account
         new_account_button['font'] = ("Roboto",int(15*self.master.winfo_width()/2350))
         new_account_button.place(rely=0.85,relx=0.4)
-
         # self.password_entry.bind('<Return>', lambda e: self.login_button.invoke())
 
     def login(self, event=None):
@@ -3906,7 +3816,6 @@ class MainWindow(tk.Frame):
         scrollable_frame.columnconfigure(1, weight=1, minsize=167)
         scrollable_frame.columnconfigure(2, weight=1, minsize=167)
 
-
         action_buttons = [tk.Button(scrollable_frame,text='REMOVE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(self.user['connections']))]
 
         users = self.db.users
@@ -3938,7 +3847,6 @@ class MainWindow(tk.Frame):
             action_buttons[i].bind("<Leave>", unhover(action_buttons[i]))
             action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             action_buttons[i].grid(row=i+1,column=2,pady=5)
-
 
         new_connection_button = tk.Button(self.connections_window,
                                 text="ADD CONNECTION",
@@ -4111,7 +4019,6 @@ class MainWindow(tk.Frame):
             match_groups[i]['members_name'] = [users.find_one({'_id': member})['username'] for member in match_groups[i]['members']]
             # match_groups[i]['projects_name'] = [projects.find_one({'_id': project}) for project in match_groups[i]['projects']]
 
-
         action_buttons = []
         for group in match_groups:
             if group['owner'] == self.user['username']:
@@ -4153,10 +4060,8 @@ class MainWindow(tk.Frame):
             label_projects['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
             label_projects.grid(row=i+1,column=2,pady=5)
 
-
             action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             action_buttons[i].grid(row=i+1,column=3,pady=5)
-
 
         new_connection_button = tk.Button(self.groups_window,
                                 text="CREATE GROUP",
@@ -4262,7 +4167,6 @@ class MainWindow(tk.Frame):
                                         borderwidth=0)
                 label_member['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
                 label_member.grid(row=i+1,column=0,pady=10)
-
 
         project_buttons = []
         for projet in group['projects']:
@@ -4493,7 +4397,6 @@ class MainWindow(tk.Frame):
                         'connections': []
                         }
 
-
         if not hasattr(self,'client'):
             try:
                 self.client = pymongo.MongoClient("mongodb+srv://" + self.database_username + ":" + self.database_password + "@chimera-data.gbqbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",connectTimeoutMS=5000)
@@ -4620,7 +4523,6 @@ class MainWindow(tk.Frame):
         if hasattr(self,'client'):
             self.client.close()
         self.master.destroy()
-
 
 root = tk.Tk()
 app = MainWindow(master=root)
