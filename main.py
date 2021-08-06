@@ -1513,14 +1513,11 @@ class MainWindow(tk.Frame):
         except: pass
         try: self.groups_window.destroy()
         except: pass
+        try: self.group_settings_window.destroy()
+        except: pass
 
     def set_ratio(self):
         self.erase_all_windows()
-
-        def hover(button):
-            return lambda e: button.config(bg='white', fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112', fg='white')
 
         self.ratio_window = tk.Toplevel(self.master)
         self.ratio_window.title('Figure Ratio')
@@ -1598,11 +1595,6 @@ class MainWindow(tk.Frame):
 
     def set_ticks(self):
         self.erase_all_windows()
-
-        def hover(button):
-            return lambda e: button.config(bg='white', fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112', fg='white')
 
         self.ticks_window = tk.Toplevel(self.master)
         self.ticks_window.title('Ticks Placement')
@@ -2755,6 +2747,7 @@ class MainWindow(tk.Frame):
         # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
         # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
         # respetiva ao novo data-set
+        self.update_combobox_values()
         select = self.data_list.index(self.data_list_var.get())
         self.selected_dataset = select
         self.current_selection = select
@@ -3082,7 +3075,8 @@ class MainWindow(tk.Frame):
                 return False
 
 
-        # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo.
+        # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo
+        self.update_combobox_values()
         select = self.data_list.index(self.data_list_var.get())
         self.dataset_text[select]= self.data_entry.get("1.0", "end-1c").replace('\t',' ')
 
@@ -3730,11 +3724,6 @@ class MainWindow(tk.Frame):
         if hasattr(self, 'password_entry'):
             del self.password_entry
 
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
-
         self.login_window = tk.Toplevel(self.master)
         self.login_window.title('Login CHIMERA Online')
         self.login_window.geometry('500x300')
@@ -3920,14 +3909,18 @@ class MainWindow(tk.Frame):
 
         action_buttons = [tk.Button(scrollable_frame,text='REMOVE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(self.user['connections']))]
 
+        users = self.db.users
         for i in range(len(self.user['connections'])):
-            label_username = tk.Label(scrollable_frame, text=self.user['connections'][i],bg='white',borderwidth=0)
+            label_username = tk.Label(scrollable_frame,
+                                      text=users.find_one({'_id': self.user['connections'][i]})['username'],
+                                      bg='white',
+                                      borderwidth=0)
             label_username["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             label_username.grid(row=i+1,column=0,pady=5)
 
             # now we find shared groups
             groups = self.db.groups
-            shared_groups = groups.find({ 'members' : { '$all' : [self.user['username'], self.user['connections'][i]] } }, max_time_ms=5000)
+            shared_groups = groups.find({ 'members' : { '$all' : [self.user['_id'], self.user['connections'][i]] } }, max_time_ms=5000)
             shared_groups = [group for group in shared_groups]
 
             groups = ''
@@ -3974,11 +3967,6 @@ class MainWindow(tk.Frame):
 
     def add_connection(self):
         self.erase_all_windows()
-
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
 
         self.new_connect_window = tk.Toplevel(self.master)
         self.new_connect_window.title('Add CHIMERA Connections')
@@ -4049,9 +4037,9 @@ class MainWindow(tk.Frame):
 
         try:
             # update my account
-            users.update_one({'username': self.user['username']}, {'$push': {'connections': username}})
+            users.update_one({'username': self.user['username']}, {'$push': {'connections': other_user['_id']}})
             # update the other person's account
-            users.update_one({'username': username}, {'$push': {'connections': self.user['username']}})
+            users.update_one({'username': username}, {'$push': {'connections': self.user['_id']}})
             self.user = users.find_one({"username": self.user['username']},max_time_ms=5000)
         except:
             tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
@@ -4080,7 +4068,7 @@ class MainWindow(tk.Frame):
         self.groups_window.columnconfigure(2, weight=1, minsize=150)
         self.groups_window.columnconfigure(3, weight=1, minsize=150)
         self.groups_window.columnconfigure(4, weight=1, minsize=150)
-        self.groups_window.columnconfigure(4, weight=1, minsize=100)
+        self.groups_window.columnconfigure(5, weight=1, minsize=100)
 
         frame_data = tk.Frame(self.groups_window, bg='white')
         frame_data.grid(row=0, column=0, columnspan=6, pady=7, sticky = tk.N + tk.S)
@@ -4112,10 +4100,17 @@ class MainWindow(tk.Frame):
 
         # now we need to find the all the groups this user is in
         groups = self.db.groups
+        users = self.db.users
+        projects = self.db.projects
 
-        match_groups = groups.find({ 'members' : { '$in' : [self.user['username']] } }, max_time_ms=5000)
+        match_groups = groups.find({ 'members' : { '$in' : [self.user['_id']] } }, max_time_ms=5000)
 
         match_groups = [group for group in match_groups]
+
+        for i in range(len(match_groups)):
+            match_groups[i]['members_name'] = [users.find_one({'_id': member})['username'] for member in match_groups[i]['members']]
+            # match_groups[i]['projects_name'] = [projects.find_one({'_id': project}) for project in match_groups[i]['projects']]
+
 
         action_buttons = []
         for group in match_groups:
@@ -4128,7 +4123,7 @@ class MainWindow(tk.Frame):
             if action_buttons[i]['text'] == 'LEAVE GROUP':
                 action_buttons[i]['command'] = lambda pos=i: self.leave_group(match_groups[pos]['_id'])
             if action_buttons[i]['text'] == 'GROUP SETTINGS':
-                action_buttons[i]['command'] = lambda pos=i: self.group_settings(match_groups[pos]['_id'])
+                action_buttons[i]['command'] = lambda pos=i: self.group_settings(match_groups[pos]['_id'], match_groups[pos]['name'])
             # Alterar as cores quando entra e sai
             action_buttons[i].bind("<Enter>", hover(action_buttons[i]))
             action_buttons[i].bind("<Leave>", unhover(action_buttons[i]))
@@ -4140,10 +4135,11 @@ class MainWindow(tk.Frame):
             label_name.grid(row=i+1,column=0,pady=5)
 
             members = ''
-            for member in match_groups[i]['members']:
+            for member in match_groups[i]['members_name']:
                 if member == match_groups[i]['owner']:
                     member += ' (owner)'
                 members += member + '\n'
+            members = members[:-1]
             label_members = tk.Label(scrollable_frame, text=members,bg='white',borderwidth=0)
             label_members["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             label_members.grid(row=i+1,column=1,pady=5)
@@ -4163,7 +4159,7 @@ class MainWindow(tk.Frame):
 
 
         new_connection_button = tk.Button(self.groups_window,
-                                text="ADD CONNECTION",
+                                text="CREATE GROUP",
                                 fg='white',
                                 bg='#F21112',
                                 activebackground='white',
@@ -4173,18 +4169,165 @@ class MainWindow(tk.Frame):
         # Alterar as cores quando entra e sai
         new_connection_button.bind("<Enter>", func=lambda e: new_connection_button.config(bg='white',fg='#F21112'))
         new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
-        new_connection_button.grid(row=2,column=2)
+        new_connection_button.grid(row=2,column=2,columnspan=2)
 
     def leave_group(self, group_id):
-        print(group_id)
-
         groups = self.db.groups
         groups.update_one({'_id': group_id},
-                          {'$pull': {'members': self.user['username']}})
+                          {'$pull': {'members': self.user['_id']}})
         self.view_groups()
 
-    def group_settings(self, group_id):
-        print(group_id)
+    def group_settings(self, group_id, group_name):
+        self.erase_all_windows()
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
+        self.group_settings_window = tk.Toplevel(self.master)
+        self.group_settings_window.title('Manage Group "{}"'.format(group_name))
+        self.group_settings_window.geometry('800x600')
+        self.group_settings_window.configure(background='#E4E4E4')
+        self.group_settings_window.resizable(False,False)
+
+        self.group_settings_window.columnconfigure(0, weight=1, minsize=100)
+        self.group_settings_window.columnconfigure(1, weight=1, minsize=150)
+        self.group_settings_window.columnconfigure(2, weight=1, minsize=150)
+        self.group_settings_window.columnconfigure(3, weight=1, minsize=150)
+        self.group_settings_window.columnconfigure(4, weight=1, minsize=150)
+        self.group_settings_window.columnconfigure(5, weight=1, minsize=100)
+
+        frame_data = tk.Frame(self.group_settings_window, bg='white')
+        frame_data.grid(row=0, column=0, columnspan=6, pady=7, sticky = tk.N + tk.S)
+        label1 = tk.Label(frame_data,text='Members',bg='white',fg='red')
+        label1["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label1.grid(row=0, column=1)
+        label2 = tk.Label(frame_data,text='Actions',bg='white',fg='red')
+        label2["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label2.grid(row=0, column=2)
+        label3 = tk.Label(frame_data,text='Projects',bg='white',fg='red')
+        label3["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label3.grid(row=0, column=3)
+        label4 = tk.Label(frame_data,text='Actions',bg='white',fg='red')
+        label4["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label4.grid(row=0, column=4)
+        data_area = tk.Canvas(frame_data, background="white", width=600, height=500)
+        vscroll = tk.Scrollbar(frame_data, orient=tk.VERTICAL, command=data_area.yview)
+        data_area['yscrollcommand'] = vscroll.set
+        scrollable_frame = tk.Frame(data_area,bg='white')
+        scrollable_frame.bind('<Configure>', lambda e: data_area.configure(scrollregion=data_area.bbox('all')))
+        data_area.create_window((0,0), window=scrollable_frame, width=600)
+        data_area.grid(row=1, column=1, columnspan=4, sticky = tk.N + tk.S + tk.E + tk.W)
+        vscroll.grid(row=1, column=5, sticky = tk.N + tk.S + tk.E + tk.W)
+
+        scrollable_frame.columnconfigure(0, weight=1, minsize=150)
+        scrollable_frame.columnconfigure(1, weight=1, minsize=150)
+        scrollable_frame.columnconfigure(2, weight=1, minsize=150)
+        scrollable_frame.columnconfigure(3, weight=1, minsize=150)
+
+        groups = self.db.groups
+        users = self.db.users
+        projects = self.db.projects
+
+        group = groups.find_one({'_id': group_id})
+
+        group['members_name'] = [users.find_one({'_id': member})['username'] for member in group['members']]
+        # group['projects_name'] = [projects.find_one({'_id': project}) for project in group['projects']]
+
+        member_buttons = []
+        for member in group['members_name']:
+            if member == group['owner']:
+                member_buttons.append('')
+            else:
+                member_buttons.append(tk.Button(scrollable_frame, text='REMOVE\nMEMBER',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
+        for i in range(len(member_buttons)):
+            if member_buttons[i] != '':
+                member_buttons[i]['command'] = lambda pos=i: self.remove_member(group['members'][i], group['_id'], group['name'])
+                member_buttons[i].bind("<Enter>", hover(member_buttons[i]))
+                member_buttons[i].bind("<Leave>", unhover(member_buttons[i]))
+                member_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+                member_buttons[i].grid(row=i+1,column=1,pady=10)
+
+                label_member = tk.Label(scrollable_frame,
+                                        text=group['members_name'][i],
+                                        bg='white',
+                                        borderwidth=0)
+                label_member['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+                label_member.grid(row=i+1,column=0,pady=10)
+            else:
+                label_member = tk.Label(scrollable_frame,
+                                        text=group['members_name'][i] + ' (owner)',
+                                        bg='white',
+                                        borderwidth=0)
+                label_member['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+                label_member.grid(row=i+1,column=0,pady=10)
+
+
+        project_buttons = []
+        for projet in group['projects']:
+            project_buttons.append(tk.Button(scrollable_frame, text='ERASE\nPROJECT',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
+        for i in range(len(project_buttons)):
+            project_buttons[i]['command'] = lambda pos=i: self.delete_project(group['projects'][i], group['projects_name'][i])
+            project_buttons[i].bind("<Enter>", hover(project_buttons[i]))
+            project_buttons[i].bind("<Leave>", unhover(project_buttons[i]))
+            project_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            project_buttons[i].grid(row=i+1,column=3,pady=10)
+
+            label_project = tk.Label(scrollable_frame,
+                                     text=group['projects'][i],
+                                     bg='white',
+                                     borderwidth=0)
+            label_project['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+            label_project.grid(row=i+1,column=2,pady=10)
+
+        new_member_button = tk.Button(self.group_settings_window,
+                                      text="ADD MEMBER",
+                                      fg='white',
+                                      bg='#F21112',
+                                      activebackground='white',
+                                      activeforeground='#F21112')
+        new_member_button["command"] = self.add_member
+        new_member_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
+        # Alterar as cores quando entra e sai
+        new_member_button.bind("<Enter>", func=lambda e: new_member_button.config(bg='white',fg='#F21112'))
+        new_member_button.bind("<Leave>", func=lambda e: new_member_button.config(bg='#F21112',fg='white'))
+        new_member_button.grid(row=2,column=2)
+
+        delete_group_button = tk.Button(self.group_settings_window,
+                                        text='ERASE GROUP',
+                                        fg='white',
+                                        bg='#F21112',
+                                        activebackground='white',
+                                        activeforeground='#F21112')
+        delete_group_button['command'] = lambda: self.delete_group(group_id, group_name)
+        delete_group_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
+        # Alterar as cores quando entra e sai
+        delete_group_button.bind("<Enter>", func=lambda e: delete_group_button.config(bg='white',fg='#F21112'))
+        delete_group_button.bind("<Leave>", func=lambda e: delete_group_button.config(bg='#F21112',fg='white'))
+        delete_group_button.grid(row=2,column=3)
+
+    def add_member(self):
+        print('aa')
+
+    def remove_member(self, member_id, group_id, group_name):
+        print(member_id)
+        groups = self.db.groups
+        groups.update_one({ '_id': group_id },
+                          { '$pull': { 'members': member_id } })
+        self.group_settings(group_id, group_name)
+
+    def delete_group(self, group_id, group_name):
+        if tk.messagebox.askyesno('DELETE GROUP {}'.format(group_name),'Are you sure you want to delete this group? This action is immediate and irreversible.'):
+            groups = self.db.groups
+            groups.delete_one({'_id': group_id})
+            self.erase_all_windows()
+
+    def delete_project(self, project_id, project_name):
+        if tk.messagebox.askyesno('DELETE PROJECT {}'.format(project_name),'Are you sure you want to delete this project? This action is immediate and irreversible.'):
+            projects = self.db.projects
+            projects.delete_one({'_id': project_id})
+            self.erase_all_windows()
 
     def logout(self):
         del self.user
@@ -4203,11 +4346,6 @@ class MainWindow(tk.Frame):
 
     def setup_account(self,event=None):
         self.erase_all_windows()
-
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
 
         self.new_account_window = tk.Toplevel(self.master)
         self.new_account_window.title('Create CHIMERA Account')
@@ -4402,11 +4540,6 @@ class MainWindow(tk.Frame):
 
     def edit_account(self, event=None):
         self.erase_all_windows()
-
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
 
         self.edit_account_window = tk.Toplevel(self.master)
         self.edit_account_window.title('Edit CHIMERA Account')
