@@ -131,3 +131,6 @@ dmypy.json
 # Attempt from py2exe
 main.spec
 output
+
+# Compile Files
+Executable_Checklist.txt
