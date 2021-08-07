@@ -1522,6 +1522,8 @@ class MainWindow(tk.Frame):
         except: pass
         try: self.group_settings_window.destroy()
         except: pass
+        try: self.projects_window.destroy()
+        except: pass
 
     def set_ratio(self):
         self.erase_all_windows()
@@ -1984,6 +1986,59 @@ class MainWindow(tk.Frame):
             if file:
                 self.fig.tight_layout()
                 self.fig.savefig(file,dpi=500)
+
+    def save_online(self):
+        data = {}
+        data['plot_text'] = self.plot_text
+        data['text_pos'] = self.text_pos
+        data['text_size'] = self.text_size
+        data['width_ratio'] = self.width_ratio
+        data['height_ratio'] = self.height_ratio
+        data['x_ticks_ref'] = self.x_ticks_ref
+        data['y_ticks_ref'] = self.y_ticks_ref
+        data['x_axis_max'] = self.x_axis_max_entry.get()
+        data['x_axis_min'] = self.x_axis_min_entry.get()
+        data['x_axis_tick_space'] = self.x_axis_tick_space_entry.get()
+        data['x_axis_title'] = self.x_axis_title_entry.get()
+        data['y_axis_max'] = self.y_axis_max_entry.get()
+        data['y_axis_min'] = self.y_axis_min_entry.get()
+        data['y_axis_tick_space'] = self.y_axis_tick_space_entry.get()
+        data['y_axis_title'] = self.y_axis_title_entry.get()
+        data['data_list'] = self.data_list
+        data['dataset_text'] = self.dataset_text
+        data['indeps'] = self.indeps
+        data['params'] = self.params
+        data['functions'] = self.functions
+        data['clean_functions'] = self.clean_functions
+        data['data_labels'] = self.data_labels
+        data['plot_labels'] = self.plot_labels
+        data['fit_labels'] = self.fit_labels
+        data['init_values'] = self.init_values
+        data['marker_color_var'] = self.marker_color_var
+        data['line_color_var'] = self.line_color_var
+        data['error_color_var'] = self.error_color_var
+        data['func_fit_color_var'] = self.func_fit_color_var
+        data['func_plot_color_var'] = self.func_plot_color_var
+        data['marker_option_translater'] = self.marker_option_translater
+        data['line_option_translater'] = self.line_option_translater
+        data['func_fit_option_translater'] = self.func_fit_option_translater
+        data['func_plot_option_translater'] = self.func_plot_option_translater
+        data['marker_size'] = [var.get() for var in self.marker_size]
+        data['line_width'] = [var.get() for var in self.line_width]
+        data['error_width'] = [var.get() for var in self.error_width]
+        data['func_fit_width'] = [var.get() for var in self.func_fit_width]
+        data['func_plot_width'] = [var.get() for var in self.func_plot_width]
+
+        data['owner'] = self.user['username']
+
+        projects = self.db.projects
+        try:
+            projects.insert_one(data)
+        except:
+            print('Erro')
+            return
+
+        tk.messagebox.showinfo('SAVED TO DATABASE', 'Project has been saved to the database.')
 
     def save_as(self, event=None):
         new_file = tk.filedialog.asksaveasfilename(filetypes=(("*CHIMERA Project (.chi)", "*.chi"),),defaultextension='.chi')
@@ -3775,6 +3830,13 @@ class MainWindow(tk.Frame):
         self.online.add_command(label='Manage Groups', command = self.view_groups)
         self.online.add_command(label='Manage Account', command = self.edit_account)
         self.online.add_command(label='Logout', command = self.logout)
+        self.file_options.delete('Open Project')
+        self.file_options.delete('Export Image')
+        self.file_options.add_command(label='Save to Database', command = self.save_online, accelerator='Ctrl+D')
+        self.file_options.add_command(label='Open Project', command=self.open_project, accelerator="Ctrl+O")
+        self.file_options.add_command(label='Export Image', command=self.export_image, accelerator="Ctrl+Shift+E")
+        self.master.bind('<Control-D>', self.save_online)
+        self.master.bind('<Control-d>', self.save_online)
 
     def toggle_pass(self):
         if self.button_show['text'] == 'Show':
@@ -3785,7 +3847,99 @@ class MainWindow(tk.Frame):
             self.password_entry.config(show='*')
 
     def view_projects(self):
-        print(self)
+        projects = self.db.projects
+        my_projects = [project for project in projects.find({'owner': self.user['username']})]
+        self.erase_all_windows()
+
+        def hover(button):
+            return lambda e: button.config(bg='white',fg='#F21112')
+        def unhover(button):
+            return lambda e: button.config(bg='#F21112',fg='white')
+
+        self.projects_window = tk.Toplevel(self.master)
+        self.projects_window.title('Manage CHIMERA Projects')
+        self.projects_window.geometry('900x600')
+        self.projects_window.configure(background='#E4E4E4')
+        self.projects_window.resizable(False,False)
+        self.focus_window(self.projects_window)
+
+        self.projects_window.columnconfigure(0, weight=1, minsize=100)
+        self.projects_window.columnconfigure(1, weight=1, minsize=140)
+        self.projects_window.columnconfigure(2, weight=1, minsize=140)
+        self.projects_window.columnconfigure(3, weight=1, minsize=140)
+        self.projects_window.columnconfigure(4, weight=1, minsize=140)
+        self.projects_window.columnconfigure(5, weight=1, minsize=140)
+        self.projects_window.columnconfigure(6, weight=1, minsize=100)
+
+        frame_data = tk.Frame(self.projects_window, bg='white')
+        frame_data.grid(row=0, column=0, columnspan=7, pady=7, sticky = tk.N + tk.S)
+        label1 = tk.Label(frame_data,text='Name',bg='white',fg='red')
+        label1["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label1.grid(row=0, column=1)
+        label2 = tk.Label(frame_data,text='Groups In',bg='white',fg='red')
+        label2["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label2.grid(row=0, column=2)
+        label3 = tk.Label(frame_data,text='Actions',bg='white',fg='red')
+        label3["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label3.grid(row=0, column=3, columnspan=3)
+        data_area = tk.Canvas(frame_data, background="white", width=800, height=550)
+        vscroll = tk.Scrollbar(frame_data, orient=tk.VERTICAL, command=data_area.yview)
+        data_area['yscrollcommand'] = vscroll.set
+        scrollable_frame = tk.Frame(data_area,bg='white')
+        scrollable_frame.bind('<Configure>', lambda e: data_area.configure(scrollregion=data_area.bbox('all')))
+        data_area.create_window((0,0), window=scrollable_frame, width=800)
+        data_area.grid(row=1, column=1, columnspan=5, sticky = tk.N + tk.S + tk.E + tk.W)
+        vscroll.grid(row=1, column=6, sticky = tk.N + tk.S + tk.E + tk.W)
+
+        scrollable_frame.columnconfigure(0, weight=1, minsize=190)
+        scrollable_frame.columnconfigure(1, weight=1, minsize=190)
+        scrollable_frame.columnconfigure(2, weight=1, minsize=140)
+        scrollable_frame.columnconfigure(3, weight=1, minsize=140)
+        scrollable_frame.columnconfigure(4, weight=1, minsize=140)
+
+        add_buttons = [tk.Button(scrollable_frame,text='ADD\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
+        remove_buttons = [tk.Button(scrollable_frame,text='REMOVE\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
+        delete_buttons = [tk.Button(scrollable_frame,text='DELETE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
+
+        users = self.db.users
+        for i in range(len(my_projects)):
+            label_name = tk.Label(scrollable_frame,
+                                  text=my_projects[i]['name'],
+                                  bg='white',
+                                  borderwidth=0)
+            label_name["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            label_name.grid(row=i,column=0,pady=10)
+
+            # now we find the groups it is in
+            groups = self.db.groups
+            groups_in = groups.find({ 'projects' : { '$in' : [my_projects[i]['_id']] } }, max_time_ms=5000)
+            groups_in = [group for group in groups_in]
+
+            groups = ''
+            for group in groups_in:
+                groups += group['name'] + '\n'
+            groups = groups[:-1]
+            if groups == '':
+                groups = 'N/A'
+
+            label_groups = tk.Label(scrollable_frame, text=groups,bg='white',borderwidth=0)
+            label_groups["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            label_groups.grid(row=i,column=1,pady=10)
+
+            # action_buttons[i]["command"] = lambda pos=i: self.disconnect_user(self.user['connections'][pos])
+            # Alterar as cores quando entra e sai
+            add_buttons[i].bind("<Enter>", hover(add_buttons[i]))
+            add_buttons[i].bind("<Leave>", unhover(add_buttons[i]))
+            add_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            add_buttons[i].grid(row=i,column=2,pady=10)
+            remove_buttons[i].bind("<Enter>", hover(remove_buttons[i]))
+            remove_buttons[i].bind("<Leave>", unhover(remove_buttons[i]))
+            remove_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            remove_buttons[i].grid(row=i,column=3,pady=10)
+            delete_buttons[i].bind("<Enter>", hover(delete_buttons[i]))
+            delete_buttons[i].bind("<Leave>", unhover(delete_buttons[i]))
+            delete_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            delete_buttons[i].grid(row=i,column=4,pady=10)
 
     def view_connections(self):
         self.erase_all_windows()
@@ -4283,6 +4437,9 @@ class MainWindow(tk.Frame):
         self.master.bind('<Control-L>', self.create_login)
         self.master.bind('<Control-l>', self.create_login)
         self.online.add_command(label='Create Account', command=self.setup_account)
+        self.file_options.delete('Save to Database')
+        self.master.unbind('<Control-D>')
+        self.master.unbind('<Control-d>')
 
     def setup_account(self,event=None):
         self.erase_all_windows()
