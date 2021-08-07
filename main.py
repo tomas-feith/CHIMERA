@@ -755,6 +755,12 @@ class MainWindow(tk.Frame):
         self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='#F21112'))
         self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
 
+    def focus_window(self, window):
+        window.lift()
+        window.focus_force()
+        window.grab_set()
+        window.grab_release()
+
     def create_scatter(self):
         # bindings for hotkeys
         # Remove the image size adjustements
@@ -1008,8 +1014,8 @@ class MainWindow(tk.Frame):
         self.file_options = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", underline=0, menu=self.file_options)
         self.file_options.add_command(label='Start New', command = self.restart, accelerator="Ctrl+N")
-        self.file_options.add_command(label='Save Project', command=self.save_everything, accelerator="Ctrl+S")
-        self.file_options.add_command(label='Save As', command=self.save_as, accelerator="Ctrl+Shift+S")
+        self.file_options.add_command(label='Save Local', command=self.save_everything, accelerator="Ctrl+S")
+        self.file_options.add_command(label='Save Local As', command=self.save_as, accelerator="Ctrl+Shift+S")
         self.file_options.add_command(label='Open Project', command=self.open_project, accelerator="Ctrl+O")
         self.file_options.add_command(label='Export Image', command=self.export_image, accelerator="Ctrl+Shift+E")
 
@@ -1525,6 +1531,7 @@ class MainWindow(tk.Frame):
         self.ratio_window.geometry('500x250')
         self.ratio_window.configure(background='#E4E4E4')
         self.ratio_window.resizable(False,False)
+        self.focus_window(self.ratio_window)
 
         text = """
         Here you can set the figure ratio for the graph. Keep in mind that the
@@ -1602,6 +1609,7 @@ class MainWindow(tk.Frame):
         self.ticks_window.geometry('500x400')
         self.ticks_window.configure(background='#E4E4E4')
         self.ticks_window.resizable(False,False)
+        self.focus_window(self.ticks_window)
 
         text = """
         Ticks are, by default, set equally spaced starting at the left-most (for
@@ -1744,6 +1752,7 @@ class MainWindow(tk.Frame):
         self.text_window.geometry('1000x600')
         self.text_window.configure(background='#E4E4E4')
         self.text_window.resizable(False,False)
+        self.focus_window(self.text_window)
 
         canvas = tk.Canvas(master=self.text_window,bg='#E4E4E4',highlightthickness=0)
         scrollbar = ttk.Scrollbar(self.text_window,orient='vertical',command=canvas.yview)
@@ -1899,6 +1908,7 @@ class MainWindow(tk.Frame):
         self.labels_window.geometry('400x400')
         self.labels_window.configure(background='#E4E4E4')
         self.labels_window.resizable(False,False)
+        self.focus_window(self.labels_window)
 
         canvas = tk.Canvas(master=self.labels_window,bg='#E4E4E4',highlightthickness=0)
         scrollbar = ttk.Scrollbar(self.labels_window, orient="vertical", command=canvas.yview)
@@ -2043,10 +2053,7 @@ class MainWindow(tk.Frame):
         self.create_scatter()
         try:
             file = open(self.file, 'r')
-            # data = file.read().split('DATASET')
             data = json.load(file)
-            for entry in data:
-                print(entry, ':', data[entry])
             file.close()
             self.plot_text = data['plot_text']
             self.text_pos = data['text_pos']
@@ -2182,8 +2189,8 @@ class MainWindow(tk.Frame):
             self.update_databox('')
             self.update_parameter()
         except:
-            import traceback
-            traceback.print_exc()
+            # import traceback
+            # traceback.print_exc()
             self.create_scatter()
             tk.messagebox.showwarning('ERROR','Unable to open. File corrupted.')
             del self.file
@@ -2197,6 +2204,7 @@ class MainWindow(tk.Frame):
         self.export_window.geometry('400x200')
         self.export_window.configure(background='#E4E4E4')
         self.export_window.resizable(False, False)
+        self.focus_window(self.export_window)
 
         # Colocação das várias opções de exportação
         function = tk.Label(self.export_window, text='Fitting Function')
@@ -2377,6 +2385,7 @@ class MainWindow(tk.Frame):
         self.import_window.geometry('400x250')
         self.import_window.configure(background='#E4E4E4')
         self.import_window.resizable(False, False)
+        self.focus_window(self.import_window)
 
         self.same_x = tk.BooleanVar()
         self.dif_x = tk.BooleanVar()
@@ -3640,6 +3649,7 @@ class MainWindow(tk.Frame):
         self.login_window.geometry('500x300')
         self.login_window.configure(background='#E4E4E4')
         self.login_window.resizable(False,False)
+        self.focus_window(self.login_window)
 
         text = """
         Welcome to CHIMERA Online! Before you can access our database you need
@@ -3659,6 +3669,7 @@ class MainWindow(tk.Frame):
 
         self.username_entry = tk.Entry(frame_username,width=20,justify='left')
         self.username_entry.place(relx=0.48,rely=0.0)
+        self.username_entry.focus_set()
 
         frame_username.place(relwidth=1,relheight=0.2,relx=0,rely=0.35)
 
@@ -3759,6 +3770,7 @@ class MainWindow(tk.Frame):
         self.master.unbind('<Control-L>')
         self.master.unbind('<Control-l>')
         self.online.delete('Create Account')
+        self.online.add_command(label='Manage My Projects', command = self.view_projects)
         self.online.add_command(label='Manage Connections', command = self.view_connections)
         self.online.add_command(label='Manage Groups', command = self.view_groups)
         self.online.add_command(label='Manage Account', command = self.edit_account)
@@ -3771,6 +3783,9 @@ class MainWindow(tk.Frame):
         else:
             self.button_show.config(text = 'Show')
             self.password_entry.config(show='*')
+
+    def view_projects(self):
+        print(self)
 
     def view_connections(self):
         self.erase_all_windows()
@@ -3785,6 +3800,7 @@ class MainWindow(tk.Frame):
         self.connections_window.geometry('600x500')
         self.connections_window.configure(background='#E4E4E4')
         self.connections_window.resizable(False,False)
+        self.focus_window(self.connections_window)
 
         self.connections_window.columnconfigure(0, weight=1, minsize=50)
         self.connections_window.columnconfigure(1, weight=1, minsize=167)
@@ -3864,7 +3880,9 @@ class MainWindow(tk.Frame):
     def disconnect_user(self,user):
         users = self.db.users
         users.update_one({ 'username': self.user['username'] },
-                          { '$pull': { 'connections': user } })
+                         { '$pull': { 'connections': user } })
+        users.update_one({ '_id': user },
+                         { '$pull': { 'connections': self.user['_id'] } })
 
         groups = self.db.groups
         groups.update_many({ 'owner': self.user['username'], 'members' : { '$in' : [user] } },
@@ -3881,6 +3899,7 @@ class MainWindow(tk.Frame):
         self.new_connect_window.geometry('600x300')
         self.new_connect_window.configure(background='#E4E4E4')
         self.new_connect_window.resizable(False,False)
+        self.focus_window(self.new_connect_window)
 
         text = """
         To add a connection, insert their username and their connection code.
@@ -3938,7 +3957,7 @@ class MainWindow(tk.Frame):
             tk.messagebox.showwarning('INVALID CONNECTION', 'The username and/or the connection code provided are incorrect.')
             self.add_connection()
             return
-        if username in self.user['connections']:
+        if other_user['_id'] in self.user['connections']:
             tk.messagebox.showwarning('REPEATED CONNECTION', 'A connection between you and {} already exists.'.format(username))
             self.new_connect_window.destroy()
             return
@@ -3970,6 +3989,7 @@ class MainWindow(tk.Frame):
         self.groups_window.geometry('800x600')
         self.groups_window.configure(background='#E4E4E4')
         self.groups_window.resizable(False,False)
+        self.focus_window(self.groups_window)
 
         self.groups_window.columnconfigure(0, weight=1, minsize=100)
         self.groups_window.columnconfigure(1, weight=1, minsize=150)
@@ -4095,6 +4115,7 @@ class MainWindow(tk.Frame):
         self.group_settings_window.geometry('800x600')
         self.group_settings_window.configure(background='#E4E4E4')
         self.group_settings_window.resizable(False,False)
+        self.focus_window(self.group_settings_window)
 
         self.group_settings_window.columnconfigure(0, weight=1, minsize=100)
         self.group_settings_window.columnconfigure(1, weight=1, minsize=150)
@@ -4185,18 +4206,24 @@ class MainWindow(tk.Frame):
             label_project['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
             label_project.grid(row=i+1,column=2,pady=10)
 
+        self.new_members = [connection for connection in [users.find_one({'_id': _id})['username'] for _id in self.user['connections']] if connection not in group['members_name']]
+        self.new_members_var = tk.StringVar()
+        self.members_selector = ttk.Combobox(self.group_settings_window, textvariable = self.new_members_var, values = self.new_members,font=("Roboto", 8))
+        # self.members_selector.bind("<<ComboboxSelected>>", self.update_databox)
+        self.members_selector.grid(row=2, column=2)
+
         new_member_button = tk.Button(self.group_settings_window,
                                       text="ADD MEMBER",
                                       fg='white',
                                       bg='#F21112',
                                       activebackground='white',
                                       activeforeground='#F21112')
-        new_member_button["command"] = self.add_member
+        new_member_button["command"] = lambda: self.add_member(group_id, group_name)
         new_member_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Alterar as cores quando entra e sai
         new_member_button.bind("<Enter>", func=lambda e: new_member_button.config(bg='white',fg='#F21112'))
         new_member_button.bind("<Leave>", func=lambda e: new_member_button.config(bg='#F21112',fg='white'))
-        new_member_button.grid(row=2,column=2)
+        new_member_button.grid(row=3,column=2)
 
         delete_group_button = tk.Button(self.group_settings_window,
                                         text='ERASE GROUP',
@@ -4209,13 +4236,21 @@ class MainWindow(tk.Frame):
         # Alterar as cores quando entra e sai
         delete_group_button.bind("<Enter>", func=lambda e: delete_group_button.config(bg='white',fg='#F21112'))
         delete_group_button.bind("<Leave>", func=lambda e: delete_group_button.config(bg='#F21112',fg='white'))
-        delete_group_button.grid(row=2,column=3)
+        delete_group_button.grid(row=3,column=3)
 
-    def add_member(self):
-        print('aa')
+    def add_member(self, group_id, group_name):
+        if self.new_members_var.get() == '':
+            tk.messagebox.showwarning('USER NOT SELECTED','Select a user to add as new member.')
+            self.group_settings(group_id, group_name)
+            return
+
+        groups = self.db.groups
+        users = self.db.users
+        groups.update_one({ '_id': group_id },
+                          { '$push': { 'members': users.find_one({ 'username': self.new_members_var.get() })['_id'] } })
+        self.group_settings(group_id, group_name)
 
     def remove_member(self, member_id, group_id, group_name):
-        print(member_id)
         groups = self.db.groups
         groups.update_one({ '_id': group_id },
                           { '$pull': { 'members': member_id } })
@@ -4242,6 +4277,7 @@ class MainWindow(tk.Frame):
         self.online.delete('Logout')
         self.online.delete('Manage Account')
         self.online.delete('Manage Connections')
+        self.online.delete('Manage My Projects')
         self.online.delete('Manage Groups')
         self.online.add_command(label='Login', command=self.create_login,accelerator='Ctrl+L')
         self.master.bind('<Control-L>', self.create_login)
@@ -4256,6 +4292,7 @@ class MainWindow(tk.Frame):
         self.new_account_window.geometry('500x300')
         self.new_account_window.configure(background='#E4E4E4')
         self.new_account_window.resizable(False,False)
+        self.focus_window(self.new_account_window)
 
         text = """
         Welcome to CHIMERA Online! In order to access the database where you can
@@ -4382,7 +4419,8 @@ class MainWindow(tk.Frame):
                     'password': hashed_pass, # first 32 chars are the salt, last 32 chars are the pass
                     'email': email,
                     'connect_code': self.user['connect_code'],
-                    'connections': []
+                    'connections': [],
+                    'projects': []
                     }
             else:
                 # but before that we create the connection code
@@ -4394,7 +4432,8 @@ class MainWindow(tk.Frame):
                         'password': hashed_pass, # first 32 chars are the salt, last 32 chars are the pass
                         'email': email,
                         'connect_code': connect_code,
-                        'connections': []
+                        'connections': [],
+                        'projects': []
                         }
 
         if not hasattr(self,'client'):
@@ -4449,6 +4488,7 @@ class MainWindow(tk.Frame):
         self.edit_account_window.geometry('600x300')
         self.edit_account_window.configure(background='#E4E4E4')
         self.edit_account_window.resizable(False,False)
+        self.focus_window(self.edit_account_window)
 
         text = """
         Here you can manage your account. All changes are immediate and
