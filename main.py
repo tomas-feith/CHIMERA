@@ -2030,12 +2030,13 @@ class MainWindow(tk.Frame):
         data['func_plot_width'] = [var.get() for var in self.func_plot_width]
 
         data['owner'] = self.user['username']
+        data['name'] = 'TEMPORARY'
 
         projects = self.db.projects
         try:
             projects.insert_one(data)
         except:
-            print('Erro')
+            tk.messagebox.showwarning('ERROR', 'Could not save project. Please try again or create local copy.')
             return
 
         tk.messagebox.showinfo('SAVED TO DATABASE', 'Project has been saved to the database.')
@@ -3864,15 +3865,16 @@ class MainWindow(tk.Frame):
         self.focus_window(self.projects_window)
 
         self.projects_window.columnconfigure(0, weight=1, minsize=100)
-        self.projects_window.columnconfigure(1, weight=1, minsize=140)
-        self.projects_window.columnconfigure(2, weight=1, minsize=140)
-        self.projects_window.columnconfigure(3, weight=1, minsize=140)
-        self.projects_window.columnconfigure(4, weight=1, minsize=140)
-        self.projects_window.columnconfigure(5, weight=1, minsize=140)
-        self.projects_window.columnconfigure(6, weight=1, minsize=100)
+        self.projects_window.columnconfigure(1, weight=1, minsize=116)
+        self.projects_window.columnconfigure(2, weight=1, minsize=116)
+        self.projects_window.columnconfigure(3, weight=1, minsize=116)
+        self.projects_window.columnconfigure(4, weight=1, minsize=116)
+        self.projects_window.columnconfigure(5, weight=1, minsize=116)
+        self.projects_window.columnconfigure(6, weight=1, minsize=116)
+        self.projects_window.columnconfigure(7, weight=1, minsize=100)
 
         frame_data = tk.Frame(self.projects_window, bg='white')
-        frame_data.grid(row=0, column=0, columnspan=7, pady=7, sticky = tk.N + tk.S)
+        frame_data.grid(row=0, column=0, columnspan=8, pady=5, sticky = tk.N + tk.S)
         label1 = tk.Label(frame_data,text='Name',bg='white',fg='red')
         label1["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
         label1.grid(row=0, column=1)
@@ -3881,24 +3883,26 @@ class MainWindow(tk.Frame):
         label2.grid(row=0, column=2)
         label3 = tk.Label(frame_data,text='Actions',bg='white',fg='red')
         label3["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-        label3.grid(row=0, column=3, columnspan=3)
+        label3.grid(row=0, column=3, columnspan=4)
         data_area = tk.Canvas(frame_data, background="white", width=800, height=550)
         vscroll = tk.Scrollbar(frame_data, orient=tk.VERTICAL, command=data_area.yview)
         data_area['yscrollcommand'] = vscroll.set
         scrollable_frame = tk.Frame(data_area,bg='white')
         scrollable_frame.bind('<Configure>', lambda e: data_area.configure(scrollregion=data_area.bbox('all')))
         data_area.create_window((0,0), window=scrollable_frame, width=800)
-        data_area.grid(row=1, column=1, columnspan=5, sticky = tk.N + tk.S + tk.E + tk.W)
-        vscroll.grid(row=1, column=6, sticky = tk.N + tk.S + tk.E + tk.W)
+        data_area.grid(row=1, column=1, columnspan=6, sticky = tk.N + tk.S + tk.E + tk.W)
+        vscroll.grid(row=1, column=7, sticky = tk.N + tk.S + tk.E + tk.W)
 
-        scrollable_frame.columnconfigure(0, weight=1, minsize=190)
-        scrollable_frame.columnconfigure(1, weight=1, minsize=190)
-        scrollable_frame.columnconfigure(2, weight=1, minsize=140)
-        scrollable_frame.columnconfigure(3, weight=1, minsize=140)
-        scrollable_frame.columnconfigure(4, weight=1, minsize=140)
+        scrollable_frame.columnconfigure(0, weight=1, minsize=160)
+        scrollable_frame.columnconfigure(1, weight=1, minsize=160)
+        scrollable_frame.columnconfigure(2, weight=1, minsize=120)
+        scrollable_frame.columnconfigure(3, weight=1, minsize=120)
+        scrollable_frame.columnconfigure(4, weight=1, minsize=120)
+        scrollable_frame.columnconfigure(5, weight=1, minsize=120)
 
-        add_buttons = [tk.Button(scrollable_frame,text='ADD\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
-        remove_buttons = [tk.Button(scrollable_frame,text='REMOVE\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
+        open_buttons = [tk.Button(scrollable_frame,text='OPEN\nPROJECT',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
+        add_buttons = [tk.Button(scrollable_frame,text='ADD TO\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
+        remove_buttons = [tk.Button(scrollable_frame,text='TAKE FROM\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
         delete_buttons = [tk.Button(scrollable_frame,text='DELETE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
 
         users = self.db.users
@@ -3927,19 +3931,30 @@ class MainWindow(tk.Frame):
             label_groups.grid(row=i,column=1,pady=10)
 
             # action_buttons[i]["command"] = lambda pos=i: self.disconnect_user(self.user['connections'][pos])
+            delete_buttons[i]['command'] = lambda pos=i: self.delete_project(my_projects[i]['_id'], my_projects[i]['name'])
             # Alterar as cores quando entra e sai
+            open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
+            open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
+            open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+            open_buttons[i].grid(row=i,column=2,pady=10)
             add_buttons[i].bind("<Enter>", hover(add_buttons[i]))
             add_buttons[i].bind("<Leave>", unhover(add_buttons[i]))
             add_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            add_buttons[i].grid(row=i,column=2,pady=10)
+            add_buttons[i].grid(row=i,column=3,pady=10)
             remove_buttons[i].bind("<Enter>", hover(remove_buttons[i]))
             remove_buttons[i].bind("<Leave>", unhover(remove_buttons[i]))
             remove_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            remove_buttons[i].grid(row=i,column=3,pady=10)
+            remove_buttons[i].grid(row=i,column=4,pady=10)
             delete_buttons[i].bind("<Enter>", hover(delete_buttons[i]))
             delete_buttons[i].bind("<Leave>", unhover(delete_buttons[i]))
             delete_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            delete_buttons[i].grid(row=i,column=4,pady=10)
+            delete_buttons[i].grid(row=i,column=5,pady=10)
+
+    def delete_project(self, project_id, project_name):
+        if tk.messagebox.askyesno('DELETE PROJECT {}'.format(project_name),'Are you sure you want to delete this project? This action is immediate and irreversible.'):
+            projects = self.db.projects
+            projects.delete_one({'_id': project_id})
+            self.view_projects()
 
     def view_connections(self):
         self.erase_all_windows()
@@ -4414,12 +4429,6 @@ class MainWindow(tk.Frame):
         if tk.messagebox.askyesno('DELETE GROUP {}'.format(group_name),'Are you sure you want to delete this group? This action is immediate and irreversible.'):
             groups = self.db.groups
             groups.delete_one({'_id': group_id})
-            self.erase_all_windows()
-
-    def delete_project(self, project_id, project_name):
-        if tk.messagebox.askyesno('DELETE PROJECT {}'.format(project_name),'Are you sure you want to delete this project? This action is immediate and irreversible.'):
-            projects = self.db.projects
-            projects.delete_one({'_id': project_id})
             self.erase_all_windows()
 
     def logout(self):
