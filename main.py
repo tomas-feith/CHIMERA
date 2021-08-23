@@ -2101,16 +2101,18 @@ class MainWindow(tk.Frame):
         file.close()
         tk.messagebox.showinfo('File Saved','File {} has been saved'.format(self.file.split('/')[-1]))
 
-    def open_project(self, event=None):
-        self.file = tk.filedialog.askopenfilename(filetypes=(("*CHIMERA Project (.chi)", "*.chi"),),defaultextension='.chi')
-        if not self.file:
-            del self.file
-            return
+    def open_project(self, event=None, data=None):
+        if data == None:
+            self.file = tk.filedialog.askopenfilename(filetypes=(("*CHIMERA Project (.chi)", "*.chi"),),defaultextension='.chi')
+            if not self.file:
+                del self.file
+                return
         self.create_scatter()
         try:
-            file = open(self.file, 'r')
-            data = json.load(file)
-            file.close()
+            if data == None:
+                file = open(self.file, 'r')
+                data = json.load(file)
+                file.close()
             self.plot_text = data['plot_text']
             self.text_pos = data['text_pos']
             self.text_size = data['text_size']
@@ -3930,7 +3932,7 @@ class MainWindow(tk.Frame):
             label_groups["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             label_groups.grid(row=i,column=1,pady=10)
 
-            # action_buttons[i]["command"] = lambda pos=i: self.disconnect_user(self.user['connections'][pos])
+            open_buttons[i]['command'] = lambda pos=i: self.open_from_database(my_projects[i]['_id'])
             delete_buttons[i]['command'] = lambda pos=i: self.delete_project(my_projects[i]['_id'], my_projects[i]['name'])
             # Alterar as cores quando entra e sai
             open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
@@ -3954,7 +3956,22 @@ class MainWindow(tk.Frame):
         if tk.messagebox.askyesno('DELETE PROJECT {}'.format(project_name),'Are you sure you want to delete this project? This action is immediate and irreversible.'):
             projects = self.db.projects
             projects.delete_one({'_id': project_id})
+
+            groups = self.db.groups
+            match_groups = groups.find({ '$in': { 'projects': project_id } })
+            # match_groups = [group for group in match_groups]
+            for group in match_groups:
+                groups.update_one({'_id': group['_id']},
+                                  {'$pull': { 'projects': project_id} })
+
             self.view_projects()
+
+
+    def open_from_database(self, project_id):
+        projects = self.db.projects
+        data = projects.find_one({'_id': project_id})
+        self.open_project(data = data)
+        self.erase_all_windows()
 
     def view_connections(self):
         self.erase_all_windows()
@@ -4206,7 +4223,7 @@ class MainWindow(tk.Frame):
 
         for i in range(len(match_groups)):
             match_groups[i]['members_name'] = [users.find_one({'_id': member})['username'] for member in match_groups[i]['members']]
-            # match_groups[i]['projects_name'] = [projects.find_one({'_id': project}) for project in match_groups[i]['projects']]
+            match_groups[i]['projects_name'] = [projects.find_one({'_id': project})['name'] for project in match_groups[i]['projects']]
 
         action_buttons = []
         for group in match_groups:
@@ -4240,12 +4257,13 @@ class MainWindow(tk.Frame):
             label_members["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             label_members.grid(row=i+1,column=1,pady=5)
 
-            projects = ''
-            for project in match_groups[i]['projects']:
-                projects += project
-            if projects == '':
-                projects = 'N/A'
-            label_projects = tk.Label(scrollable_frame, text=projects,bg='white',borderwidth=0)
+            projects_names = ''
+            for project in match_groups[i]['projects_name']:
+                projects_names += project + '\n'
+            projects_names = projects_names[:-1]
+            if projects_names == '':
+                projects_names = 'N/A'
+            label_projects = tk.Label(scrollable_frame, text=projects_names,bg='white',borderwidth=0)
             label_projects['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
             label_projects.grid(row=i+1,column=2,pady=5)
 
@@ -4360,16 +4378,16 @@ class MainWindow(tk.Frame):
 
         project_buttons = []
         for projet in group['projects']:
-            project_buttons.append(tk.Button(scrollable_frame, text='ERASE\nPROJECT',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
+            project_buttons.append(tk.Button(scrollable_frame, text='REMOVE\nPROJECT',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
         for i in range(len(project_buttons)):
-            project_buttons[i]['command'] = lambda pos=i: self.delete_project(group['projects'][i], group['projects_name'][i])
+            project_buttons[i]['command'] = lambda pos=i: self.remove_project(group['projects'][i], group_id, group_name)
             project_buttons[i].bind("<Enter>", hover(project_buttons[i]))
             project_buttons[i].bind("<Leave>", unhover(project_buttons[i]))
             project_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             project_buttons[i].grid(row=i+1,column=3,pady=10)
 
             label_project = tk.Label(scrollable_frame,
-                                     text=group['projects'][i],
+                                     text=projects.find_one({ '_id': group['projects'][i]})['name'],
                                      bg='white',
                                      borderwidth=0)
             label_project['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
@@ -4423,6 +4441,12 @@ class MainWindow(tk.Frame):
         groups = self.db.groups
         groups.update_one({ '_id': group_id },
                           { '$pull': { 'members': member_id } })
+        self.group_settings(group_id, group_name)
+
+    def remove_project(self, project_id, group_id, group_name):
+        groups = self.db.groups
+        groups.update_one({ '_id': group_id},
+                          { '$pull': {' projects': project_id } })
         self.group_settings(group_id, group_name)
 
     def delete_group(self, group_id, group_name):
