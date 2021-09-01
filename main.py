@@ -3851,6 +3851,7 @@ class MainWindow(tk.Frame):
 
     def view_projects(self):
         projects = self.db.projects
+        groups = self.db.groups
         my_projects = [project for project in projects.find({'owner': self.user['username']})]
         self.erase_all_windows()
 
@@ -3907,6 +3908,16 @@ class MainWindow(tk.Frame):
         remove_buttons = [tk.Button(scrollable_frame,text='TAKE FROM\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
         delete_buttons = [tk.Button(scrollable_frame,text='DELETE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
 
+        self.new_groups = [[group for group in groups.find({}) if project['_id'] not in group['projects']] for project in my_projects]
+        self.new_groups_name = [[group['name'] for group in project] for project in self.new_groups]
+        self.new_groups_var = [tk.StringVar() for project in my_projects]
+        self.new_group_selector = [ttk.Combobox(scrollable_frame, textvariable = self.new_groups_var[i], values = self.new_groups_name[i],font=('Roboto',8)) for i in range(len(my_projects))]
+
+        self.current_groups = [[group for group in groups.find({}) if project['_id'] in group['projects']] for project in my_projects]
+        self.current_groups_name = [[group['name'] for group in project] for project in self.current_groups]
+        self.current_groups_var = [tk.StringVar() for project in my_projects]
+        self.current_group_selector = [ttk.Combobox(scrollable_frame, textvariable = self.current_groups_var[i], values = self.current_groups_name[i],font=('Roboto',8)) for i in range(len(my_projects))]
+
         users = self.db.users
         for i in range(len(my_projects)):
             label_name = tk.Label(scrollable_frame,
@@ -3914,7 +3925,7 @@ class MainWindow(tk.Frame):
                                   bg='white',
                                   borderwidth=0)
             label_name["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            label_name.grid(row=i,column=0,pady=10)
+            label_name.grid(row=2*i,column=0,rowspan=2,pady=10)
 
             # now we find the groups it is in
             groups = self.db.groups
@@ -3930,7 +3941,7 @@ class MainWindow(tk.Frame):
 
             label_groups = tk.Label(scrollable_frame, text=groups,bg='white',borderwidth=0)
             label_groups["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            label_groups.grid(row=i,column=1,pady=10)
+            label_groups.grid(row=2*i,column=1,rowspan=2,pady=10)
 
             open_buttons[i]['command'] = lambda pos=i: self.open_from_database(my_projects[i]['_id'])
             delete_buttons[i]['command'] = lambda pos=i: self.delete_project(my_projects[i]['_id'], my_projects[i]['name'])
@@ -3938,19 +3949,21 @@ class MainWindow(tk.Frame):
             open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
             open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
             open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            open_buttons[i].grid(row=i,column=2,pady=10)
+            open_buttons[i].grid(row=2*i,column=2,rowspan=2,pady=10)
             add_buttons[i].bind("<Enter>", hover(add_buttons[i]))
             add_buttons[i].bind("<Leave>", unhover(add_buttons[i]))
             add_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            add_buttons[i].grid(row=i,column=3,pady=10)
+            add_buttons[i].grid(row=2*i + 1,column=3,pady=(0,10))
+            self.new_group_selector[i].grid(row=2*i,column=3,pady=(10,0))
             remove_buttons[i].bind("<Enter>", hover(remove_buttons[i]))
             remove_buttons[i].bind("<Leave>", unhover(remove_buttons[i]))
             remove_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            remove_buttons[i].grid(row=i,column=4,pady=10)
+            remove_buttons[i].grid(row=2*i + 1,column=4,pady=(0,10))
+            self.current_group_selector[i].grid(row=2*i,column=4,pady=(10,0))
             delete_buttons[i].bind("<Enter>", hover(delete_buttons[i]))
             delete_buttons[i].bind("<Leave>", unhover(delete_buttons[i]))
             delete_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            delete_buttons[i].grid(row=i,column=5,pady=10)
+            delete_buttons[i].grid(row=2*i,rowspan=2,column=5,pady=10)
 
     def delete_project(self, project_id, project_name):
         if tk.messagebox.askyesno('DELETE PROJECT {}'.format(project_name),'Are you sure you want to delete this project? This action is immediate and irreversible.'):
@@ -3959,7 +3972,6 @@ class MainWindow(tk.Frame):
 
             groups = self.db.groups
             match_groups = groups.find({ '$in': { 'projects': project_id } })
-            # match_groups = [group for group in match_groups]
             for group in match_groups:
                 groups.update_one({'_id': group['_id']},
                                   {'$pull': { 'projects': project_id} })
@@ -4396,7 +4408,6 @@ class MainWindow(tk.Frame):
         self.new_members = [connection for connection in [users.find_one({'_id': _id})['username'] for _id in self.user['connections']] if connection not in group['members_name']]
         self.new_members_var = tk.StringVar()
         self.members_selector = ttk.Combobox(self.group_settings_window, textvariable = self.new_members_var, values = self.new_members,font=("Roboto", 8))
-        # self.members_selector.bind("<<ComboboxSelected>>", self.update_databox)
         self.members_selector.grid(row=2, column=2)
 
         new_member_button = tk.Button(self.group_settings_window,
