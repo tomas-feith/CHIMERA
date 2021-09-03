@@ -3918,7 +3918,7 @@ class MainWindow(tk.Frame):
         self.current_groups_var = [tk.StringVar() for project in my_projects]
         self.current_group_selector = [ttk.Combobox(scrollable_frame, textvariable = self.current_groups_var[i], values = self.current_groups_name[i],font=('Roboto',8)) for i in range(len(my_projects))]
 
-        users = self.db.users
+        # users = self.db.users
         for i in range(len(my_projects)):
             label_name = tk.Label(scrollable_frame,
                                   text=my_projects[i]['name'],
@@ -3943,8 +3943,10 @@ class MainWindow(tk.Frame):
             label_groups["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             label_groups.grid(row=2*i,column=1,rowspan=2,pady=10)
 
-            open_buttons[i]['command'] = lambda pos=i: self.open_from_database(my_projects[i]['_id'])
-            delete_buttons[i]['command'] = lambda pos=i: self.delete_project(my_projects[i]['_id'], my_projects[i]['name'])
+            open_buttons[i]['command'] = lambda pos=i: self.open_from_database(my_projects[pos]['_id'])
+            add_buttons[i]['command'] = lambda pos=i: self.add_project_to_group(my_projects[pos]['_id'], self.new_groups_var[pos])
+            remove_buttons[i]['command'] = lambda pos=i: self.remove_project_from_group(my_projects[pos]['_id'], self.current_groups_var[pos])
+            delete_buttons[i]['command'] = lambda pos=i: self.delete_project(my_projects[pos]['_id'], my_projects[pos]['name'])
             # Alterar as cores quando entra e sai
             open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
             open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
@@ -3984,6 +3986,28 @@ class MainWindow(tk.Frame):
         data = projects.find_one({'_id': project_id})
         self.open_project(data = data)
         self.erase_all_windows()
+
+    def add_project_to_group(self, project_id, group):
+        if not group.get():
+            tk.messagebox.showwarning('NO GROUP SELECTED', 'Select a group in which to insert this project.')
+        else:
+            groups = self.db.groups
+            groups.update_one({ 'name': group.get() },
+                              { '$push': { 'projects': project_id } }
+                              )
+        self.erase_all_windows()
+        self.view_projects()
+
+    def remove_project_from_group(self, project_id, group):
+        if not group.get():
+            tk.messagebox.showwarning('NO GROUP SELECTED', 'Select the group from which to remove this project.')
+        else:
+            groups = self.db.groups
+            groups.update_one({ 'name': group.get() },
+                              { '$pull': { 'projects': project_id } }
+                              )
+        self.erase_all_windows()
+        self.view_projects()
 
     def view_connections(self):
         self.erase_all_windows()
@@ -4368,7 +4392,7 @@ class MainWindow(tk.Frame):
                 member_buttons.append(tk.Button(scrollable_frame, text='REMOVE\nMEMBER',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
         for i in range(len(member_buttons)):
             if member_buttons[i] != '':
-                member_buttons[i]['command'] = lambda pos=i: self.remove_member(group['members'][i], group['_id'], group['name'])
+                member_buttons[i]['command'] = lambda pos=i: self.remove_member(group['members'][pos], group['_id'], group['name'])
                 member_buttons[i].bind("<Enter>", hover(member_buttons[i]))
                 member_buttons[i].bind("<Leave>", unhover(member_buttons[i]))
                 member_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
@@ -4392,7 +4416,7 @@ class MainWindow(tk.Frame):
         for projet in group['projects']:
             project_buttons.append(tk.Button(scrollable_frame, text='REMOVE\nPROJECT',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
         for i in range(len(project_buttons)):
-            project_buttons[i]['command'] = lambda pos=i: self.remove_project(group['projects'][i], group_id, group_name)
+            project_buttons[i]['command'] = lambda pos=i: self.remove_project(group['projects'][pos], group_id, group_name)
             project_buttons[i].bind("<Enter>", hover(project_buttons[i]))
             project_buttons[i].bind("<Leave>", unhover(project_buttons[i]))
             project_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
