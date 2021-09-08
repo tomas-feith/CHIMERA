@@ -654,6 +654,7 @@ class MainWindow(tk.Frame):
         super().__init__(master)
         # Esta é a janela principal
         self.master = master
+        self.master.title('CHIMERA')
         if os.name == 'posix':
             self.master.attributes('-zoomed',True)
         if os.name == 'nt':
@@ -662,9 +663,6 @@ class MainWindow(tk.Frame):
 
         # Ativar a função custom para fechar a janela
         self.master.protocol("WM_DELETE_WINDOW", self.close)
-
-        # Tirar o título
-        self.winfo_toplevel().title("")
 
         # Definir o tamanho mínimo da janela
         self.master.minsize(int(0.5*self.master.winfo_screenwidth()),int(0.5*self.master.winfo_screenheight()))
@@ -3828,7 +3826,7 @@ class MainWindow(tk.Frame):
         self.master.unbind('<Control-L>')
         self.master.unbind('<Control-l>')
         self.online.delete('Create Account')
-        self.online.add_command(label='Manage My Projects', command = self.view_projects)
+        self.online.add_command(label='Manage Projects', command = self.view_projects)
         self.online.add_command(label='Manage Connections', command = self.view_connections)
         self.online.add_command(label='Manage Groups', command = self.view_groups)
         self.online.add_command(label='Manage Account', command = self.edit_account)
@@ -3850,10 +3848,21 @@ class MainWindow(tk.Frame):
             self.password_entry.config(show='*')
 
     def view_projects(self):
+        self.erase_all_windows()
         projects = self.db.projects
         groups = self.db.groups
-        my_projects = [project for project in projects.find({'owner': self.user['username']})]
-        self.erase_all_windows()
+        all_projects = [project for project in projects.find({})]
+        me_projects = []
+
+        for project in all_projects:
+            if project['owner'] == self.user['username']:
+                me_projects.append(project)
+            else:
+                if groups.find_one({
+                                    'projects': { '$in': [project['_id']] },
+                                    'members': { '$in': [self.user['_id']] }
+                                    }):
+                    me_projects.append(project)
 
         def hover(button):
             return lambda e: button.config(bg='white',fg='#F21112')
@@ -3862,74 +3871,86 @@ class MainWindow(tk.Frame):
 
         self.projects_window = tk.Toplevel(self.master)
         self.projects_window.title('Manage CHIMERA Projects')
-        self.projects_window.geometry('900x600')
+        self.projects_window.geometry('1000x600')
         self.projects_window.configure(background='#E4E4E4')
         self.projects_window.resizable(False,False)
         self.focus_window(self.projects_window)
 
         self.projects_window.columnconfigure(0, weight=1, minsize=100)
-        self.projects_window.columnconfigure(1, weight=1, minsize=116)
-        self.projects_window.columnconfigure(2, weight=1, minsize=116)
-        self.projects_window.columnconfigure(3, weight=1, minsize=116)
-        self.projects_window.columnconfigure(4, weight=1, minsize=116)
-        self.projects_window.columnconfigure(5, weight=1, minsize=116)
-        self.projects_window.columnconfigure(6, weight=1, minsize=116)
-        self.projects_window.columnconfigure(7, weight=1, minsize=100)
+        self.projects_window.columnconfigure(1, weight=1, minsize=120)
+        self.projects_window.columnconfigure(2, weight=1, minsize=120)
+        self.projects_window.columnconfigure(3, weight=1, minsize=120)
+        self.projects_window.columnconfigure(4, weight=1, minsize=110)
+        self.projects_window.columnconfigure(5, weight=1, minsize=110)
+        self.projects_window.columnconfigure(6, weight=1, minsize=110)
+        self.projects_window.columnconfigure(7, weight=1, minsize=110)
+        self.projects_window.columnconfigure(8, weight=1, minsize=100)
 
         frame_data = tk.Frame(self.projects_window, bg='white')
-        frame_data.grid(row=0, column=0, columnspan=8, pady=5, sticky = tk.N + tk.S)
+        frame_data.grid(row=0, column=0, columnspan=9, pady=5, sticky = tk.N + tk.S)
         label1 = tk.Label(frame_data,text='Name',bg='white',fg='red')
         label1["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
         label1.grid(row=0, column=1)
-        label2 = tk.Label(frame_data,text='Groups In',bg='white',fg='red')
-        label2["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-        label2.grid(row=0, column=2)
-        label3 = tk.Label(frame_data,text='Actions',bg='white',fg='red')
+        label2 = tk.Label(frame_data,text='Owner',bg='white',fg='red')
+        label2['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+        label2.grid(row=0,column=2)
+        label3 = tk.Label(frame_data,text='Groups In',bg='white',fg='red')
         label3["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-        label3.grid(row=0, column=3, columnspan=4)
+        label3.grid(row=0, column=3)
+        label4 = tk.Label(frame_data,text='Actions',bg='white',fg='red')
+        label4["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+        label4.grid(row=0, column=4, columnspan=4)
         data_area = tk.Canvas(frame_data, background="white", width=800, height=550)
         vscroll = tk.Scrollbar(frame_data, orient=tk.VERTICAL, command=data_area.yview)
         data_area['yscrollcommand'] = vscroll.set
         scrollable_frame = tk.Frame(data_area,bg='white')
         scrollable_frame.bind('<Configure>', lambda e: data_area.configure(scrollregion=data_area.bbox('all')))
         data_area.create_window((0,0), window=scrollable_frame, width=800)
-        data_area.grid(row=1, column=1, columnspan=6, sticky = tk.N + tk.S + tk.E + tk.W)
-        vscroll.grid(row=1, column=7, sticky = tk.N + tk.S + tk.E + tk.W)
+        data_area.grid(row=1, column=1, columnspan=7, sticky = tk.N + tk.S + tk.E + tk.W)
+        vscroll.grid(row=1, column=8, sticky = tk.N + tk.S + tk.E + tk.W)
 
-        scrollable_frame.columnconfigure(0, weight=1, minsize=160)
-        scrollable_frame.columnconfigure(1, weight=1, minsize=160)
-        scrollable_frame.columnconfigure(2, weight=1, minsize=120)
-        scrollable_frame.columnconfigure(3, weight=1, minsize=120)
-        scrollable_frame.columnconfigure(4, weight=1, minsize=120)
-        scrollable_frame.columnconfigure(5, weight=1, minsize=120)
+        scrollable_frame.columnconfigure(0, weight=1, minsize=135)
+        scrollable_frame.columnconfigure(1, weight=1, minsize=135)
+        scrollable_frame.columnconfigure(2, weight=1, minsize=135)
+        scrollable_frame.columnconfigure(3, weight=1, minsize=100)
+        scrollable_frame.columnconfigure(4, weight=1, minsize=100)
+        scrollable_frame.columnconfigure(5, weight=1, minsize=100)
+        scrollable_frame.columnconfigure(6, weight=1, minsize=100)
 
-        open_buttons = [tk.Button(scrollable_frame,text='OPEN\nPROJECT',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
-        add_buttons = [tk.Button(scrollable_frame,text='ADD TO\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
-        remove_buttons = [tk.Button(scrollable_frame,text='TAKE FROM\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
-        delete_buttons = [tk.Button(scrollable_frame,text='DELETE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(my_projects))]
+        open_buttons = [tk.Button(scrollable_frame,text='OPEN\nPROJECT',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(me_projects))]
+        add_buttons = [tk.Button(scrollable_frame,text='ADD TO\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(me_projects))]
+        remove_buttons = [tk.Button(scrollable_frame,text='TAKE FROM\nGROUP',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(me_projects))]
+        delete_buttons = [tk.Button(scrollable_frame,text='DELETE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(me_projects))]
 
-        self.new_groups = [[group for group in groups.find({}) if project['_id'] not in group['projects']] for project in my_projects]
+        self.new_groups = [[group for group in groups.find({}) if project['_id'] not in group['projects']] for project in me_projects]
         self.new_groups_name = [[group['name'] for group in project] for project in self.new_groups]
-        self.new_groups_var = [tk.StringVar() for project in my_projects]
-        self.new_group_selector = [ttk.Combobox(scrollable_frame, textvariable = self.new_groups_var[i], values = self.new_groups_name[i],font=('Roboto',8)) for i in range(len(my_projects))]
+        self.new_groups_var = [tk.StringVar() for project in me_projects]
+        self.new_group_selector = [ttk.Combobox(scrollable_frame, textvariable = self.new_groups_var[i], values = self.new_groups_name[i],font=('Roboto',8)) for i in range(len(me_projects))]
 
-        self.current_groups = [[group for group in groups.find({}) if project['_id'] in group['projects']] for project in my_projects]
+        self.current_groups = [[group for group in groups.find({}) if project['_id'] in group['projects']] for project in me_projects]
         self.current_groups_name = [[group['name'] for group in project] for project in self.current_groups]
-        self.current_groups_var = [tk.StringVar() for project in my_projects]
-        self.current_group_selector = [ttk.Combobox(scrollable_frame, textvariable = self.current_groups_var[i], values = self.current_groups_name[i],font=('Roboto',8)) for i in range(len(my_projects))]
+        self.current_groups_var = [tk.StringVar() for project in me_projects]
+        self.current_group_selector = [ttk.Combobox(scrollable_frame, textvariable = self.current_groups_var[i], values = self.current_groups_name[i],font=('Roboto',8)) for i in range(len(me_projects))]
 
         # users = self.db.users
-        for i in range(len(my_projects)):
+        for i in range(len(me_projects)):
             label_name = tk.Label(scrollable_frame,
-                                  text=my_projects[i]['name'],
+                                  text=me_projects[i]['name'],
                                   bg='white',
                                   borderwidth=0)
             label_name["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             label_name.grid(row=2*i,column=0,rowspan=2,pady=10)
 
+            label_owner = tk.Label(scrollable_frame,
+                                   text=me_projects[i]['owner'],
+                                   bg='white',
+                                   borderwidth=0)
+            label_owner['font'] = ('Roboto',int(15*self.master.winfo_width()/2350))
+            label_owner.grid(row=2*i,column=1,rowspan=2,pady=10)
+
             # now we find the groups it is in
             groups = self.db.groups
-            groups_in = groups.find({ 'projects' : { '$in' : [my_projects[i]['_id']] } }, max_time_ms=5000)
+            groups_in = groups.find({ 'projects' : { '$in' : [me_projects[i]['_id']] } }, max_time_ms=5000)
             groups_in = [group for group in groups_in]
 
             groups = ''
@@ -3941,31 +3962,39 @@ class MainWindow(tk.Frame):
 
             label_groups = tk.Label(scrollable_frame, text=groups,bg='white',borderwidth=0)
             label_groups["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            label_groups.grid(row=2*i,column=1,rowspan=2,pady=10)
+            label_groups.grid(row=2*i,column=2,rowspan=2,pady=10)
 
-            open_buttons[i]['command'] = lambda pos=i: self.open_from_database(my_projects[pos]['_id'])
-            add_buttons[i]['command'] = lambda pos=i: self.add_project_to_group(my_projects[pos]['_id'], self.new_groups_var[pos])
-            remove_buttons[i]['command'] = lambda pos=i: self.remove_project_from_group(my_projects[pos]['_id'], self.current_groups_var[pos])
-            delete_buttons[i]['command'] = lambda pos=i: self.delete_project(my_projects[pos]['_id'], my_projects[pos]['name'])
-            # Alterar as cores quando entra e sai
-            open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
-            open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
-            open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            open_buttons[i].grid(row=2*i,column=2,rowspan=2,pady=10)
-            add_buttons[i].bind("<Enter>", hover(add_buttons[i]))
-            add_buttons[i].bind("<Leave>", unhover(add_buttons[i]))
-            add_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            add_buttons[i].grid(row=2*i + 1,column=3,pady=(0,10))
-            self.new_group_selector[i].grid(row=2*i,column=3,pady=(10,0))
-            remove_buttons[i].bind("<Enter>", hover(remove_buttons[i]))
-            remove_buttons[i].bind("<Leave>", unhover(remove_buttons[i]))
-            remove_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            remove_buttons[i].grid(row=2*i + 1,column=4,pady=(0,10))
-            self.current_group_selector[i].grid(row=2*i,column=4,pady=(10,0))
-            delete_buttons[i].bind("<Enter>", hover(delete_buttons[i]))
-            delete_buttons[i].bind("<Leave>", unhover(delete_buttons[i]))
-            delete_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
-            delete_buttons[i].grid(row=2*i,rowspan=2,column=5,pady=10)
+            if me_projects[i]['owner'] == self.user['username']:
+                open_buttons[i]['command'] = lambda pos=i: self.open_from_database(me_projects[pos]['_id'])
+                add_buttons[i]['command'] = lambda pos=i: self.add_project_to_group(me_projects[pos]['_id'], self.new_groups_var[pos])
+                remove_buttons[i]['command'] = lambda pos=i: self.remove_project_from_group(me_projects[pos]['_id'], self.current_groups_var[pos])
+                delete_buttons[i]['command'] = lambda pos=i: self.delete_project(me_projects[pos]['_id'], me_projects[pos]['name'])
+                # Alterar as cores quando entra e sai
+                open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
+                open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
+                open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+                open_buttons[i].grid(row=2*i,column=3,rowspan=2,pady=10)
+                add_buttons[i].bind("<Enter>", hover(add_buttons[i]))
+                add_buttons[i].bind("<Leave>", unhover(add_buttons[i]))
+                add_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+                add_buttons[i].grid(row=2*i + 1,column=4,pady=(0,10))
+                self.new_group_selector[i].grid(row=2*i,column=4,pady=(10,0))
+                remove_buttons[i].bind("<Enter>", hover(remove_buttons[i]))
+                remove_buttons[i].bind("<Leave>", unhover(remove_buttons[i]))
+                remove_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+                remove_buttons[i].grid(row=2*i + 1,column=5,pady=(0,10))
+                self.current_group_selector[i].grid(row=2*i,column=5,pady=(10,0))
+                delete_buttons[i].bind("<Enter>", hover(delete_buttons[i]))
+                delete_buttons[i].bind("<Leave>", unhover(delete_buttons[i]))
+                delete_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+                delete_buttons[i].grid(row=2*i,rowspan=2,column=6,pady=10)
+            else:
+                open_buttons[i]['command'] = lambda pos=i: self.open_from_database(me_projects[pos]['_id'])
+                # Alterar as cores quando entra e sai
+                open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
+                open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
+                open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
+                open_buttons[i].grid(row=2*i,column=3,rowspan=2,columnspan=4,pady=10)
 
     def delete_project(self, project_id, project_name):
         if tk.messagebox.askyesno('DELETE PROJECT {}'.format(project_name),'Are you sure you want to delete this project? This action is immediate and irreversible.'):
@@ -4499,7 +4528,7 @@ class MainWindow(tk.Frame):
         self.online.delete('Logout')
         self.online.delete('Manage Account')
         self.online.delete('Manage Connections')
-        self.online.delete('Manage My Projects')
+        self.online.delete('Manage Projects')
         self.online.delete('Manage Groups')
         self.online.add_command(label='Login', command=self.create_login,accelerator='Ctrl+L')
         self.master.bind('<Control-L>', self.create_login)
