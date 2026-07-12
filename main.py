@@ -81,7 +81,7 @@ def resource_path(relative_path):
 class MainWindow(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        # Esta é a janela principal
+        # This is the main window
         self.master = master
         self.master.title('CHIMERA')
         if os.name == 'posix':
@@ -90,43 +90,43 @@ class MainWindow(tk.Frame):
             self.master.state('zoomed')
         self.master.iconphoto(True, tk.PhotoImage(file=resource_path('img/Logo.png')))
 
-        # Ativar a função custom para fechar a janela
+        # Enable the custom window-close function
         self.master.protocol("WM_DELETE_WINDOW", self.close)
 
-        # Definir o tamanho mínimo da janela
+        # Set the minimum window size
         self.master.minsize(int(0.5*self.master.winfo_screenwidth()),int(0.5*self.master.winfo_screenheight()))
 
-        # Tamanhos default para a janela
+        # Default sizes for the window
         self.width  = int(.8*self.master.winfo_screenwidth())
         self.height = int(.8*self.master.winfo_screenheight())
 
-        # Frames para conter os objetos
+        # Frames to hold the objects
         self.top = tk.Frame(self.master, bg = '#E4E4E4')
         self.top.pack(in_ = self.master)
         self.bottom = tk.Frame(self.master, bg = '#E4E4E4')
         self.bottom.pack(in_ = self.master)
 
-        # Canvases para as figuras
+        # Canvases for the figures
         self.title_canvas = tk.Canvas(self.top, bg = '#E4E4E4')
         self.title_canvas.pack(in_ = self.top)
         self.logo_canvas = tk.Canvas(self.bottom, bg = '#E4E4E4')
         self.logo_canvas.grid(in_ = self.bottom, column = 1, row = 0, pady = self.height/10)
 
-        # Começar a definir a janela
+        # Start setting up the window
         self.master.geometry(str(self.width)+"x"+str(self.height))
         self.master.configure(background='#E4E4E4')
         self.master.update()
-        # Criar a janela per se
+        # Create the window itself
         self.pack
-        # Colocar as imagens e botoes
+        # Place the images and buttons
         self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
         self.place_item(resource_path("img/Logo.png"), 0.26, self.logo_canvas)
         self.create_widgets()
 
-        # Estado partilhado entre métodos para controlar a construção das caixas
-        # de parâmetros (era uma variável global).
+        # State shared between methods to control the construction of the
+        # parameter boxes (was a global variable).
         self.count = 0
-        # Para garantir que os widgets e imagens mudam de tamanho
+        # To ensure the widgets and images are resized
         self.master.bind('<Configure>', self.resize_window)
         check_version()
 
@@ -134,11 +134,11 @@ class MainWindow(tk.Frame):
         img_src = Image.open(src)
         img_ratio = self.master.winfo_width()*ratio/float(img_src.size[0])
         img_src = img_src.resize((int(img_src.size[0]*img_ratio), int(img_src.size[1]*img_ratio)))
-        # Definir a canvas para pôr tudo na tela
+        # Set up the canvas to put everything on screen
         canvas.config(width = img_src.size[0], height = img_src.size[1], highlightthickness = 0)
         img = ImageTk.PhotoImage(img_src)
         canvas.create_image(canvas.winfo_width()/2, canvas.winfo_height()/2,image = img)
-        # Guardar a imagem só porque às vezes o tkinter é chato
+        # Keep a reference to the image because tkinter is sometimes finicky
         canvas.image = img
 
     def resize_window(self, event):
@@ -146,14 +146,14 @@ class MainWindow(tk.Frame):
         self.logo_canvas.delete("all")
         self.place_item(resource_path("img/chimtext.png"), 0.6, self.title_canvas)
         self.place_item(resource_path("img/Logo.png"), 0.26, self.logo_canvas)
-        #Define novas posicoes relativas a janela
+        # Define new positions relative to the window
         self.new.grid(column = 2, row = 0, padx = (int(self.master.winfo_width()/10),20))
-        #define novos tamanhos relativos a janela
+        # Define new sizes relative to the window
         self.new["font"] = ("Roboto",int(0.018*self.master.winfo_width()),"bold")
         self.new.configure(height = 1)
 
     def create_widgets(self):
-        # Criar botão para um novo fit
+        # Create button for a new fit
         self.new = tk.Button(self.bottom,
                              width = int(0.011*self.master.winfo_width()),
                              height=1,
@@ -165,11 +165,11 @@ class MainWindow(tk.Frame):
         self.new["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
         self.new["command"] = self.create_scatter
         self.new.grid(column = 3, row = 0, padx = (int(self.master.winfo_width()/10),20))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         self.new.bind("<Enter>", func=lambda e: self.new.config(bg='white',fg='#F21112'))
         self.new.bind("<Leave>", func=lambda e: self.new.config(bg='#F21112',fg='white'))
 
-        # Criar botão para importar um fit
+        # Create button to import a fit
         self.old = tk.Button(self.bottom,
                               width = int(0.011*self.master.winfo_width()),
                               height=1,
@@ -219,23 +219,23 @@ class MainWindow(tk.Frame):
         self.selected_dataset = 0
 
         self.count_plots = 0
-        # Destruir tudo o que estava na janela
+        # Destroy everything that was in the window
         self.title_canvas.delete("all")
         self.logo_canvas.delete("all")
         self.new.destroy()
         self.count = 1
 
-        # Definimos já o array para as labels
+        # Define the array for the labels up front
         self.data_labels = ['']
         self.plot_labels = ['']
         self.fit_labels = ['']
 
-        # Definir arrays para armazenar texto e as suas posições
+        # Define arrays to store text and their positions
         self.plot_text = ['']
         self.text_pos = [[0,0]]
         self.text_size = [10]
 
-        # Definimos as funções, variáveis e afins
+        # Define the functions, variables and the like
         self.indeps = ['x']
         self.params = ['A,omega,phi,lambda']
         self.functions = ['A*sin(omega*x+phi)*exp(-lambda*x)']
@@ -258,25 +258,25 @@ class MainWindow(tk.Frame):
         self.x_ticks_ref = []
         self.y_ticks_ref = []
 
-        # Definir o ratio da figura
+        # Set the figure ratio
         self.width_ratio = 1
         self.height_ratio = 1
 
         self.master.configure(background='#E4E4E4')
 
-        # Criação da estrutura de frames da janela
+        # Create the window's frame structure
         self.frame_left = tk.Frame(self.master,  bg='#E4E4E4')
         self.frame_left.place(in_=self.master, relwidth=0.5, relheight=1, relx=0, rely=0)
 
-        # frame_right, contem tudo na parte direita da janela
+        # frame_right holds everything on the right side of the window
         self.frame_right = tk.Frame(self.master,  bg='#E4E4E4')
         self.frame_right.place( in_ = self.master, relwidth=0.5, relheight=1,relx=0.5, rely=0)
 
-        #Subsecção da mesma onde se inserem as entrys de parametros, variavel independente e funçao
+        # Subsection where the parameter, independent-variable and function entries go
         self.subframe_right_1=tk.Frame(self.frame_right, bg='#E4E4E4', highlightbackground="black", highlightthickness=0, padx=20, pady=20)
         self.subframe_right_1.place(in_=self.frame_right, relwidth=1, relheight=0.5, relx=0, rely=0)
 
-         # Criação das frames para a edição visual do gráfico
+         # Create the frames for the visual editing of the plot
         self.subframe_right_2=tk.Frame(self.frame_right, bg='#E4E4E4')
         self.subframe_right_2.place(in_ = self.frame_right, relwidth=1, relheight=0.2, relx=0, rely=0.25)
 
@@ -292,11 +292,11 @@ class MainWindow(tk.Frame):
         self.subframe_left_2 = tk.Frame(self.frame_left, bg='#E4E4E4')
         self.subframe_left_2.place(in_ = self.frame_left, relwidth = 1, relheight= 0.38, relx=0, rely=0.55)
 
-        #Criação da zona onde se inserem as informaçoes relativas aos eixos do grafico
+        # Create the area where the plot's axis information is entered
         self.subframe_right_3 = tk.Frame(self.frame_right, bg='#E4E4E4')
         self.subframe_right_3.place(in_ = self.frame_right, relwidth = 1, relheight = 0.52, rely=0.48)
 
-        #Criação do botão que chama a função que processa a funçao
+        # Create the button that calls the function that processes the function
         self.compile_button = tk.Button(self.subframe_right_1,
                                        text="COMPILE",
                                        fg='white',
@@ -307,7 +307,7 @@ class MainWindow(tk.Frame):
         self.compile_button.place(relwidth=0.2,relx=0.8, rely=0.2,relheight=0.1 )
         self.compile_button["command"] = self.compile_function
 
-        #Botão que serve para updatar a lista de entries dos parâmetros
+        # Button used to update the list of parameter entries
         self.up_button = tk.Button(self.subframe_right_1,
                                   text="UPDATE",
                                   fg='white',
@@ -317,7 +317,7 @@ class MainWindow(tk.Frame):
         self.up_button.place(relwidth=0.2,relx=0.8, rely=0.1,relheight=0.1 )
         self.up_button["command"] = self.update_parameter
 
-        #Botão pra plottar o dataset, chama a função plot_dataset
+        # Button to plot the dataset; calls the plot_dataset function
         self.plot_button = tk.Button(self.plot_button_frame,
                                        text="PLOT",
                                        fg='white',
@@ -328,7 +328,7 @@ class MainWindow(tk.Frame):
         self.plot_button.place(in_  = self.plot_button_frame, relwidth=0.2, relheight=1, relx=0.25)
         self.plot_button["command"] = self.plot_dataset
 
-        #Botão pra plottar a funçao, chama a funçao plot_function
+        # Button to plot the function; calls the plot_function function
         self.plot_function_button = tk.Button(self.plot_button_frame,
                                        text="PLOT FUNCTION",
                                        fg='white',
@@ -341,7 +341,7 @@ class MainWindow(tk.Frame):
         self.want_function = [tk.BooleanVar()]
         self.want_function[0].set(0)
 
-        # Botão para importar ficheiros
+        # Button to import files
         self.import_data = tk.Button(self.data_button_frame,
                                      text='IMPORT DATA',
                                      fg='white',
@@ -360,7 +360,7 @@ class MainWindow(tk.Frame):
         self.add_labels.place(relwidth=0.2, relheight=1, relx=0.33)
         self.add_labels["command"] = self.labels
 
-        # Botão para adicionar entradas de texto
+        # Button to add text entries
         self.add_text = tk.Button(self.data_button_frame,
                                   text='SET TEXT',
                                   fg='white',
@@ -370,7 +370,7 @@ class MainWindow(tk.Frame):
         self.add_text.place(relwidth=0.16, relheight=1, relx=0.58)
         self.add_text["command"] = self.text
 
-        # Botão para exportar como latex
+        # Button to export as LaTeX
         self.export_latex = tk.Button(self.data_button_frame,
                                       text="LaTeX-ify",
                                       fg='white',
@@ -380,7 +380,7 @@ class MainWindow(tk.Frame):
         self.export_latex.place(relwidth=0.16, relheight=1, relx=0.79)
         self.export_latex["command"] = self.latexify
 
-        #Criação do botão ligado à funçao que adiciona mais um dataset
+        # Create the button linked to the function that adds another dataset
         self.add_dataset_button = tk.Button(self.plot_button_frame,
                                        text="+",
                                        fg='white',
@@ -389,7 +389,7 @@ class MainWindow(tk.Frame):
                                        activeforeground='#F21112', command = lambda: self.add_dataset(''))
         self.add_dataset_button.place(in_ = self.plot_button_frame, relwidth=0.05, relheight=0.5, relx = 0.15, rely=0)
 
-        # Botão para remover datasets
+        # Button to remove datasets
         self.remove_dataset_button = tk.Button(self.plot_button_frame,
                                              text="-",
                                              fg='white',
@@ -410,7 +410,7 @@ class MainWindow(tk.Frame):
         self.want_fit = [tk.BooleanVar()]
         self.want_fit[0].set(0)
 
-        # Variável para armazenar todos os botoes
+        # Variable to store all the buttons
         self.buttons = [self.up_button,
                   self.compile_button,
                   self.plot_button,
@@ -433,12 +433,12 @@ class MainWindow(tk.Frame):
             button.bind("<Leave>", unhover(button))
             button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
 
-        # Criar uma menu bar
-        # esta self.menu_bar é a mais geral, é a que contem as outras
+        # Create a menu bar
+        # this self.menu_bar is the top-level one; it contains the others
         self.menu_bar = tk.Menu(self.master)
         self.master.config(menu=self.menu_bar)
 
-        # Este é o botão file na self.menu_bar
+        # This is the file button in self.menu_bar
         self.file_options = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", underline=0, menu=self.file_options)
         self.file_options.add_command(label='Start New', command = self.restart, accelerator="Ctrl+N")
@@ -447,28 +447,28 @@ class MainWindow(tk.Frame):
         self.file_options.add_command(label='Open Project', command=self.open_project, accelerator="Ctrl+O")
         self.file_options.add_command(label='Export Image', command=self.export_image, accelerator="Ctrl+Shift+E")
 
-        # Botao na self.menu_bar para escolher as opçoes do plot
+        # Button in self.menu_bar to choose the plot options
         self.plot_options = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="Plot options", menu=self.plot_options)
 
-        # Estas 3 variáveis servem para o utilizador escolher o que quer ver
+        # These 3 variables let the user choose what they want to see
         self.want_points = [tk.BooleanVar()]
         self.want_line = [tk.BooleanVar()]
         self.want_error = [tk.BooleanVar()]
-        # Valores default para as ditas variáveis
+        # Default values for those variables
         self.want_points[0].set(1)
         self.want_line[0].set(0)
         self.want_error[0].set(1)
 
-        # Aqui adicionam-se os 3 checkbuttons da dita checklist do que o utilizador quer ler,
-        # as variáveis definidas anteriormente servem para registar se o utilizador tem o dito setting selecionado ou nao
+        # Here we add the 3 checkbuttons of the checklist of what the user wants to read,
+        # the variables defined above record whether the user has each setting selected or not
         self.plot_options.add_checkbutton(label = "Plot points", onvalue = 1, offvalue = 0, variable = self.want_points[self.selected_dataset])
         self.plot_options.add_checkbutton(label = "Connect points", onvalue = 1, offvalue = 0, variable = self.want_line[self.selected_dataset])
         self.plot_options.add_checkbutton(label = "Error bars", onvalue = 1, offvalue = 0, variable = self.want_error[self.selected_dataset])
         self.plot_options.add_checkbutton(label = "Plot fit", onvalue = 1, offvalue = 0, variable = self.want_fit[self.selected_dataset])
         self.plot_options.add_checkbutton(label = "Plot function", onvalue =1, offvalue = 0, variable=self.want_function[self.selected_dataset])
 
-        # Estes 3 menus na self.menu_bar servem para selecionar a cor dos markers(pontos), da linha e das errorbars
+        # These 3 menus in self.menu_bar select the color of the markers (points), the line and the error bars
         self.choose_color = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="Choose Colors", menu = self.choose_color)
 
@@ -486,7 +486,7 @@ class MainWindow(tk.Frame):
         self.func_fit_color_var.append('black')
         self.func_plot_color_var.append('black')
 
-        # Aqui tou so a meter os checkbuttons nas caixas
+        # Here I'm just putting the checkbuttons in the boxes
         self.choose_color.add_command(label = 'Marker Color', command = self.marker_color_pick)
         self.choose_color.add_command(label = 'Connection Color', command = self.line_color_pick)
         self.choose_color.add_command(label = 'Errorbar Color', command = self.error_color_pick)
@@ -502,27 +502,27 @@ class MainWindow(tk.Frame):
 
         self.datasets_to_plot.add_checkbutton(label = "Plot Dataset 1", onvalue = 1, offvalue = 0, variable = self.datasets_to_plot_var[0] )
 
-        # criação do dropdown menu para as opções mais avançadas
+        # create the dropdown menu for the more advanced options
         self.advanced = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label = 'Advanced', menu = self.advanced)
         self.advanced.add_command(label='Tick Placement', command = self.set_ticks)
         self.advanced.add_command(label='Figure Ratio', command = self.set_ratio)
         self.advanced.add_command(label='Generate Residue Plot', command = self.create_residue_data, accelerator = 'Ctrl+Shift+R')
 
-        # criação da secção para aceder ao modo online
+        # create the section to access online mode
         self.online = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label='CHIMERA Online', menu = self.online)
         self.online.add_command(label='Login', command = self.create_login, accelerator = 'Ctrl + L')
         self.online.add_command(label='Create Account', command = self.setup_account)
 
-        # criação do dropdown menu para as ajudas
+        # create the dropdown menu for the help entries
         self.help = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label = 'Help', menu = self.help)
         self.help.add_command(label='Documentation', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/docs'))
         self.help.add_command(label='FAQs', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/faq'))
         self.help.add_command(label='About', command=lambda: webbrowser.open('https://sites.google.com/view/chimera-fit/about'))
 
-        # Criação da zona para inserir a variável independente
+        # Create the area to enter the independent variable
         self.independent_label = tk.Label(self.subframe_right_1,text="Independent Var", bg='#E4E4E4')
         self.independent_label["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
         self.independent_label.place(relwidth=0.25, rely=0, relheight=0.1)
@@ -531,7 +531,7 @@ class MainWindow(tk.Frame):
         self.independent_entry.insert(0, 'x')
         self.independent_entry.focus_set()
 
-        # Criação da zona para inserir os parâmetros
+        # Create the area to enter the parameters
         self.parameter_label = tk.Label(self.subframe_right_1,text="Parameter", bg='#E4E4E4')
         self.parameter_label["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
         self.parameter_label.place(relwidth=0.22, rely=0.1, relheight=0.1)
@@ -540,7 +540,7 @@ class MainWindow(tk.Frame):
         self.parameter_entry.insert(0, "A,omega,phi,lambda")
         self.parameter_entry.focus_set()
 
-        # Criação da zona onde se insere a função
+        # Create the area where the function is entered
         self.function_label = tk.Label(self.subframe_right_1,text= "Function", bg='#E4E4E4')
         self.function_label["font"] = ("Roboto",int(0.01*self.master.winfo_width()))
         self.function_label.place(relwidth=0.22, rely=0.2, relheight=0.1)
@@ -596,7 +596,7 @@ class MainWindow(tk.Frame):
 
         self.x_axis_title_entry = tk.Entry(self.subframe_right_3)
         self.x_axis_title_entry.place(in_ = self.subframe_right_3, relwidth = 0.3, relheight = 0.1, relx = 0.1, rely=0.25)
-        self.x_axis_title_entry.insert(0, "Abcissas")
+        self.x_axis_title_entry.insert(0, "x")
 
         self.x_axis_tick_space_label = tk.Label(self.subframe_right_3, text = "Tick Spacing", bg='#E4E4E4')
         self.x_axis_tick_space_label.place(in_=self.subframe_right_3, relwidth = 0.22, relheight = 0.1, relx=0.175, rely= 0.4)
@@ -640,7 +640,7 @@ class MainWindow(tk.Frame):
 
         self.y_axis_title_entry = tk.Entry(self.subframe_right_3)
         self.y_axis_title_entry.place(in_ = self.subframe_right_3, relwidth = 0.3, relheight = 0.1, relx = 0.6, rely=0.25)
-        self.y_axis_title_entry.insert(0, "Ordenadas")
+        self.y_axis_title_entry.insert(0, "y")
 
         self.y_axis_tick_space_label = tk.Label(self.subframe_right_3, text = "Tick Spacing", bg='#E4E4E4')
         self.y_axis_tick_space_label.place(in_=self.subframe_right_3, relwidth = 0.22, relheight = 0.1, relx = 0.675, rely= 0.4)
@@ -800,31 +800,31 @@ class MainWindow(tk.Frame):
         sep3 = ttk.Separator(self.subframe_right_3, orient = tk.HORIZONTAL)
         sep3.place(in_ = self.subframe_right_3, relx=0, rely=0.55, relwidth=1)
 
-        # Criação do texto respetivo ao primeiro dataset
-        # A variável dataset_text contém os textos presentes em cada dataset
+        # Create the text corresponding to the first dataset
+        # The dataset_text variable holds the text present in each dataset
         self.dataset_text = []
         self.dataset_text.append("0.000000 0.200000 -4.220083 5.000000\n0.040080 0.200000 20.306079 5.000000\n0.080160 0.200000 29.509556 5.000000\n0.120240 0.200000 48.493836 5.000000\n0.160321 0.200000 68.609105 5.000000\n0.200401 0.200000 73.976780 5.000000\n0.240481 0.200000 90.348206 5.000000\n0.280561 0.200000 107.429971 5.000000\n0.320641 0.200000 108.084140 5.000000\n0.360721 0.200000 127.051755 5.000000\n0.400802 0.200000 134.937988 5.000000\n0.440882 0.200000 129.461255 5.000000\n0.480962 0.200000 150.258016 5.000000\n0.521042 0.200000 156.667045 5.000000\n0.561122 0.200000 172.252046 5.000000\n0.601202 0.200000 163.602874 5.000000\n0.641283 0.200000 171.550207 5.000000\n0.681363 0.200000 163.741960 5.000000\n0.721443 0.200000 173.751143 5.000000\n0.761523 0.200000 168.647742 5.000000\n0.801603 0.200000 170.747842 5.000000\n0.841683 0.200000 170.096170 5.000000\n0.881764 0.200000 160.471599 5.000000\n0.921844 0.200000 150.175606 5.000000\n0.961924 0.200000 152.733786 5.000000\n1.002004 0.200000 143.121698 5.000000\n1.042084 0.200000 146.264532 5.000000\n1.082164 0.200000 127.527399 5.000000\n1.122244 0.200000 119.731893 5.000000\n1.162325 0.200000 109.983294 5.000000\n1.202405 0.200000 107.143773 5.000000\n1.242485 0.200000 95.094167 5.000000\n1.282565 0.200000 92.440938 5.000000\n1.322645 0.200000 83.966296 5.000000\n1.362725 0.200000 66.828702 5.000000\n1.402806 0.200000 52.931513 5.000000\n1.442886 0.200000 36.324946 5.000000\n1.482966 0.200000 29.922973 5.000000\n1.523046 0.200000 7.976208 5.000000\n1.563126 0.200000 1.489428 5.000000\n1.603206 0.200000 -9.195030 5.000000\n1.643287 0.200000 -23.532098 5.000000\n1.683367 0.200000 -25.749417 5.000000\n1.723447 0.200000 -35.118530 5.000000\n1.763527 0.200000 -55.796327 5.000000\n1.803607 0.200000 -68.857647 5.000000\n1.843687 0.200000 -70.314311 5.000000\n1.883768 0.200000 -86.585397 5.000000\n1.923848 0.200000 -94.812446 5.000000\n1.963928 0.200000 -92.395743 5.000000\n2.004008 0.200000 -100.446687 5.000000\n2.044088 0.200000 -106.587079 5.000000\n2.084168 0.200000 -112.562231 5.000000\n2.124248 0.200000 -108.020072 5.000000\n2.164329 0.200000 -115.267282 5.000000\n2.204409 0.200000 -122.261355 5.000000\n2.244489 0.200000 -116.516333 5.000000\n2.284569 0.200000 -128.890452 5.000000\n2.324649 0.200000 -129.017330 5.000000\n2.364729 0.200000 -119.878573 5.000000\n2.404810 0.200000 -128.626340 5.000000\n2.444890 0.200000 -129.201100 5.000000\n2.484970 0.200000 -118.233865 5.000000\n2.525050 0.200000 -108.107293 5.000000\n2.565130 0.200000 -111.984111 5.000000\n2.605210 0.200000 -102.305572 5.000000\n2.645291 0.200000 -100.950003 5.000000\n2.685371 0.200000 -95.231812 5.000000\n2.725451 0.200000 -79.889093 5.000000\n2.765531 0.200000 -78.113814 5.000000\n2.805611 0.200000 -63.122766 5.000000\n2.845691 0.200000 -62.347123 5.000000\n2.885772 0.200000 -57.464439 5.000000\n2.925852 0.200000 -50.095949 5.000000\n2.965932 0.200000 -28.707316 5.000000\n3.006012 0.200000 -25.857203 5.000000\n3.046092 0.200000 -9.977920 5.000000\n3.086172 0.200000 -17.829600 5.000000\n3.126253 0.200000 -5.207881 5.000000\n3.166333 0.200000 3.204056 5.000000\n3.206413 0.200000 28.687108 5.000000\n3.246493 0.200000 27.405625 5.000000\n3.286573 0.200000 33.953569 5.000000\n3.326653 0.200000 36.077991 5.000000\n3.366733 0.200000 40.915877 5.000000\n3.406814 0.200000 52.547911 5.000000\n3.446894 0.200000 44.613076 5.000000\n3.486974 0.200000 68.303123 5.000000\n3.527054 0.200000 79.331374 5.000000\n3.567134 0.200000 80.976405 5.000000\n3.607214 0.200000 81.713514 5.000000\n3.647295 0.200000 78.158750 5.000000\n3.687375 0.200000 93.019663 5.000000\n3.727455 0.200000 86.270143 5.000000\n3.767535 0.200000 88.670332 5.000000\n3.807615 0.200000 92.136118 5.000000\n3.847695 0.200000 93.761178 5.000000\n3.887776 0.200000 88.573773 5.000000\n3.927856 0.200000 94.170806 5.000000\n3.967936 0.200000 86.460671 5.000000\n4.008016 0.200000 94.492714 5.000000\n4.048096 0.200000 90.596259 5.000000\n4.088176 0.200000 87.304429 5.000000\n4.128257 0.200000 87.532433 5.000000\n4.168337 0.200000 72.274535 5.000000\n4.208417 0.200000 66.245807 5.000000\n4.248497 0.200000 73.091925 5.000000\n4.288577 0.200000 60.468736 5.000000\n4.328657 0.200000 60.017482 5.000000\n4.368737 0.200000 58.271275 5.000000\n4.408818 0.200000 45.748794 5.000000\n4.448898 0.200000 40.314987 5.000000\n4.488978 0.200000 49.452884 5.000000\n4.529058 0.200000 26.422226 5.000000\n4.569138 0.200000 22.944044 5.000000\n4.609218 0.200000 16.095398 5.000000\n4.649299 0.200000 12.753866 5.000000\n4.689379 0.200000 6.909262 5.000000\n4.729459 0.200000 1.212596 5.000000\n4.769539 0.200000 3.055895 5.000000\n4.809619 0.200000 -14.751589 5.000000\n4.849699 0.200000 -20.025156 5.000000\n4.889780 0.200000 -31.446377 5.000000\n4.929860 0.200000 -31.690325 5.000000\n4.969940 0.200000 -40.431643 5.000000\n5.010020 0.200000 -33.717315 5.000000\n5.050100 0.200000 -43.198812 5.000000\n5.090180 0.200000 -45.091974 5.000000\n5.130261 0.200000 -54.723450 5.000000\n5.170341 0.200000 -52.448394 5.000000\n5.210421 0.200000 -54.470856 5.000000\n5.250501 0.200000 -66.779061 5.000000\n5.290581 0.200000 -67.979157 5.000000\n5.330661 0.200000 -66.643499 5.000000\n5.370741 0.200000 -72.572019 5.000000\n5.410822 0.200000 -65.619787 5.000000\n5.450902 0.200000 -70.286317 5.000000\n5.490982 0.200000 -66.983429 5.000000\n5.531062 0.200000 -66.396522 5.000000\n5.571142 0.200000 -58.528374 5.000000\n5.611222 0.200000 -63.276543 5.000000\n5.651303 0.200000 -57.647651 5.000000\n5.691383 0.200000 -58.155591 5.000000\n5.731463 0.200000 -59.947225 5.000000\n5.771543 0.200000 -56.605605 5.000000\n5.811623 0.200000 -48.498689 5.000000\n5.851703 0.200000 -44.906405 5.000000\n5.891784 0.200000 -35.595236 5.000000\n5.931864 0.200000 -36.182548 5.000000\n5.971944 0.200000 -35.946789 5.000000\n6.012024 0.200000 -26.033401 5.000000\n6.052104 0.200000 -21.916403 5.000000\n6.092184 0.200000 -18.744021 5.000000\n6.132265 0.200000 -19.034690 5.000000\n6.172345 0.200000 -3.464158 5.000000\n6.212425 0.200000 -9.989100 5.000000\n6.252505 0.200000 -18.031833 5.000000\n6.292585 0.200000 -0.473183 5.000000\n6.332665 0.200000 7.128211 5.000000\n6.372745 0.200000 10.383434 5.000000\n6.412826 0.200000 8.963351 5.000000\n6.452906 0.200000 17.957149 5.000000\n6.492986 0.200000 18.615820 5.000000\n6.533066 0.200000 28.568868 5.000000\n6.573146 0.200000 36.890251 5.000000\n6.613226 0.200000 28.441762 5.000000\n6.653307 0.200000 37.849841 5.000000\n6.693387 0.200000 32.059030 5.000000\n6.733467 0.200000 28.204411 5.000000\n6.773547 0.200000 48.291845 5.000000\n6.813627 0.200000 50.102458 5.000000\n6.853707 0.200000 42.508948 5.000000\n6.893788 0.200000 46.535820 5.000000\n6.933868 0.200000 48.448955 5.000000\n6.973948 0.200000 55.769351 5.000000\n7.014028 0.200000 54.062273 5.000000\n7.054108 0.200000 49.087978 5.000000\n7.094188 0.200000 57.951041 5.000000\n7.134269 0.200000 46.272647 5.000000\n7.174349 0.200000 47.668543 5.000000\n7.214429 0.200000 46.921758 5.000000\n7.254509 0.200000 42.871597 5.000000\n7.294589 0.200000 38.610888 5.000000\n7.334669 0.200000 39.815706 5.000000\n7.374749 0.200000 37.159121 5.000000\n7.414830 0.200000 31.996323 5.000000\n7.454910 0.200000 38.671490 5.000000\n7.494990 0.200000 30.193041 5.000000\n7.535070 0.200000 24.469951 5.000000\n7.575150 0.200000 27.829150 5.000000\n7.615230 0.200000 14.374572 5.000000\n7.655311 0.200000 18.588095 5.000000\n7.695391 0.200000 19.879006 5.000000\n7.735471 0.200000 14.032910 5.000000\n7.775551 0.200000 4.663582 5.000000\n7.815631 0.200000 -2.575609 5.000000\n7.855711 0.200000 -1.598550 5.000000\n7.895792 0.200000 -2.158824 5.000000\n7.935872 0.200000 -7.086892 5.000000\n7.975952 0.200000 -14.662059 5.000000\n8.016032 0.200000 -21.428117 5.000000\n8.056112 0.200000 -15.659874 5.000000\n8.096192 0.200000 -20.559999 5.000000\n8.136273 0.200000 -21.496457 5.000000\n8.176353 0.200000 -15.018610 5.000000\n8.216433 0.200000 -27.698434 5.000000\n8.256513 0.200000 -24.037836 5.000000\n8.296593 0.200000 -31.816119 5.000000\n8.336673 0.200000 -32.542239 5.000000\n8.376754 0.200000 -41.213083 5.000000\n8.416834 0.200000 -33.509833 5.000000\n8.456914 0.200000 -37.619873 5.000000\n8.496994 0.200000 -27.887921 5.000000\n8.537074 0.200000 -31.248875 5.000000\n8.577154 0.200000 -37.039771 5.000000\n8.617234 0.200000 -33.194420 5.000000\n8.657315 0.200000 -35.690008 5.000000\n8.697395 0.200000 -26.343880 5.000000\n8.737475 0.200000 -35.840091 5.000000\n8.777555 0.200000 -19.936502 5.000000\n8.817635 0.200000 -33.370277 5.000000\n8.857715 0.200000 -32.042716 5.000000\n8.897796 0.200000 -26.828380 5.000000\n8.937876 0.200000 -34.670138 5.000000\n8.977956 0.200000 -30.877291 5.000000\n9.018036 0.200000 -28.066351 5.000000\n9.058116 0.200000 -16.888626 5.000000\n9.098196 0.200000 -21.047476 5.000000\n9.138277 0.200000 -16.292002 5.000000\n9.178357 0.200000 -21.978134 5.000000\n9.218437 0.200000 -10.110033 5.000000\n9.258517 0.200000 -7.966969 5.000000\n9.298597 0.200000 -14.467292 5.000000\n9.338677 0.200000 -9.640137 5.000000\n9.378758 0.200000 -7.084470 5.000000\n9.418838 0.200000 -1.477334 5.000000\n9.458918 0.200000 0.219948 5.000000\n9.498998 0.200000 2.325002 5.000000\n9.539078 0.200000 6.512176 5.000000\n9.579158 0.200000 5.541867 5.000000\n9.619238 0.200000 11.372225 5.000000\n9.659319 0.200000 13.947301 5.000000\n9.699399 0.200000 13.590980 5.000000\n9.739479 0.200000 13.216626 5.000000\n9.779559 0.200000 16.390693 5.000000\n9.819639 0.200000 27.023087 5.000000\n9.859719 0.200000 17.697813 5.000000\n9.899800 0.200000 27.454231 5.000000\n9.939880 0.200000 23.537202 5.000000\n9.979960 0.200000 23.818608 5.000000\n10.020040 0.200000 14.047478 5.000000\n10.060120 0.200000 32.127949 5.000000\n10.100200 0.200000 24.409514 5.000000\n10.140281 0.200000 23.204936 5.000000\n10.180361 0.200000 26.134774 5.000000\n10.220441 0.200000 27.358767 5.000000\n10.260521 0.200000 20.644017 5.000000\n10.300601 0.200000 21.998389 5.000000\n10.340681 0.200000 17.857595 5.000000\n10.380762 0.200000 21.323762 5.000000\n10.420842 0.200000 20.252274 5.000000\n10.460922 0.200000 19.224765 5.000000\n10.501002 0.200000 16.624415 5.000000\n10.541082 0.200000 19.284652 5.000000\n10.581162 0.200000 27.722624 5.000000\n10.621242 0.200000 10.830659 5.000000\n10.661323 0.200000 18.016111 5.000000\n10.701403 0.200000 12.131010 5.000000\n10.741483 0.200000 25.532536 5.000000\n10.781563 0.200000 0.247603 5.000000\n10.821643 0.200000 6.395373 5.000000\n10.861723 0.200000 13.165740 5.000000\n10.901804 0.200000 3.000769 5.000000\n10.941884 0.200000 2.168944 5.000000\n10.981964 0.200000 3.228704 5.000000\n11.022044 0.200000 -1.992237 5.000000\n11.062124 0.200000 0.717827 5.000000\n11.102204 0.200000 -2.348446 5.000000\n11.142285 0.200000 -8.534931 5.000000\n11.182365 0.200000 -6.482811 5.000000\n11.222445 0.200000 -12.571645 5.000000\n11.262525 0.200000 -10.239189 5.000000\n11.302605 0.200000 -23.445802 5.000000\n11.342685 0.200000 -9.620284 5.000000\n11.382766 0.200000 -9.469368 5.000000\n11.422846 0.200000 -14.469548 5.000000\n11.462926 0.200000 -16.057060 5.000000\n11.503006 0.200000 -15.463553 5.000000\n11.543086 0.200000 -29.203668 5.000000\n11.583166 0.200000 -21.897996 5.000000\n11.623246 0.200000 -19.576155 5.000000\n11.663327 0.200000 -9.354795 5.000000\n11.703407 0.200000 -11.857799 5.000000\n11.743487 0.200000 -18.484859 5.000000\n11.783567 0.200000 -17.001798 5.000000\n11.823647 0.200000 -20.839559 5.000000\n11.863727 0.200000 -10.625569 5.000000\n11.903808 0.200000 -12.561239 5.000000\n11.943888 0.200000 -10.337802 5.000000\n11.983968 0.200000 -20.437828 5.000000\n12.024048 0.200000 -21.202328 5.000000\n12.064128 0.200000 -20.814618 5.000000\n12.104208 0.200000 -9.093745 5.000000\n12.144289 0.200000 -10.776351 5.000000\n12.184369 0.200000 -14.682031 5.000000\n12.224449 0.200000 -15.557082 5.000000\n12.264529 0.200000 -8.452130 5.000000\n12.304609 0.200000 -5.284851 5.000000\n12.344689 0.200000 -6.043369 5.000000\n12.384770 0.200000 -8.505228 5.000000\n12.424850 0.200000 -3.082345 5.000000\n12.464930 0.200000 2.547971 5.000000\n12.505010 0.200000 3.798123 5.000000\n12.545090 0.200000 9.212148 5.000000\n12.585170 0.200000 -1.805794 5.000000\n12.625251 0.200000 7.187777 5.000000\n12.665331 0.200000 3.731835 5.000000\n12.705411 0.200000 9.221259 5.000000\n12.745491 0.200000 -7.587803 5.000000\n12.785571 0.200000 14.854788 5.000000\n12.825651 0.200000 1.033444 5.000000\n12.865731 0.200000 10.726527 5.000000\n12.905812 0.200000 15.855602 5.000000\n12.945892 0.200000 9.741655 5.000000\n12.985972 0.200000 12.129298 5.000000\n13.026052 0.200000 6.866070 5.000000\n13.066132 0.200000 13.327839 5.000000\n13.106212 0.200000 22.548522 5.000000\n13.146293 0.200000 12.441904 5.000000\n13.186373 0.200000 14.290439 5.000000\n13.226453 0.200000 18.981131 5.000000\n13.266533 0.200000 14.088621 5.000000\n13.306613 0.200000 18.580735 5.000000\n13.346693 0.200000 5.400956 5.000000\n13.386774 0.200000 13.922285 5.000000\n13.426854 0.200000 12.228760 5.000000\n13.466934 0.200000 14.367235 5.000000\n13.507014 0.200000 10.069593 5.000000\n13.547094 0.200000 9.403623 5.000000\n13.587174 0.200000 10.807500 5.000000\n13.627255 0.200000 8.994746 5.000000\n13.667335 0.200000 17.059241 5.000000\n13.707415 0.200000 5.944681 5.000000\n13.747495 0.200000 14.293543 5.000000\n13.787575 0.200000 11.252237 5.000000\n13.827655 0.200000 16.805709 5.000000\n13.867735 0.200000 4.094287 5.000000\n13.907816 0.200000 5.383987 5.000000\n13.947896 0.200000 12.449402 5.000000\n13.987976 0.200000 7.040040 5.000000\n14.028056 0.200000 2.234196 5.000000\n14.068136 0.200000 6.228159 5.000000\n14.108216 0.200000 -1.072208 5.000000\n14.148297 0.200000 -5.193341 5.000000\n14.188377 0.200000 -4.510789 5.000000\n14.228457 0.200000 -3.619780 5.000000\n14.268537 0.200000 4.591740 5.000000\n14.308617 0.200000 -5.416248 5.000000\n14.348697 0.200000 -1.694420 5.000000\n14.388778 0.200000 -0.238606 5.000000\n14.428858 0.200000 -2.555457 5.000000\n14.468938 0.200000 -4.215943 5.000000\n14.509018 0.200000 -2.086985 5.000000\n14.549098 0.200000 -8.206409 5.000000\n14.589178 0.200000 -6.998627 5.000000\n14.629259 0.200000 -11.455970 5.000000\n14.669339 0.200000 -8.796179 5.000000\n14.709419 0.200000 -4.568559 5.000000\n14.749499 0.200000 -9.766033 5.000000\n14.789579 0.200000 -14.257980 5.000000\n14.829659 0.200000 -8.425578 5.000000\n14.869739 0.200000 -21.594720 5.000000\n14.909820 0.200000 -6.706730 5.000000\n14.949900 0.200000 -22.397763 5.000000\n14.989980 0.200000 -14.721651 5.000000\n15.030060 0.200000 -6.735613 5.000000\n15.070140 0.200000 -6.340337 5.000000\n15.110220 0.200000 -2.445827 5.000000\n15.150301 0.200000 -9.874866 5.000000\n15.190381 0.200000 -1.413741 5.000000\n15.230461 0.200000 -8.766435 5.000000\n15.270541 0.200000 -5.677615 5.000000\n15.310621 0.200000 -3.008112 5.000000\n15.350701 0.200000 -2.927042 5.000000\n15.390782 0.200000 -13.984512 5.000000\n15.430862 0.200000 -5.995535 5.000000\n15.470942 0.200000 -14.618264 5.000000\n15.511022 0.200000 0.097088 5.000000\n15.551102 0.200000 -13.189818 5.000000\n15.591182 0.200000 0.355034 5.000000\n15.631263 0.200000 0.784178 5.000000\n15.671343 0.200000 0.266240 5.000000\n15.711423 0.200000 -2.829156 5.000000\n15.751503 0.200000 -0.311902 5.000000\n15.791583 0.200000 0.066581 5.000000\n15.831663 0.200000 -2.041654 5.000000\n15.871743 0.200000 5.305573 5.000000\n15.911824 0.200000 5.302848 5.000000\n15.951904 0.200000 5.252021 5.000000\n15.991984 0.200000 -2.231145 5.000000\n16.032064 0.200000 1.885515 5.000000\n16.072144 0.200000 6.379447 5.000000\n16.112224 0.200000 6.896192 5.000000\n16.152305 0.200000 8.838547 5.000000\n16.192385 0.200000 6.327971 5.000000\n16.232465 0.200000 6.743566 5.000000\n16.272545 0.200000 4.314842 5.000000\n16.312625 0.200000 4.302374 5.000000\n16.352705 0.200000 0.469928 5.000000\n16.392786 0.200000 7.795278 5.000000\n16.432866 0.200000 10.292563 5.000000\n16.472946 0.200000 1.007937 5.000000\n16.513026 0.200000 7.731705 5.000000\n16.553106 0.200000 8.774526 5.000000\n16.593186 0.200000 3.301125 5.000000\n16.633267 0.200000 5.489381 5.000000\n16.673347 0.200000 11.807418 5.000000\n16.713427 0.200000 6.936980 5.000000\n16.753507 0.200000 10.544944 5.000000\n16.793587 0.200000 3.398610 5.000000\n16.833667 0.200000 -1.275229 5.000000\n16.873747 0.200000 10.642082 5.000000\n16.913828 0.200000 1.769257 5.000000\n16.953908 0.200000 3.303666 5.000000\n16.993988 0.200000 0.219273 5.000000\n17.034068 0.200000 11.769642 5.000000\n17.074148 0.200000 -10.607201 5.000000\n17.114228 0.200000 -1.017754 5.000000\n17.154309 0.200000 2.763988 5.000000\n17.194389 0.200000 -1.423901 5.000000\n17.234469 0.200000 5.356608 5.000000\n17.274549 0.200000 6.227375 5.000000\n17.314629 0.200000 6.759017 5.000000\n17.354709 0.200000 5.116336 5.000000\n17.394790 0.200000 1.193953 5.000000\n17.434870 0.200000 0.091315 5.000000\n17.474950 0.200000 -6.167816 5.000000\n17.515030 0.200000 -7.607873 5.000000\n17.555110 0.200000 -6.554534 5.000000\n17.595190 0.200000 -8.763374 5.000000\n17.635271 0.200000 -9.999903 5.000000\n17.675351 0.200000 1.444506 5.000000\n17.715431 0.200000 -2.940430 5.000000\n17.755511 0.200000 -2.074974 5.000000\n17.795591 0.200000 -4.999610 5.000000\n17.835671 0.200000 -8.447734 5.000000\n17.875752 0.200000 -9.219865 5.000000\n17.915832 0.200000 -0.884357 5.000000\n17.955912 0.200000 -13.630628 5.000000\n17.995992 0.200000 -3.362859 5.000000\n18.036072 0.200000 -2.861015 5.000000\n18.076152 0.200000 0.459927 5.000000\n18.116232 0.200000 2.075756 5.000000\n18.156313 0.200000 1.742471 5.000000\n18.196393 0.200000 -4.681144 5.000000\n18.236473 0.200000 -11.362966 5.000000\n18.276553 0.200000 -10.926193 5.000000\n18.316633 0.200000 -3.513967 5.000000\n18.356713 0.200000 4.763483 5.000000\n18.396794 0.200000 -2.458590 5.000000\n18.436874 0.200000 -4.460571 5.000000\n18.476954 0.200000 -8.472226 5.000000\n18.517034 0.200000 -18.139443 5.000000\n18.557114 0.200000 -3.079748 5.000000\n18.597194 0.200000 2.546519 5.000000\n18.637275 0.200000 5.423287 5.000000\n18.677355 0.200000 -4.911763 5.000000\n18.717435 0.200000 -0.456041 5.000000\n18.757515 0.200000 1.675098 5.000000\n18.797595 0.200000 2.913273 5.000000\n18.837675 0.200000 -1.921587 5.000000\n18.877756 0.200000 -2.727984 5.000000\n18.917836 0.200000 8.666047 5.000000\n18.957916 0.200000 0.215012 5.000000\n18.997996 0.200000 2.999787 5.000000\n19.038076 0.200000 5.302385 5.000000\n19.078156 0.200000 1.706727 5.000000\n19.118236 0.200000 -0.960444 5.000000\n19.158317 0.200000 -2.947608 5.000000\n19.198397 0.200000 8.699859 5.000000\n19.238477 0.200000 3.165915 5.000000\n19.278557 0.200000 2.699166 5.000000\n19.318637 0.200000 7.007208 5.000000\n19.358717 0.200000 1.366691 5.000000\n19.398798 0.200000 5.806320 5.000000\n19.438878 0.200000 5.205500 5.000000\n19.478958 0.200000 6.384510 5.000000\n19.519038 0.200000 2.091265 5.000000\n19.559118 0.200000 1.740590 5.000000\n19.599198 0.200000 -1.249371 5.000000\n19.639279 0.200000 13.168858 5.000000\n19.679359 0.200000 6.457068 5.000000\n19.719439 0.200000 -2.875295 5.000000\n19.759519 0.200000 6.103446 5.000000\n19.799599 0.200000 2.828744 5.000000\n19.839679 0.200000 8.695443 5.000000\n19.879760 0.200000 -1.042130 5.000000\n19.919840 0.200000 1.382902 5.000000\n19.959920 0.200000 5.380195 5.000000\n20.000000 0.200000 4.680706 5.000000")
 
         self.data_list_var = tk.StringVar()
 
-        # Variável que mostra qual está selecionada
+        # Variable showing which one is selected
         self.data_list_var.set('dataset 1')
 
-        # Variável que contem os datasets e respetivo numero
+        # Variable holding the datasets and their number
         self.data_list = ['dataset 1']
 
-        # Criação do botão seletor de data-sets, ligalo à função update_databox
+        # Create the dataset selector button; link it to the update_databox function
         self.dataset_selector = ttk.Combobox(self.plot_button_frame, textvariable = self.data_list_var, values = self.data_list, postcommand = self.update_combobox_values,font=("Roboto", 8))
         self.dataset_selector.place(relx = 0, relheight = 1, relwidth=0.15)
         self.dataset_selector.bind("<<ComboboxSelected>>", self.update_databox)
 
-        # Criação da caixa que contem os dados, inserção do texto referente ao primeiro dataset na mesma
+        # Create the box holding the data and insert the first dataset's text into it
         self.data_entry = (ScrolledText(self.subframe_left_2))
         self.data_entry.pack(expand = 1, fill = tk.X)
         self.data_entry.insert(tk.INSERT,self.dataset_text[0])
 
-        # Basicamente a lógica é isto começar com alguma coisa pq fode com indices dps, soluçao preguicosa
-        # é darlhe os valores do textinho default
+        # Basically the logic starts with something because otherwise the indices break later; a lazy solution
+        # just give it the default text values
         self.abcissas = [[0, 0, 0, 0]]
         self.err_abcissas = [[0, 0, 0, 0]]
         self.ordenadas = [[0, 0, 0, 0]]
@@ -1000,7 +1000,7 @@ class MainWindow(tk.Frame):
                                 activeforeground='#F21112')
         save_button["command"] = self.save_ratio
         save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
         save_button.pack(side='top',pady=20)
@@ -1093,7 +1093,7 @@ class MainWindow(tk.Frame):
                                 activeforeground='#F21112')
         save_button["command"] = self.save_ticks
         save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
         save_button.pack(side='top',pady=20)
@@ -1142,7 +1142,7 @@ class MainWindow(tk.Frame):
             residues = [y[i] - residues[i] for i in range(len(residues))]
         except Exception:
             tk.messagebox.showwarning('ERROR', 'Can only generate residue data after fit.')
-        # apagamos o gráfico
+        # erase the plot
         try:
             self.canvas.get_tk_widget().pack_forget()
             del self.canvas
@@ -1243,7 +1243,7 @@ class MainWindow(tk.Frame):
                                        )
             self.remove_buttons[i]["command"] = lambda pos=i: self.remove_text(pos)
             self.remove_buttons[i]["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-            # Alterar as cores quando entra e sai
+            # Change the colors on enter and leave
             self.remove_buttons[i].bind("<Enter>", hover(self.remove_buttons[i]))
             self.remove_buttons[i].bind("<Leave>", unhover(self.remove_buttons[i]))
 
@@ -1258,7 +1258,7 @@ class MainWindow(tk.Frame):
             self.remove_buttons[i].pack(side='left',padx=10)
             frame.pack(side='top',pady=10)
 
-         # Colocação do botão para salvar as legendas
+         # Place the button to save the legends
         frame = tk.Frame(scrollable_frame,bg='#E4E4E4')
 
         save_button = tk.Button(frame,
@@ -1269,7 +1269,7 @@ class MainWindow(tk.Frame):
                                 activeforeground='#F21112')
         save_button["command"] = self.save_text
         save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
         save_button.pack(side='left',padx=20)
@@ -1385,7 +1385,7 @@ class MainWindow(tk.Frame):
             self.label_entries[i][2].pack(side='right')
             frame3.pack(side='top',pady=10)
 
-        # Colocação do botão para salvar as legendas
+        # Place the button to save the legends
         save_button = tk.Button(scrollable_frame,
                                 text="SAVE",
                                 fg='white',
@@ -1394,7 +1394,7 @@ class MainWindow(tk.Frame):
                                 activeforeground='#F21112')
         save_button["command"] = self.save_labels
         save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
         save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
         save_button.pack(side='bottom')
@@ -1663,7 +1663,7 @@ class MainWindow(tk.Frame):
         self.export_window.resizable(False, False)
         self.focus_window(self.export_window)
 
-        # Colocação das várias opções de exportação
+        # Place the various export options
         function = tk.Label(self.export_window, text='Fitting Function')
         function["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         function.configure(background='#E4E4E4')
@@ -1676,7 +1676,7 @@ class MainWindow(tk.Frame):
         data_diff_x["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         data_diff_x.configure(background='#E4E4E4')
 
-        # Colocação dos botões para copiar o texto
+        # Place the buttons to copy the text
         self.function_button = tk.Button(self.export_window,
                                     text="COPY",
                                     fg='white',
@@ -1685,7 +1685,7 @@ class MainWindow(tk.Frame):
                                     activeforeground='#F21112')
         self.function_button["command"] = self.export_function
         self.function_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
         self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
 
@@ -1697,7 +1697,7 @@ class MainWindow(tk.Frame):
                                            activeforeground='#F21112')
         self.data_same_x_button["command"] = self.export_data_same_x
         self.data_same_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         self.data_same_x_button.bind("<Enter>", func=lambda e: self.data_same_x_button.config(bg='white',fg='#F21112'))
         self.data_same_x_button.bind("<Leave>", func=lambda e: self.data_same_x_button.config(bg='#F21112',fg='white'))
 
@@ -1709,11 +1709,11 @@ class MainWindow(tk.Frame):
                                            activeforeground='#F21112')
         self.data_diff_x_button["command"] = self.export_data_diff_x
         self.data_diff_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         self.data_diff_x_button.bind("<Enter>", func=lambda e: self.data_diff_x_button.config(bg='white',fg='#F21112'))
         self.data_diff_x_button.bind("<Leave>", func=lambda e: self.data_diff_x_button.config(bg='#F21112',fg='white'))
 
-        # Dizer as posições dos vários elementos na tela
+        # Set the positions of the various elements on screen
         function.place(relx=.05, rely=.15, anchor='w')
         data_same_x.place(relx=.05,rely=.5,anchor='w')
         data_diff_x.place(relx=.05,rely=.85,anchor='w')
@@ -1722,7 +1722,7 @@ class MainWindow(tk.Frame):
         self.data_diff_x_button.place(relx=.85,rely=.85,anchor='c')
 
     def export_function(self):
-        # Se a função já tiver sido compilada
+        # If the function has already been compiled
         try:
             self.functions[self.selected_dataset]
         except Exception:
@@ -1730,7 +1730,7 @@ class MainWindow(tk.Frame):
             self.export_window.destroy()
             return
         if self.functions[self.selected_dataset]:
-            # Algumas operações de estética
+            # Some cosmetic operations
             self.function_button.configure(text='COPIED!',fg='#F21112',bg='white')
             self.data_same_x_button.configure(text='COPY',fg='white',bg='#F21112')
             self.data_diff_x_button.configure(text='COPY',fg='white',bg='#F21112')
@@ -1749,7 +1749,7 @@ class MainWindow(tk.Frame):
             self.export_window.destroy()
 
     def export_data_same_x(self):
-        # Algumas operações de estética
+        # Some cosmetic operations
         self.function_button.configure(text='COPY',fg='white',bg='#F21112')
         self.data_same_x_button.configure(text='COPIED!',fg='#F21112',bg='white')
         self.data_diff_x_button.configure(text='COPY',fg='white',bg='#F21112')
@@ -1764,7 +1764,7 @@ class MainWindow(tk.Frame):
         pyperclip.copy(text)
 
     def export_data_diff_x(self):
-        # Algumas operações de estética
+        # Some cosmetic operations
         self.function_button.configure(text='COPY',fg='white',bg='#F21112')
         self.data_same_x_button.configure(text='COPY',fg='white',bg='#F21112')
         self.data_diff_x_button.configure(text='COPIED!',fg='#F21112',bg='white')
@@ -1857,7 +1857,7 @@ class MainWindow(tk.Frame):
 
         self.same_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
 
-        self.same_x_text =tk.Label(self.import_window, bg = '#E4E4E4', text = 'First column will be x.\nSubsequencial columns will be (y1, ey1, y2, ey2,...)')
+        self.same_x_text =tk.Label(self.import_window, bg = '#E4E4E4', text = 'First column will be x.\nSubsequent columns will be (y1, ey1, y2, ey2,...)')
         self.same_x_text.place(in_ = self.import_window, relwidth = 0.9, relheight = 0.15, rely = 0.15, relx = 0.05)
 
         self.dif_x_button = tk.Checkbutton(self.import_window, bg = '#E4E4E4', offvalue = 0, onvalue = 1, variable = self.dif_x, text = 'All datasets have their own x',  command = self.dif_xfunction)
@@ -1877,7 +1877,7 @@ class MainWindow(tk.Frame):
                                   activeforeground='#F21112')
         import_button.place(in_ = self.import_window, relwidth =0.5, relheight = 0.15, relx=0.25, rely=0.8)
         import_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         import_button.bind("<Enter>", func=lambda e: import_button.config(bg='white',fg='#F21112'))
         import_button.bind("<Leave>", func=lambda e: import_button.config(bg='#F21112',fg='white'))
 
@@ -1891,19 +1891,19 @@ class MainWindow(tk.Frame):
         self.dif_x_error.get()
 
         if self.dif_x_error.get():
-            self.same_x_text['text'] = 'First columns will be (x, ex).\nSubsequencial columns will be (y1, ey1, y2, ey2,...)'
+            self.same_x_text['text'] = 'First columns will be (x, ex).\nSubsequent columns will be (y1, ey1, y2, ey2,...)'
             self.same_x_button['text'] = 'All datasets have same (x, ex)'
             self.dif_x_button['text'] = 'All datasets have their own (x, ex)'
             self.dif_x_text['text'] = 'Columns will be (x1, ex1, y1, ey1, x2, ex2, y2, ey2,...)'
         else:
-            self.same_x_text['text'] = 'First column will be x.\nSubsequencial columns will be (y1, ey1, y2, ey2,...)'
+            self.same_x_text['text'] = 'First column will be x.\nSubsequent columns will be (y1, ey1, y2, ey2,...)'
             self.same_x_button['text'] = 'All datasets have same x'
             self.dif_x_button['text'] = 'All datasets have their own x'
             self.dif_x_text['text'] = 'Columns will be (x1, y1, ey1, x2, y2, ey2,...)'
 
-    # Função para adicionar um dataset
+    # Function to add a dataset
     def add_dataset(self, string):
-        # adicionar o texto merdoso, dar update À variavel do número de datasets
+        # add the placeholder text and update the dataset-count variable
         self.number_datasets = self.number_datasets + 1
         if ("dataset " + str(len(self.data_list) + 1)) in self.data_list:
             i=1
@@ -1939,7 +1939,7 @@ class MainWindow(tk.Frame):
 
         self.full_output.append('')
 
-        # Acrescentar para todas as variaveis de cores e opcoes
+        # Append for all the color and option variables
         self.want_fit.append(tk.BooleanVar())
         self.want_fit[-1].set(0)
         self.want_points.append(tk.BooleanVar())
@@ -1961,7 +1961,7 @@ class MainWindow(tk.Frame):
         self.ord.append(np.array(self.ordenadas[-1]))
         self.err_ord.append(np.array(self.err_ordenadas[-1]))
 
-        # Criar as variáveis respetivas à escolha de cores para cada plot
+        # Create the variables for the color choice of each plot
         self.marker_color_var.append("black")
         self.line_color_var.append("black")
         self.error_color_var.append("black")
@@ -1990,7 +1990,7 @@ class MainWindow(tk.Frame):
 
         self.datasets_to_plot.add_checkbutton(label = "Plot Dataset " + str(len(self.data_list)), onvalue = 1, offvalue = 0, variable = self.datasets_to_plot_var[self.number_datasets-1] )
 
-    # Função para remover datasets
+    # Function to remove datasets
     def remove_dataset(self):
         if self.number_datasets == 1:
             tk.messagebox.showwarning('ERROR', 'At least one dataset is needed. Add one before removing this one.')
@@ -1998,10 +1998,10 @@ class MainWindow(tk.Frame):
 
         self.number_datasets -= 1
 
-        # apagar o data_set
+        # delete the dataset
         self.dataset_text.pop(self.selected_dataset)
 
-        # remover todas as variáveis guardadas
+        # remove all the stored variables
         self.data_list = ["data_list "+str(i+1) for i in range(self.number_datasets)]
         self.abcissas.pop(self.selected_dataset)
         self.err_abcissas.pop(self.selected_dataset)
@@ -2031,7 +2031,7 @@ class MainWindow(tk.Frame):
 
         self.full_output.pop(self.selected_dataset)
 
-        # remover todas as variaveis de cores e opcoes
+        # remove all the color and option variables
         self.want_fit.pop(self.selected_dataset)
         self.want_points.pop(self.selected_dataset)
         self.want_line.pop(self.selected_dataset)
@@ -2050,7 +2050,7 @@ class MainWindow(tk.Frame):
         self.ord.pop(self.selected_dataset)
         self.err_ord.pop(self.selected_dataset)
 
-        # Criar as variáveis respetivas à escolha de cores para cada plot
+        # Create the variables for the color choice of each plot
         self.marker_color_var.pop(self.selected_dataset)
         self.line_color_var.pop(self.selected_dataset)
         self.error_color_var.pop(self.selected_dataset)
@@ -2123,12 +2123,12 @@ class MainWindow(tk.Frame):
         return True
 
     def update_databox(self, event):
-        # Guardar o atual na cena
+        # Keep the current one
         if event != "remove":
             self.dataset_text[self.current_selection] = self.data_entry.get("1.0", "end-1c").replace('\t',' ')
-        # Esta função serve para aparecer o texto respetivo a um dataset na caixa de texto
-        # Pra fazer isso a forma menos messy é mesmo destruir tudo o que tá na frame e por a informação
-        # respetiva ao novo data-set
+        # This function shows the text for a dataset in the text box
+        # The least messy way to do that is to destroy everything in the frame and put the information
+        # for the new dataset
         self.update_combobox_values()
         select = self.data_list.index(self.data_list_var.get())
         self.selected_dataset = select
@@ -2158,13 +2158,13 @@ class MainWindow(tk.Frame):
         self.subframe_left_2 = tk.Frame(self.frame_left, bg='#E4E4E4')
         self.subframe_left_2.place(in_ = self.frame_left, relwidth = 1, relheight= 0.38, relx=0, rely=0.55)
 
-        # Criação da caixa de texto com a informaçao respetiva
+        # Create the text box with the corresponding information
         self.data_entry = (ScrolledText(self.subframe_left_2))
         self.data_entry.pack(expand = 1, fill = tk.X)
         self.data_entry.insert(tk.INSERT,self.dataset_text[select])
 
-        # Mesma coisa de apagar e por novos para os menus, para aparecerem os certos no sitio que diz respeito
-        # ao dataset selecionado
+        # Same delete-and-recreate for the menus, so the right ones appear in the place corresponding
+        # to the selected dataset
         self.marker_sizescale.destroy()
         self.line_width_scale.destroy()
         self.error_size_scale.destroy()
@@ -2258,7 +2258,7 @@ class MainWindow(tk.Frame):
         self.func_fit_style_combo.place(in_ = self.subframe_right_3, relwidth = 0.15, relx = 0.63, rely=0.80, relheight=0.05)
         self.func_fit_style_combo.bind("<<ComboboxSelected>>", self.func_fit_selector)
 
-        # Saber qual o dataset selecionado so pra enfiar as cores e tal do correto
+        # Figure out which dataset is selected just to apply the correct colors and so on
         self.line_width_scale = tk.Scale(self.subframe_right_3, from_ = 1, to= 5, resolution = 0.5,orient = tk.HORIZONTAL, troughcolor = '#F21112', bg = '#E4E4E4', highlightthickness=0, command = self.line_slider, showvalue = False, variable = self.line_width[self.selected_dataset])
         self.line_width_scale.place(in_ = self.subframe_right_3, relwidth = 0.17, relx = 0.34, rely=0.56, relheight=0.06)
         self.line_width_scale['width'] = 0.025*self.master.winfo_width()
@@ -2338,7 +2338,7 @@ class MainWindow(tk.Frame):
             tk.messagebox.showwarning('ERROR', parsed_input[1])
             self.clean_functions[self.selected_dataset] = ''
 
-    # Função para plottar a funçao com parametros numericos dados pelo utilizador
+    # Function to plot the function with numeric parameters given by the user
     def plot_fitted_function(self, dataset):
         self.x_fitted_func[dataset]=[0]*10000
         self.y_fitted_func[dataset]=[0]*10000
@@ -2399,7 +2399,7 @@ class MainWindow(tk.Frame):
         # we don't want to remove autoscale while in here
         self.remove_autoscale = False
 
-        # Testar se os limites estão bem definidos. Se não estiverem podemos saltar isto tudo
+        # Test whether the limits are well defined. If not, we can skip all of this
         info_x = [(self.x_axis_max_entry, 'Max value of x'), (self.x_axis_min_entry, 'Min value of x'), (self.x_axis_tick_space_entry, 'X axis tick spacing')]
         info_y = [(self.y_axis_max_entry, 'Max value of y'), (self.y_axis_min_entry, 'Min value of y'), (self.y_axis_tick_space_entry, 'Y axis tick spacing')]
 
@@ -2413,15 +2413,15 @@ class MainWindow(tk.Frame):
                     else:
                         tk.messagebox.showwarning('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
                     return False
-            # Ver ainda se não temos os max menores que os min
+            # Also check that the max values are not smaller than the min
             if float(self.x_axis_max_entry.get().replace(',','.').replace(' ','')) <= float(self.x_axis_min_entry.get().replace(',','.').replace(' ','')):
                 tk.messagebox.showwarning('ERROR', 'Upper limit for X axis is not greater that lower limit.')
                 return False
-            # E se os espaçamentos dos ticks são positivos
+            # And that the tick spacings are positive
             if float(self.x_axis_tick_space_entry.get().replace(',','.').replace(' ','')) <= 0:
                 tk.messagebox.showwarning('ERROR', 'Tick spacing must be a positive non-zero number.')
                 return False
-            # E se não estamos com demasiados ticks
+            # And that we do not have too many ticks
             x_max  = float(self.x_axis_max_entry.get().replace(',','.').replace(' ',''))
             x_min  = float(self.x_axis_min_entry.get().replace(',','.').replace(' ',''))
             amp = x_max - x_min
@@ -2440,11 +2440,11 @@ class MainWindow(tk.Frame):
                     else:
                         tk.messagebox.showwarning('ERROR', var[1]+' contains non-numerical input. Only numerical input allowed.')
                     return False
-            # Ver ainda se não temos os max menores que os min
+            # Also check that the max values are not smaller than the min
             if float(self.y_axis_max_entry.get().replace(',','.').replace(' ','')) <= float(self.y_axis_min_entry.get().replace(',','.').replace(' ','')):
                 tk.messagebox.showwarning('ERROR', 'Upper limit for Y axis is not greater that lower limit.')
                 return False
-            # E se os espaçamentos dos ticks são positivos
+            # And that the tick spacings are positive
             if float(self.y_axis_tick_space_entry.get().replace(',','.').replace(' ','')) <= 0:
                 tk.messagebox.showwarning('ERROR', 'Tick spacing must be a positive non-zero number.')
                 return False
@@ -2456,7 +2456,7 @@ class MainWindow(tk.Frame):
                 tk.messagebox.showwarning('ERROR','Having {} ticks will make your plot unreabable. Adjust Y tick spacing.'.format(n_ticks))
                 return False
 
-        # Testar se os dados estão bem. Se não estiverem podemos saltar isto tudo
+        # Test whether the data is fine. If not, we can skip all of this
         self.update_combobox_values()
         select = self.data_list.index(self.data_list_var.get())
         self.dataset_text[select]= self.data_entry.get("1.0", "end-1c").replace('\t',' ')
@@ -2464,7 +2464,7 @@ class MainWindow(tk.Frame):
         if not self.check_databox():
             return False
 
-        # pôr os dados em plot=true
+        # set the data to plot=true
         self.datasets_to_plot_var[select].set(1)
 
         if(self.count_plots == 0):
@@ -2724,10 +2724,10 @@ class MainWindow(tk.Frame):
                             self.r2_entry.delete(0, tk.END)
                             self.r2_entry.insert(0, "{0:.6f}".format(self.fit_r2[self.selected_dataset]))
                             self.r2_entry.config(state = 'readonly')
-        # Se calhar por também uma condição para ver se o utilizador quer grid
+        # Maybe also add a condition to check whether the user wants a grid
         self.a.grid(True)
 
-        # Escrever os textos no gráfico
+        # Write the texts on the plot
         for i in range(len(self.plot_text)):
             self.a.text(self.text_pos[i][0],self.text_pos[i][1],self.plot_text[i],fontsize=self.text_size[i])
 
@@ -2739,7 +2739,7 @@ class MainWindow(tk.Frame):
         self.canvas.get_tk_widget().pack()
         self.canvas.draw()
 
-        # we don't want_ to remove autoscale while in here
+        # we don't want to remove autoscale while in here
         self.remove_autoscale = True
 
     def update_parameter(self):
@@ -2748,7 +2748,7 @@ class MainWindow(tk.Frame):
             self.canvas.get_tk_widget().pack_forget()
             del self.canvas
             del self.fig
-        #Mesmo raciocinio de destruir a caixa onde se poem os parametros e inicial guesses para por as novas
+        # Same reasoning: destroy the box holding the parameters and initial guesses to put the new ones
         self.params[self.selected_dataset] = self.parameter_entry.get()
         self.indeps[self.selected_dataset] = self.independent_entry.get()
 
@@ -3000,17 +3000,17 @@ class MainWindow(tk.Frame):
         Parameters
         ----------
         data : array of array
-            Pontos, no formato [[x1,ex1,y1,ey1],[x2,ex2,y2,ey2],...]
+            Points, in the format [[x1,ex1,y1,ey1],[x2,ex2,y2,ey2],...]
 
         init_params: array
-            Estimativas iniciais para os valores dos parâmetros
+            Initial estimates for the parameter values
 
         Returns
         -------
-        fit.beta: parametros de ajustamento
-        fit.sd_beta: incertezas dos parametros
-        fit.res_var: chi quadrado reduzido
-        r2: R^2 para o fit
+        fit.beta: fitted parameters
+        fit.sd_beta: parameter uncertainties
+        fit.res_var: reduced chi-squared
+        r2: R^2 of the fit
         """
         for i in range(len(self.clean_functions)):
             if self.clean_functions[i] == '':
@@ -3022,7 +3022,7 @@ class MainWindow(tk.Frame):
         x_err    = []
         y_err    = []
 
-        # vamos começar por testar se todos os pontos têm as mesmas dimensões, e se não há pontos repetidos
+        # start by testing that all points have the same dimensions and that there are no repeated points
         dims = len(data[0])
         for point in data:
             if len(point)!=dims:
@@ -3138,7 +3138,7 @@ class MainWindow(tk.Frame):
                                 activeforeground='#F21112')
         login_button["command"] = self.login
         login_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         login_button.bind("<Enter>", func=lambda e: login_button.config(bg='white',fg='#F21112'))
         login_button.bind("<Leave>", func=lambda e: login_button.config(bg='#F21112',fg='white'))
         login_button.place(rely=0.7,relx=0.45)
@@ -3366,7 +3366,7 @@ class MainWindow(tk.Frame):
                 add_buttons[i]['command'] = lambda pos=i: self.add_project_to_group(me_projects[pos]['_id'], self.new_groups_var[pos])
                 remove_buttons[i]['command'] = lambda pos=i: self.remove_project_from_group(me_projects[pos]['_id'], self.current_groups_var[pos])
                 delete_buttons[i]['command'] = lambda pos=i: self.delete_project(me_projects[pos]['_id'], me_projects[pos]['name'])
-                # Alterar as cores quando entra e sai
+                # Change the colors on enter and leave
                 open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
                 open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
                 open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
@@ -3387,7 +3387,7 @@ class MainWindow(tk.Frame):
                 delete_buttons[i].grid(row=2*i,rowspan=2,column=6,pady=10)
             else:
                 open_buttons[i]['command'] = lambda pos=i: self.open_from_database(me_projects[pos]['_id'])
-                # Alterar as cores quando entra e sai
+                # Change the colors on enter and leave
                 open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
                 open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
                 open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
@@ -3506,7 +3506,7 @@ class MainWindow(tk.Frame):
             label_groups.grid(row=i+1,column=1,pady=5)
 
             action_buttons[i]["command"] = lambda pos=i: self.disconnect_user(self.user['connections'][pos])
-            # Alterar as cores quando entra e sai
+            # Change the colors on enter and leave
             action_buttons[i].bind("<Enter>", hover(action_buttons[i]))
             action_buttons[i].bind("<Leave>", unhover(action_buttons[i]))
             action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
@@ -3520,7 +3520,7 @@ class MainWindow(tk.Frame):
                                 activeforeground='#F21112')
         new_connection_button["command"] = self.add_connection
         new_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         new_connection_button.bind("<Enter>", func=lambda e: new_connection_button.config(bg='white',fg='#F21112'))
         new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
         new_connection_button.grid(row=2,column=2)
@@ -3584,7 +3584,7 @@ class MainWindow(tk.Frame):
                                 activeforeground='#F21112')
         save_connection_button["command"] = self.finish_connection
         save_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         save_connection_button.bind("<Enter>", func=lambda e: save_connection_button.config(bg='white',fg='#F21112'))
         save_connection_button.bind("<Leave>", func=lambda e: save_connection_button.config(bg='#F21112',fg='white'))
         save_connection_button.place(relx=0.4,rely=0.8)
@@ -3699,7 +3699,7 @@ class MainWindow(tk.Frame):
                 action_buttons[i]['command'] = lambda pos=i: self.leave_group(match_groups[pos]['_id'])
             if action_buttons[i]['text'] == 'GROUP SETTINGS':
                 action_buttons[i]['command'] = lambda pos=i: self.group_settings(match_groups[pos]['_id'], match_groups[pos]['name'])
-            # Alterar as cores quando entra e sai
+            # Change the colors on enter and leave
             action_buttons[i].bind("<Enter>", hover(action_buttons[i]))
             action_buttons[i].bind("<Leave>", unhover(action_buttons[i]))
             action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
@@ -3740,7 +3740,7 @@ class MainWindow(tk.Frame):
                                 activeforeground='#F21112')
         new_connection_button["command"] = self.add_connection
         new_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         new_connection_button.bind("<Enter>", func=lambda e: new_connection_button.config(bg='white',fg='#F21112'))
         new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
         new_connection_button.grid(row=2,column=2,columnspan=2)
@@ -3868,7 +3868,7 @@ class MainWindow(tk.Frame):
                                       activeforeground='#F21112')
         new_member_button["command"] = lambda: self.add_member(group_id, group_name)
         new_member_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         new_member_button.bind("<Enter>", func=lambda e: new_member_button.config(bg='white',fg='#F21112'))
         new_member_button.bind("<Leave>", func=lambda e: new_member_button.config(bg='#F21112',fg='white'))
         new_member_button.grid(row=3,column=2)
@@ -3881,7 +3881,7 @@ class MainWindow(tk.Frame):
                                         activeforeground='#F21112')
         delete_group_button['command'] = lambda: self.delete_group(group_id, group_name)
         delete_group_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         delete_group_button.bind("<Enter>", func=lambda e: delete_group_button.config(bg='white',fg='#F21112'))
         delete_group_button.bind("<Leave>", func=lambda e: delete_group_button.config(bg='#F21112',fg='white'))
         delete_group_button.grid(row=3,column=3)
@@ -3997,7 +3997,7 @@ class MainWindow(tk.Frame):
                                           activeforeground='#F21112')
         create_account_button["command"] = self.save_account
         create_account_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         create_account_button.bind("<Enter>", func=lambda e: create_account_button.config(bg='white',fg='#F21112'))
         create_account_button.bind("<Leave>", func=lambda e: create_account_button.config(bg='#F21112',fg='white'))
         create_account_button.place(rely=0.7,relx=0.36)
@@ -4203,7 +4203,7 @@ class MainWindow(tk.Frame):
                                           activeforeground='#F21112')
         create_account_button["command"] = self.save_account
         create_account_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        # Alterar as cores quando entra e sai
+        # Change the colors on enter and leave
         create_account_button.bind("<Enter>", func=lambda e: create_account_button.config(bg='white',fg='#F21112'))
         create_account_button.bind("<Leave>", func=lambda e: create_account_button.config(bg='#F21112',fg='white'))
         create_account_button.place(rely=0.85,relx=0.40)

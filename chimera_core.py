@@ -16,21 +16,20 @@ def take_first(elem: str) -> float:
 
 def latexify_data(data: list[str], mode: int) -> str:
     """
-    Função para, recebendo um batch de datasets, gerar o texto LaTeX para uma
-    tabela.
+    Given a batch of datasets, generate the LaTeX text for a table.
 
     Parameters
     ----------
     data : array
-        Conjunto dos datasets para gerar a tabela latex.
+        The set of datasets to generate the LaTeX table from.
     mode : int
-        0: Usar a mesma coluna de x para todos os sets.
-        1: Usar uma coluna nova de x para cada um dos sets.
+        0: Use the same x column for all sets.
+        1: Use a new x column for each of the sets.
 
     Returns
     -------
-    None.
-
+    str
+        The LaTeX source for the table.
     """
     datasets = [[[i for i in point.split(' ')] for point in dataset.split('\n')] for dataset in data]
 
@@ -106,7 +105,7 @@ def latexify_data(data: list[str], mode: int) -> str:
 
 def math_2_latex(expr: str, params: str, indep: str) -> str:
 
-    # agrupar todas as variáveis relevantes (assume-se input já validado)
+    # gather all relevant variables (input is assumed already validated)
     variables = cast('list[str]', process_params(params, indep)[1])
     variables.append(indep)
 
@@ -155,36 +154,36 @@ def math_2_latex(expr: str, params: str, indep: str) -> str:
                     'Omega'
                     ]
 
-    # substituir todas as letras gregas nos parametros
+    # replace all Greek letters in the parameters
     for var in variables:
-        # se a variavel tiver um numero, só nos interessa a parte sem numero
+        # if the variable has a number, we only care about the non-numeric part
         if ''.join([i for i in var if not i.isdigit()]) in greek_letters:
             latex = latex.replace(var,'\\'+var)
 
-    # baixar todos os indices
+    # subscript all indices
     for var in variables:
         pos=0
-        # temos de verificar até onde é que há números para baixar
+        # check how far the trailing digits go, in order to subscript them
         while pos<len(var):
             try:
                 int(var[len(var)-pos-1])
             except ValueError:
                 break
             pos+=1
-        # se houver algum número, então fazemos replace
+        # if there is any number, perform the replacement
         if pos != 0:
             latex = latex.replace(var, var[:(len(var)-pos)]+'_{'+var[(len(var)-pos):]+'}')
 
-    # tratar das potências
+    # handle powers
     latex = latex.replace('**','^')
     i=0
     while i<len(latex):
         if latex[i]=='^':
             if latex[i+1]!='(':
                 latex = latex[:i+1]+'{'+latex[i+1:]
-                # o expoente começa depois do '{' recém-inserido (índice i+2);
-                # avança-se até ao fim do expoente (operação ou ')') e fecha-se
-                # a chaveta imediatamente antes desse ponto
+                # the exponent starts after the just-inserted '{' (index i+2);
+                # advance to the end of the exponent (an operator or ')') and close
+                # the brace immediately before that point
                 j = i+2
                 while j < len(latex) and latex[j] not in operations and latex[j] != ')':
                     j += 1
@@ -202,13 +201,13 @@ def math_2_latex(expr: str, params: str, indep: str) -> str:
                 latex = latex[:j]+'}'+latex[j+1:]
         i+=1
 
-    # tratar das frações
+    # handle fractions
     i=0
     while i<len(latex):
         correction_after = 0
         correction_pre = 0
         if latex[i]=='/':
-            # procurar para trás
+            # search backwards
             if latex[i-1]!=')':
                 for k in range(i-1,-1,-1):
                     if latex[k] in operations:
@@ -227,7 +226,7 @@ def math_2_latex(expr: str, params: str, indep: str) -> str:
                 latex = latex[:k+1]+latex[k+2:]
                 i-=2
 
-            # procurar para a frente
+            # search forwards
             if latex[i+1]!='(':
                 for j in range(i+1,len(latex)):
                     if latex[j] in operations or latex[j]==')':
@@ -250,7 +249,7 @@ def math_2_latex(expr: str, params: str, indep: str) -> str:
             latex = latex[:k+1-correction_pre]+'\\frac{'+latex[k+1-correction_pre:i]+'}{'+latex[i+1:j+correction_after]+'}'+latex[j+correction_after:]
         i+=1
 
-    # Por fim tratar das funções
+    # Finally, handle the functions
     i = 0
     functions = []
     while i < len(latex):
@@ -266,10 +265,10 @@ def math_2_latex(expr: str, params: str, indep: str) -> str:
     for function in functions:
         latex = latex.replace(function,'\\text{'+function+'}')
 
-    # remover os * porque ninguém usa isso em LaTeX
+    # remove the * since no one writes it in LaTeX
     latex = latex.replace('*','')
 
-    # e pôr os parentesis com os tamanhos corretos
+    # and size the parentheses correctly
     latex = latex.replace('(','\\left(')
     latex = latex.replace(')','\\right)')
 
@@ -296,77 +295,77 @@ def process_params(params: str, indep: str) -> tuple[bool, list[str] | str]:
     if (len([p for p in indep.split(' ') if p]) > 1):
         return (False, 'Multiple independent variables found. Only one is allowed.')
 
-    # Fazer limpeza dos params
-    # Assumindo que estão separados por virgulas ou espaços
-    # Os parâmetros limpos serão guardados neste array
+    # Clean up the params
+    # Assuming they are separated by commas or spaces
+    # The cleaned parameters will be stored in this array
     clean_split = []
-    # Divide-se ao longo dos espaços todos
+    # Split along all the spaces
     first_split = params.split(' ')
     for val in first_split:
-        # Divide-se cada um dos resultados da divisão anterior, agora ao longo das vírgulas
+        # Split each result of the previous division, now along the commas
         for param in val.split(','):
-            # Se param != ''
+            # If param != ''
             if param:
                 clean_split.append(param)
 
-    # Ver se foi dado algum parâmetro
+    # Check whether any parameter was given
     if clean_split == []:
         return (False, 'No parameters were found.')
-    # Ver se foi dada a variável independente
-    # Mas primeiro apagar eventuais espaços na variável
+    # Check whether the independent variable was given
+    # But first remove any spaces in the variable
     indep=indep.replace(' ','')
     if indep == '':
         return (False, 'No independent variable was found.')
-    # Ver se algum dos parâmetros tem carateres proibidos
+    # Check whether any parameter has forbidden characters
     for val in clean_split:
         for char in val:
             if char not in allowed:
                 return (False, 'Parameter \''+str(val)+'\' contains the character \''+str(char)+'\'. Only letters or numbers allowed.')
-    # Ver se a variavel indep tem caraters proibidos
+    # Check whether the independent variable has forbidden characters
     for char in indep:
         if char not in allowed:
             return (False, 'Independent variable \''+str(indep)+'\' contains the character \''+str(char)+'\'. Only letters or numbers allowed.')
 
-    # Verificar se nenhum dos nomes das variáveis são funções
+    # Check that none of the variable names are functions
     for val in clean_split:
         if val in functions:
             return (False, 'Name \''+str(val)+'\' is already binded to a function. Provide a different name.')
-    # Verificar se a variável independente não é uma função
+    # Check that the independent variable is not a function
     if indep in functions:
         return (False, 'Name \''+str(indep)+'\' is already associated to a function. Provide a different name.')
 
-    # Verificar se nenhum dos nomes das variáveis está reservado
+    # Check that none of the variable names are reserved
     for val in clean_split:
         if val in forbidden:
             return (False, 'Name \''+str(val)+'\' is a reserved keyword. Provide a different name.')
-    # Verificar se a variável independente não é uma palavra reservada
+    # Check that the independent variable is not a reserved word
     if indep in forbidden:
         return (False, 'Name \''+str(indep)+'\' is a reserved keyword. Provide a different name.')
 
-    # Ver se nenhum dos parâmetros é repetido
+    # Check that no parameter is repeated
     for val in clean_split:
         if clean_split.count(val) > 1:
             return (False, 'Parameter \''+str(val)+'\' was provided more than once. Give different names to each parameter.')
 
-    # Verificar se a variável independente não está nos parâmetros
+    # Check that the independent variable is not among the parameters
     if indep in clean_split:
         return (False, 'Name \''+str(indep)+'\' was given to the independent variable and to a parameter. Change one of them.')
 
-    # Verificar se nenhum dos parâmetros são números
+    # Check that none of the parameters are numbers
     for val in clean_split:
         try:
             float(val)
         except ValueError:
             pass
-        # Se não der nenhum erro é por é um número e não queremos isso
+        # If it does not raise an error it is a number, which we do not want
         else:
             return (False, 'Parameter \''+str(val)+'\' given is a number. Use a different name.')
-    # E verificar se a variável independente também não é
+    # And check that the independent variable is not one either
     try:
         float(indep)
     except ValueError:
         pass
-    # Igual a acima
+    # Same as above
     else:
         return (False, 'Independent variable \''+str(indep)+'\' given is a number. Use a different name.')
 
@@ -374,8 +373,8 @@ def process_params(params: str, indep: str) -> tuple[bool, list[str] | str]:
 
 def parser(expr: str, params: str, indep: str) -> tuple[bool, str]:
     np.seterr(divide='warn', invalid='warn', under='warn', over='warn')
-    # Funções do numpy a utilizar
-    # Ainda falta acrescentar as funções de estatística
+    # numpy functions to use
+    # Statistics functions still need to be added
     functions = ['sin',
                  'cos',
                  'tan',
@@ -393,7 +392,7 @@ def parser(expr: str, params: str, indep: str) -> tuple[bool, str]:
     forbidden = ['PI', 'E']
 
 
-    # Ver se a função não está vazia
+    # Check that the function is not empty
     expr=expr.replace(' ','')
     if expr == '':
         return (False, 'No fitting function was found.')
@@ -405,47 +404,47 @@ def parser(expr: str, params: str, indep: str) -> tuple[bool, str]:
     else:
         return (False, cast('str', process[1]))
 
-    # Ver se a função contém a variável independente
+    # Check that the function contains the independent variable
     if indep not in expr:
         return (False, "Independent variable is not present in fit function.")
 
-    # Substituir as funções pelo equivalente numpy
-    # Primeira substituição temporária para não haver erros de conversão
+    # Replace the functions with their numpy equivalent
+    # First a temporary substitution to avoid conversion errors
     for func_idx, func_name in enumerate(functions):
         expr = ('['+str(len(clean_split)+func_idx)+']').join(expr.split(func_name))
-    # Substituir as palavras reservadas
+    # Replace the reserved words
     for keyword in forbidden:
         if keyword == 'PI':
             expr = '[3.14]'.join(expr.split(keyword))
         if keyword == 'E':
             expr = '[2.72]'.join(expr.split(keyword))
 
-    # Substituir os nomes dos parâmetros por marcadores temporários únicos.
-    # Usa-se um marcador com '\x00' (impossível no input, que só permite letras
-    # e dígitos) para que um parâmetro chamado 'B' não colida com a notação
-    # 'B[i]' e para não voltar a substituir tokens já inseridos. Substituem-se
-    # primeiro os nomes mais compridos, evitando colisões entre nomes que são
-    # prefixo de outros (p.ex. 'a' e 'ab').
+    # Replace the parameter names with unique temporary markers.
+    # A NUL-byte marker is used (impossible in the input, which only allows
+    # letters and digits) so a parameter named 'B' does not collide with the
+    # 'B[i]' notation and so already-inserted tokens are not re-substituted.
+    # The longest names are substituted first, avoiding collisions between
+    # names that are prefixes of others (e.g. 'a' and 'ab').
     for pos in sorted(range(len(clean_split)), key=lambda k: len(clean_split[k]), reverse=True):
         expr = ('\x00'+str(pos)+'\x00').join(expr.split(clean_split[pos]))
 
-    # Substituir a variável independente
+    # Replace the independent variable
     expr = '_x'.join(expr.split(indep))
 
-    # Voltar a substituir os elementos pelas funções
+    # Substitute the markers back with the functions
     for func_idx, func_name in enumerate(functions):
         expr = ('np.'+func_name).join(expr.split('['+str(func_idx+len(clean_split))+']'))
 
-    # Pôr os números associados às palavras reservadas
+    # Put back the numbers associated with the reserved words
     expr = 'np.pi'.join(expr.split('[3.14]'))
     expr = 'np.e'.join(expr.split('[2.72]'))
 
-    # Converter os marcadores dos parâmetros na notação final 'B[i]'
+    # Convert the parameter markers into the final 'B[i]' notation
     for pos in range(len(clean_split)):
         expr = ('B['+str(pos)+']').join(expr.split('\x00'+str(pos)+'\x00'))
 
-    # Vamos finalmente testar se a função funciona
-    # Valores de teste só porque sim
+    # Finally, test whether the function works
+    # Arbitrary test values
     B = [np.pi/2]*len(clean_split)  # noqa: F841  # referenced inside eval(expr)
     _x=-1
 
@@ -485,27 +484,27 @@ def rederive_clean_functions(
 
 def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "list | int":
     """
-    Função para ler os dados de ficheiros de texto ou excel
+    Read the data from text or Excel files.
 
     Parameters
     ----------
     src : string
-        Caminho para o ficheiro.
+        Path to the file.
     out : type
-        str/float - devolver os elementos todos neste formato.
+        str/float - return all elements in this format.
     mode : bool
-        true: enviar os dados para a variavel dos dados
+        true: join each dataset's points into a single text block.
 
     Returns
     -------
     data : array of array of array
-        Dados lidos do ficheiro.
+        The data read from the file.
     """
     formats = [['xls', 'xlsx', 'xlsm', 'xlsb', 'odf', 'ods', 'odt'],
                ['csv', 'txt', 'dat']
               ]
     form = -1
-    # Determinar que tipo de ficheiro estamos a utilizar
+    # Determine which type of file we are dealing with
     if isinstance(src, StringIO):
         form = 1
     else:
@@ -513,22 +512,22 @@ def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "l
             for ext in exts:
                 if src.split('.')[-1] == ext:
                     form = form_idx
-    # Se não for nenhum dos considerados, devolver -1 para marcar o erro
+    # If it is none of the considered types, return -1 to signal the error
     if form == -1:
         return -1
-    # Se for da classe ficheiro de texto
+    # If it is a text file
     if form:
         data = pd.read_csv(src, sep=r"\s+|;|:|None|,", engine='python', dtype="object", header=None)
-    # Se for da classe Excel
+    # If it is an Excel file
     else:
         data = pd.read_excel(src, dtype="object",header=None)
 
 
-    # Fazer a divisão nos datasets fornecidos
-    # Se não houver incerteza no x, então o número de colunas é ímpar
+    # Split into the provided datasets
+    # If there is no x uncertainty, the number of columns is odd
     full_sets: list = []
 
-    #Datatype 0 funciona dentro do programa, os outros dois so sao chamados caso venha de excel
+    # Datatype 0 is used within the program; the other two are only called when coming from Excel
     if(datatype == 0):
         if (data.shape[1]%2)!=0:
             for i in range(1,int((data.shape[1]+1)/2)):
@@ -537,14 +536,14 @@ def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "l
                     x = data[0].to_numpy(out)[j]
                     y = data[2*i-1].to_numpy(out)[j]
                     ey = data[2*i].to_numpy(out)[j]
-                    # Procurar incoerências nas linhas
+                    # Look for inconsistencies in the rows
                     if (
                             (out==float and np.isnan(y)!=np.isnan(ey)) or
                             (out==str and y=='nan' and ey!='nan') or
                             (out==str and y!='nan'and ey=='nan')
                         ):
                         return -2
-                    # Se a linha estiver vazia não se acrescenta
+                    # If the row is empty, do not add it
                     if (
                             not (out==float and np.isnan(x)) and
                             not (out==str and x=='nan') and
@@ -553,7 +552,7 @@ def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "l
                         ):
                         points.append([x, y, ey])
                 full_sets.append(points)
-        # Se houver incerteza no x o tratamento é ligeiramente diferente
+        # If there is x uncertainty the handling is slightly different
         else:
             for i in range(1,int((data.shape[1])/2)):
                 points = []
@@ -562,7 +561,7 @@ def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "l
                     ex = data[1].to_numpy(out)[j]
                     y = data[2*i].to_numpy(out)[j]
                     ey = data[2*i+1].to_numpy(out)[j]
-                    # Procurar incoerências nas linhas
+                    # Look for inconsistencies in the rows
                     if (
                             (out==float and np.isnan(x)!=np.isnan(ex)) or
                             (out==float and np.isnan(y)!=np.isnan(ey)) or
@@ -570,7 +569,7 @@ def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "l
                             (out==str and y!='nan'and ey=='nan')
                         ):
                         return -2
-                    # Se a linha estiver vazia não se acrescenta
+                    # If the row is empty, do not add it
                     if (
                             not (out==float and np.isnan(x) and np.isnan(ex)) and
                             not (out==str and x=='nan' and ex=='nan') and
@@ -596,7 +595,7 @@ def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "l
                     points.append([x, y, ey])
             full_sets.append(points)
 
-    # Se houver incerteza no x o tratamento é ligeiramente diferente
+    # If there is x uncertainty the handling is slightly different
     if(datatype == 2):
         for i in range(0,int((data.shape[1])/4)):
             points = []
@@ -605,7 +604,7 @@ def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "l
                 ex = data[4*i+1].to_numpy(out)[j]
                 y = data[4*i+2].to_numpy(out)[j]
                 ey = data[4*i+3].to_numpy(out)[j]
-                # Se a linha estiver vazia não se acrescenta
+                # If the row is empty, do not add it
                 if (
                         not (out==float and np.isnan(x) and np.isnan(ex)) and
                         not (out==str and x=='nan' and ex=='nan') and
