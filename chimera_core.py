@@ -31,7 +31,7 @@ def latexify_data(data: list[str], mode: int) -> str:
     str
         The LaTeX source for the table.
     """
-    datasets = [[[i for i in point.split(' ')] for point in dataset.split('\n')] for dataset in data]
+    datasets = [[point.split(' ') for point in dataset.split('\n')] for dataset in data]
 
     latex_table = r"""% Add the following required packages to your document preamble:
 % \usepackage{graphicx}
@@ -44,8 +44,7 @@ def latexify_data(data: list[str], mode: int) -> str:
 \begin{tabular}{"""
     if mode == 0:
         latex_table +=r'c|'
-        for i in range(len(datasets)):
-            latex_table += 'c'
+        latex_table += 'c' * len(datasets)
         latex_table+='}\n\\hline\n X & '
         for i in range(len(datasets)):
             latex_table += 'Y%d & ' % (i+1)
@@ -75,13 +74,12 @@ def latexify_data(data: list[str], mode: int) -> str:
         data_text.sort(key=take_first)
 
     if mode == 1:
-        for i in range(len(datasets)):
-            latex_table += 'cc|'
+        latex_table += 'cc|' * len(datasets)
         latex_table = latex_table[:-1] + '}\n\\hline\n'
         for i in range(len(datasets)):
             latex_table += 'X%d & Y%d & ' % (i+1,i+1)
         latex_table = latex_table[:-2] + '\\\\ \\hline \n'
-        max_size = max([len(dataset) for dataset in datasets])
+        max_size = max(len(dataset) for dataset in datasets)
         data_text = ['' for i in range(max_size)]
         for i in range(max_size):
             for dataset in datasets:
@@ -309,7 +307,7 @@ def process_params(params: str, indep: str) -> tuple[bool, list[str] | str]:
                 clean_split.append(param)
 
     # Check whether any parameter was given
-    if clean_split == []:
+    if not clean_split:
         return (False, 'No parameters were found.')
     # Check whether the independent variable was given
     # But first remove any spaces in the variable
@@ -320,36 +318,36 @@ def process_params(params: str, indep: str) -> tuple[bool, list[str] | str]:
     for val in clean_split:
         for char in val:
             if char not in allowed:
-                return (False, 'Parameter \''+str(val)+'\' contains the character \''+str(char)+'\'. Only letters or numbers allowed.')
+                return (False, 'Parameter \''+val+'\' contains the character \''+char+'\'. Only letters or numbers allowed.')
     # Check whether the independent variable has forbidden characters
     for char in indep:
         if char not in allowed:
-            return (False, 'Independent variable \''+str(indep)+'\' contains the character \''+str(char)+'\'. Only letters or numbers allowed.')
+            return (False, 'Independent variable \''+indep+'\' contains the character \''+char+'\'. Only letters or numbers allowed.')
 
     # Check that none of the variable names are functions
     for val in clean_split:
         if val in functions:
-            return (False, 'Name \''+str(val)+'\' is already binded to a function. Provide a different name.')
+            return (False, 'Name \''+val+'\' is already binded to a function. Provide a different name.')
     # Check that the independent variable is not a function
     if indep in functions:
-        return (False, 'Name \''+str(indep)+'\' is already associated to a function. Provide a different name.')
+        return (False, 'Name \''+indep+'\' is already associated to a function. Provide a different name.')
 
     # Check that none of the variable names are reserved
     for val in clean_split:
         if val in forbidden:
-            return (False, 'Name \''+str(val)+'\' is a reserved keyword. Provide a different name.')
+            return (False, 'Name \''+val+'\' is a reserved keyword. Provide a different name.')
     # Check that the independent variable is not a reserved word
     if indep in forbidden:
-        return (False, 'Name \''+str(indep)+'\' is a reserved keyword. Provide a different name.')
+        return (False, 'Name \''+indep+'\' is a reserved keyword. Provide a different name.')
 
     # Check that no parameter is repeated
     for val in clean_split:
         if clean_split.count(val) > 1:
-            return (False, 'Parameter \''+str(val)+'\' was provided more than once. Give different names to each parameter.')
+            return (False, 'Parameter \''+val+'\' was provided more than once. Give different names to each parameter.')
 
     # Check that the independent variable is not among the parameters
     if indep in clean_split:
-        return (False, 'Name \''+str(indep)+'\' was given to the independent variable and to a parameter. Change one of them.')
+        return (False, 'Name \''+indep+'\' was given to the independent variable and to a parameter. Change one of them.')
 
     # Check that none of the parameters are numbers
     for val in clean_split:
@@ -359,7 +357,7 @@ def process_params(params: str, indep: str) -> tuple[bool, list[str] | str]:
             pass
         # If it does not raise an error it is a number, which we do not want
         else:
-            return (False, 'Parameter \''+str(val)+'\' given is a number. Use a different name.')
+            return (False, 'Parameter \''+val+'\' given is a number. Use a different name.')
     # And check that the independent variable is not one either
     try:
         float(indep)
@@ -367,7 +365,7 @@ def process_params(params: str, indep: str) -> tuple[bool, list[str] | str]:
         pass
     # Same as above
     else:
-        return (False, 'Independent variable \''+str(indep)+'\' given is a number. Use a different name.')
+        return (False, 'Independent variable \''+indep+'\' given is a number. Use a different name.')
 
     return (True, clean_split)
 

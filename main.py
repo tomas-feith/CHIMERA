@@ -166,8 +166,7 @@ class MainWindow(tk.Frame):
         self.new["command"] = self.create_scatter
         self.new.grid(column = 3, row = 0, padx = (int(self.master.winfo_width()/10),20))
         # Change the colors on enter and leave
-        self.new.bind("<Enter>", func=lambda e: self.new.config(bg='white',fg='#F21112'))
-        self.new.bind("<Leave>", func=lambda e: self.new.config(bg='#F21112',fg='white'))
+        self._add_hover(self.new)
 
         # Create button to import a fit
         self.old = tk.Button(self.bottom,
@@ -181,8 +180,7 @@ class MainWindow(tk.Frame):
         self.old["font"] = ("Roboto",int(0.02*self.master.winfo_width()),"bold")
         self.old["command"] = self.open_project
         self.old.grid(column = 0, row = 0, padx = (20,int(self.master.winfo_width()/10)))
-        self.old.bind("<Enter>", func=lambda e: self.old.config(bg='white',fg='#F21112'))
-        self.old.bind("<Leave>", func=lambda e: self.old.config(bg='#F21112',fg='white'))
+        self._add_hover(self.old)
 
     def focus_window(self, window):
         window.lift()
@@ -425,12 +423,7 @@ class MainWindow(tk.Frame):
                   ]
 
         for button in self.buttons:
-            def hover(button):
-                return lambda e: button.config(bg='white',fg='#F21112')
-            def unhover(button):
-                return lambda e: button.config(bg='#F21112',fg='white')
-            button.bind("<Enter>", hover(button))
-            button.bind("<Leave>", unhover(button))
+            self._add_hover(button)
             button["font"] = ("Roboto",int(0.011*self.master.winfo_width()))
 
         # Create a menu bar
@@ -1001,8 +994,7 @@ class MainWindow(tk.Frame):
         save_button["command"] = self.save_ratio
         save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
-        save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
+        self._add_hover(save_button)
         save_button.pack(side='top',pady=20)
 
     def save_ratio(self):
@@ -1094,8 +1086,7 @@ class MainWindow(tk.Frame):
         save_button["command"] = self.save_ticks
         save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
-        save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
+        self._add_hover(save_button)
         save_button.pack(side='top',pady=20)
 
     def save_ticks(self):
@@ -1172,10 +1163,6 @@ class MainWindow(tk.Frame):
     def text(self):
         self.erase_all_windows()
 
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
 
         self.text_window = tk.Toplevel(self.master)
         self.text_window.title('Add Text')
@@ -1244,8 +1231,7 @@ class MainWindow(tk.Frame):
             self.remove_buttons[i]["command"] = lambda pos=i: self.remove_text(pos)
             self.remove_buttons[i]["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
             # Change the colors on enter and leave
-            self.remove_buttons[i].bind("<Enter>", hover(self.remove_buttons[i]))
-            self.remove_buttons[i].bind("<Leave>", unhover(self.remove_buttons[i]))
+            self._add_hover(self.remove_buttons[i])
 
             label.pack(side='left',padx=5)
             self.text_entries[i].pack(side='left')
@@ -1270,8 +1256,7 @@ class MainWindow(tk.Frame):
         save_button["command"] = self.save_text
         save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
-        save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
+        self._add_hover(save_button)
         save_button.pack(side='left',padx=20)
 
         add_button = tk.Button(frame,
@@ -1282,8 +1267,7 @@ class MainWindow(tk.Frame):
                                activeforeground='#F21112')
         add_button["command"] = self.new_text
         add_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
-        add_button.bind("<Enter>", func=lambda e: add_button.config(bg='white',fg='#F21112'))
-        add_button.bind("<Leave>", func=lambda e: add_button.config(bg='#F21112',fg='white'))
+        self._add_hover(add_button)
         add_button.pack(side='right',padx=20)
 
         frame.pack(side='top')
@@ -1395,8 +1379,7 @@ class MainWindow(tk.Frame):
         save_button["command"] = self.save_labels
         save_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        save_button.bind("<Enter>", func=lambda e: save_button.config(bg='white',fg='#F21112'))
-        save_button.bind("<Leave>", func=lambda e: save_button.config(bg='#F21112',fg='white'))
+        self._add_hover(save_button)
         save_button.pack(side='bottom')
 
     def save_labels(self):
@@ -1414,6 +1397,11 @@ class MainWindow(tk.Frame):
             if file:
                 self.fig.tight_layout()
                 self.fig.savefig(file,dpi=500)
+
+    def _add_hover(self, widget):
+        """Give a red/white button the standard hover colour swap."""
+        widget.bind("<Enter>", lambda e: widget.config(bg='white', fg='#F21112'))
+        widget.bind("<Leave>", lambda e: widget.config(bg='#F21112', fg='white'))
 
     def _serialize_project(self):
         """Collect the current project state into a plain dict for saving.
@@ -1686,8 +1674,7 @@ class MainWindow(tk.Frame):
         self.function_button["command"] = self.export_function
         self.function_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
-        self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
+        self._add_hover(self.function_button)
 
         self.data_same_x_button = tk.Button(self.export_window,
                                            text="COPY",
@@ -1698,8 +1685,7 @@ class MainWindow(tk.Frame):
         self.data_same_x_button["command"] = self.export_data_same_x
         self.data_same_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        self.data_same_x_button.bind("<Enter>", func=lambda e: self.data_same_x_button.config(bg='white',fg='#F21112'))
-        self.data_same_x_button.bind("<Leave>", func=lambda e: self.data_same_x_button.config(bg='#F21112',fg='white'))
+        self._add_hover(self.data_same_x_button)
 
         self.data_diff_x_button = tk.Button(self.export_window,
                                            text="COPY",
@@ -1710,8 +1696,7 @@ class MainWindow(tk.Frame):
         self.data_diff_x_button["command"] = self.export_data_diff_x
         self.data_diff_x_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        self.data_diff_x_button.bind("<Enter>", func=lambda e: self.data_diff_x_button.config(bg='white',fg='#F21112'))
-        self.data_diff_x_button.bind("<Leave>", func=lambda e: self.data_diff_x_button.config(bg='#F21112',fg='white'))
+        self._add_hover(self.data_diff_x_button)
 
         # Set the positions of the various elements on screen
         function.place(relx=.05, rely=.15, anchor='w')
@@ -1737,10 +1722,8 @@ class MainWindow(tk.Frame):
 
             self.function_button.bind("<Enter>", func=lambda e: '')
             self.function_button.bind("<Leave>", func=lambda e: '')
-            self.data_same_x_button.bind("<Enter>", func=lambda e: self.data_same_x_button.config(bg='white',fg='#F21112'))
-            self.data_same_x_button.bind("<Leave>", func=lambda e: self.data_same_x_button.config(bg='#F21112',fg='white'))
-            self.data_diff_x_button.bind("<Enter>", func=lambda e: self.data_diff_x_button.config(bg='white',fg='#F21112'))
-            self.data_diff_x_button.bind("<Leave>", func=lambda e: self.data_diff_x_button.config(bg='#F21112',fg='white'))
+            self._add_hover(self.data_same_x_button)
+            self._add_hover(self.data_diff_x_button)
 
             text = math_2_latex(self.functions[self.selected_dataset],self.params[self.selected_dataset],self.indeps[self.selected_dataset])
             pyperclip.copy(text)
@@ -1754,12 +1737,10 @@ class MainWindow(tk.Frame):
         self.data_same_x_button.configure(text='COPIED!',fg='#F21112',bg='white')
         self.data_diff_x_button.configure(text='COPY',fg='white',bg='#F21112')
 
-        self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
-        self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
+        self._add_hover(self.function_button)
         self.data_same_x_button.bind("<Enter>", func=lambda e: '')
         self.data_same_x_button.bind("<Leave>", func=lambda e: '')
-        self.data_diff_x_button.bind("<Enter>", func=lambda e: self.data_diff_x_button.config(bg='white',fg='#F21112'))
-        self.data_diff_x_button.bind("<Leave>", func=lambda e: self.data_diff_x_button.config(bg='#F21112',fg='white'))
+        self._add_hover(self.data_diff_x_button)
         text = latexify_data(self.dataset_text,0)
         pyperclip.copy(text)
 
@@ -1769,10 +1750,8 @@ class MainWindow(tk.Frame):
         self.data_same_x_button.configure(text='COPY',fg='white',bg='#F21112')
         self.data_diff_x_button.configure(text='COPIED!',fg='#F21112',bg='white')
 
-        self.function_button.bind("<Enter>", func=lambda e: self.function_button.config(bg='white',fg='#F21112'))
-        self.function_button.bind("<Leave>", func=lambda e: self.function_button.config(bg='#F21112',fg='white'))
-        self.data_same_x_button.bind("<Enter>", func=lambda e: self.data_same_x_button.config(bg='white',fg='#F21112'))
-        self.data_same_x_button.bind("<Leave>", func=lambda e: self.data_same_x_button.config(bg='#F21112',fg='white'))
+        self._add_hover(self.function_button)
+        self._add_hover(self.data_same_x_button)
         self.data_diff_x_button.bind("<Enter>", func=lambda e: '')
         self.data_diff_x_button.bind("<Leave>", func=lambda e: '')
         text = latexify_data(self.dataset_text,0)
@@ -1878,8 +1857,7 @@ class MainWindow(tk.Frame):
         import_button.place(in_ = self.import_window, relwidth =0.5, relheight = 0.15, relx=0.25, rely=0.8)
         import_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        import_button.bind("<Enter>", func=lambda e: import_button.config(bg='white',fg='#F21112'))
-        import_button.bind("<Leave>", func=lambda e: import_button.config(bg='#F21112',fg='white'))
+        self._add_hover(import_button)
 
     def same_xfunction(self):
         self.dif_x.set(0)
@@ -2866,8 +2844,7 @@ class MainWindow(tk.Frame):
                                    activeforeground='#F21112')
                 output['command'] = self.show_output
                 output['font'] = ('Roboto',int(20*self.master.winfo_width()/2350))
-                output.bind("<Enter>", func=lambda e: output.config(bg='white',fg='#F21112'))
-                output.bind("<Leave>", func=lambda e: output.config(bg='#F21112',fg='white'))
+                self._add_hover(output)
                 output.grid(row = x+1, column = 5)
 
                 self.windows_item = self.param_canvas.create_window((0,0), window=self.another_frame, anchor="nw")
@@ -2960,8 +2937,7 @@ class MainWindow(tk.Frame):
                                    activeforeground='#F21112')
                 output['command'] = self.show_output
                 output['font'] = ('Roboto',int(20*self.master.winfo_width()/2350))
-                output.bind("<Enter>", func=lambda e: output.config(bg='white',fg='#F21112'))
-                output.bind("<Leave>", func=lambda e: output.config(bg='#F21112',fg='white'))
+                self._add_hover(output)
                 output.grid(row = x+1, column = 5)
 
             self.count = 2
@@ -3139,8 +3115,7 @@ class MainWindow(tk.Frame):
         login_button["command"] = self.login
         login_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        login_button.bind("<Enter>", func=lambda e: login_button.config(bg='white',fg='#F21112'))
-        login_button.bind("<Leave>", func=lambda e: login_button.config(bg='#F21112',fg='white'))
+        self._add_hover(login_button)
         login_button.place(rely=0.7,relx=0.45)
 
         new_account_button = tk.Button(self.login_window,
@@ -3261,10 +3236,6 @@ class MainWindow(tk.Frame):
                                     }):
                     me_projects.append(project)
 
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
 
         self.projects_window = tk.Toplevel(self.master)
         self.projects_window.title('Manage CHIMERA Projects')
@@ -3367,29 +3338,24 @@ class MainWindow(tk.Frame):
                 remove_buttons[i]['command'] = lambda pos=i: self.remove_project_from_group(me_projects[pos]['_id'], self.current_groups_var[pos])
                 delete_buttons[i]['command'] = lambda pos=i: self.delete_project(me_projects[pos]['_id'], me_projects[pos]['name'])
                 # Change the colors on enter and leave
-                open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
-                open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
+                self._add_hover(open_buttons[i])
                 open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
                 open_buttons[i].grid(row=2*i,column=3,rowspan=2,pady=10)
-                add_buttons[i].bind("<Enter>", hover(add_buttons[i]))
-                add_buttons[i].bind("<Leave>", unhover(add_buttons[i]))
+                self._add_hover(add_buttons[i])
                 add_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
                 add_buttons[i].grid(row=2*i + 1,column=4,pady=(0,10))
                 self.new_group_selector[i].grid(row=2*i,column=4,pady=(10,0))
-                remove_buttons[i].bind("<Enter>", hover(remove_buttons[i]))
-                remove_buttons[i].bind("<Leave>", unhover(remove_buttons[i]))
+                self._add_hover(remove_buttons[i])
                 remove_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
                 remove_buttons[i].grid(row=2*i + 1,column=5,pady=(0,10))
                 self.current_group_selector[i].grid(row=2*i,column=5,pady=(10,0))
-                delete_buttons[i].bind("<Enter>", hover(delete_buttons[i]))
-                delete_buttons[i].bind("<Leave>", unhover(delete_buttons[i]))
+                self._add_hover(delete_buttons[i])
                 delete_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
                 delete_buttons[i].grid(row=2*i,rowspan=2,column=6,pady=10)
             else:
                 open_buttons[i]['command'] = lambda pos=i: self.open_from_database(me_projects[pos]['_id'])
                 # Change the colors on enter and leave
-                open_buttons[i].bind('<Enter>',hover(open_buttons[i]))
-                open_buttons[i].bind('<Leave>',unhover(open_buttons[i]))
+                self._add_hover(open_buttons[i])
                 open_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
                 open_buttons[i].grid(row=2*i,column=3,rowspan=2,columnspan=4,pady=10)
 
@@ -3438,10 +3404,6 @@ class MainWindow(tk.Frame):
     def view_connections(self):
         self.erase_all_windows()
 
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
 
         self.connections_window = tk.Toplevel(self.master)
         self.connections_window.title('Manage CHIMERA Connections')
@@ -3507,8 +3469,7 @@ class MainWindow(tk.Frame):
 
             action_buttons[i]["command"] = lambda pos=i: self.disconnect_user(self.user['connections'][pos])
             # Change the colors on enter and leave
-            action_buttons[i].bind("<Enter>", hover(action_buttons[i]))
-            action_buttons[i].bind("<Leave>", unhover(action_buttons[i]))
+            self._add_hover(action_buttons[i])
             action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             action_buttons[i].grid(row=i+1,column=2,pady=5)
 
@@ -3521,8 +3482,7 @@ class MainWindow(tk.Frame):
         new_connection_button["command"] = self.add_connection
         new_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        new_connection_button.bind("<Enter>", func=lambda e: new_connection_button.config(bg='white',fg='#F21112'))
-        new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
+        self._add_hover(new_connection_button)
         new_connection_button.grid(row=2,column=2)
 
     def disconnect_user(self,user):
@@ -3585,8 +3545,7 @@ class MainWindow(tk.Frame):
         save_connection_button["command"] = self.finish_connection
         save_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        save_connection_button.bind("<Enter>", func=lambda e: save_connection_button.config(bg='white',fg='#F21112'))
-        save_connection_button.bind("<Leave>", func=lambda e: save_connection_button.config(bg='#F21112',fg='white'))
+        self._add_hover(save_connection_button)
         save_connection_button.place(relx=0.4,rely=0.8)
 
     def finish_connection(self):
@@ -3627,10 +3586,6 @@ class MainWindow(tk.Frame):
     def view_groups(self):
         self.erase_all_windows()
 
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
 
         self.groups_window = tk.Toplevel(self.master)
         self.groups_window.title('Manage CHIMERA Groups')
@@ -3700,8 +3655,7 @@ class MainWindow(tk.Frame):
             if action_buttons[i]['text'] == 'GROUP SETTINGS':
                 action_buttons[i]['command'] = lambda pos=i: self.group_settings(match_groups[pos]['_id'], match_groups[pos]['name'])
             # Change the colors on enter and leave
-            action_buttons[i].bind("<Enter>", hover(action_buttons[i]))
-            action_buttons[i].bind("<Leave>", unhover(action_buttons[i]))
+            self._add_hover(action_buttons[i])
             action_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
 
         for i in range(len(match_groups)):
@@ -3741,8 +3695,7 @@ class MainWindow(tk.Frame):
         new_connection_button["command"] = self.add_connection
         new_connection_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        new_connection_button.bind("<Enter>", func=lambda e: new_connection_button.config(bg='white',fg='#F21112'))
-        new_connection_button.bind("<Leave>", func=lambda e: new_connection_button.config(bg='#F21112',fg='white'))
+        self._add_hover(new_connection_button)
         new_connection_button.grid(row=2,column=2,columnspan=2)
 
     def leave_group(self, group_id):
@@ -3754,10 +3707,6 @@ class MainWindow(tk.Frame):
     def group_settings(self, group_id, group_name):
         self.erase_all_windows()
 
-        def hover(button):
-            return lambda e: button.config(bg='white',fg='#F21112')
-        def unhover(button):
-            return lambda e: button.config(bg='#F21112',fg='white')
 
         self.group_settings_window = tk.Toplevel(self.master)
         self.group_settings_window.title('Manage Group "{}"'.format(group_name))
@@ -3819,8 +3768,7 @@ class MainWindow(tk.Frame):
         for i in range(len(member_buttons)):
             if member_buttons[i] != '':
                 member_buttons[i]['command'] = lambda pos=i: self.remove_member(group['members'][pos], group['_id'], group['name'])
-                member_buttons[i].bind("<Enter>", hover(member_buttons[i]))
-                member_buttons[i].bind("<Leave>", unhover(member_buttons[i]))
+                self._add_hover(member_buttons[i])
                 member_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
                 member_buttons[i].grid(row=i+1,column=1,pady=10)
 
@@ -3843,8 +3791,7 @@ class MainWindow(tk.Frame):
             project_buttons.append(tk.Button(scrollable_frame, text='REMOVE\nPROJECT',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112'))
         for i in range(len(project_buttons)):
             project_buttons[i]['command'] = lambda pos=i: self.remove_project(group['projects'][pos], group_id, group_name)
-            project_buttons[i].bind("<Enter>", hover(project_buttons[i]))
-            project_buttons[i].bind("<Leave>", unhover(project_buttons[i]))
+            self._add_hover(project_buttons[i])
             project_buttons[i]["font"] = ("Roboto",int(15*self.master.winfo_width()/2350))
             project_buttons[i].grid(row=i+1,column=3,pady=10)
 
@@ -3869,8 +3816,7 @@ class MainWindow(tk.Frame):
         new_member_button["command"] = lambda: self.add_member(group_id, group_name)
         new_member_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        new_member_button.bind("<Enter>", func=lambda e: new_member_button.config(bg='white',fg='#F21112'))
-        new_member_button.bind("<Leave>", func=lambda e: new_member_button.config(bg='#F21112',fg='white'))
+        self._add_hover(new_member_button)
         new_member_button.grid(row=3,column=2)
 
         delete_group_button = tk.Button(self.group_settings_window,
@@ -3882,8 +3828,7 @@ class MainWindow(tk.Frame):
         delete_group_button['command'] = lambda: self.delete_group(group_id, group_name)
         delete_group_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        delete_group_button.bind("<Enter>", func=lambda e: delete_group_button.config(bg='white',fg='#F21112'))
-        delete_group_button.bind("<Leave>", func=lambda e: delete_group_button.config(bg='#F21112',fg='white'))
+        self._add_hover(delete_group_button)
         delete_group_button.grid(row=3,column=3)
 
     def add_member(self, group_id, group_name):
@@ -3998,8 +3943,7 @@ class MainWindow(tk.Frame):
         create_account_button["command"] = self.save_account
         create_account_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        create_account_button.bind("<Enter>", func=lambda e: create_account_button.config(bg='white',fg='#F21112'))
-        create_account_button.bind("<Leave>", func=lambda e: create_account_button.config(bg='#F21112',fg='white'))
+        self._add_hover(create_account_button)
         create_account_button.place(rely=0.7,relx=0.36)
 
     def save_account(self, event=None):
@@ -4204,8 +4148,7 @@ class MainWindow(tk.Frame):
         create_account_button["command"] = self.save_account
         create_account_button["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
         # Change the colors on enter and leave
-        create_account_button.bind("<Enter>", func=lambda e: create_account_button.config(bg='white',fg='#F21112'))
-        create_account_button.bind("<Leave>", func=lambda e: create_account_button.config(bg='#F21112',fg='white'))
+        self._add_hover(create_account_button)
         create_account_button.place(rely=0.85,relx=0.40)
 
     def close(self):
