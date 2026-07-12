@@ -66,7 +66,7 @@ ignore_errors = true
 
 # The extracted pure modules are fully typed; require annotations there.
 [[tool.mypy.overrides]]
-module = ["chimera_core", "db", "expr_eval"]
+module = ["chimera_core", "db", "expr_eval", "fitting"]
 disallow_untyped_defs = true
 
 [tool.pytest.ini_options]

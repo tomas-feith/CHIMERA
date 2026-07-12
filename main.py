@@ -19,7 +19,6 @@ import os
 import re
 import secrets
 import sys
-import warnings
 import webbrowser
 from io import StringIO
 from tkinter.scrolledtext import ScrolledText
@@ -28,14 +27,6 @@ import pyperclip
 import requests
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
-# TODO: scipy.odr is deprecated as of SciPy 1.17 and slated for removal in 1.19;
-# migrate the fitting code to the `odrpack` package. Until then scipy is pinned
-# to <1.19 (see pyproject.toml) and the deprecation notice is silenced so it does
-# not spam users on startup.
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore', DeprecationWarning)
-    from scipy import odr
 
 from chimera_core import (
     latexify_data,
@@ -47,6 +38,7 @@ from chimera_core import (
 )
 from db import ChimeraDB
 from expr_eval import safe_eval
+from fitting import run_odr_fit
 
 
 def check_version():
@@ -3020,9 +3012,6 @@ class MainWindow(tk.Frame):
         fit.res_var: chi quadrado reduzido
         r2: R^2 para o fit
         """
-        self.dataset_to_fit = dataset_number
-        func = odr.Model(self.fit_function)
-
         for i in range(len(self.clean_functions)):
             if self.clean_functions[i] == '':
                 tk.messagebox.showwarning('ERROR','Fitting function for dataset {} is not defined. Make sure it is compiled without errors.'.format(i+1))
@@ -3055,31 +3044,12 @@ class MainWindow(tk.Frame):
             tk.messagebox.showwarning('ERROR','At least one point in dataset {} has a null y uncertainty. It is not possible to fit data with null uncertainty.'.format(self.current_selection))
             return 0
 
-        if len(data[0])==3:
-            fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0]*len(x_points))
-        else:
-            fit_data = odr.RealData(x_points, y_points, sx=x_err, sy=y_err, fix=[0]*len(x_points))
-
-        my_odr = odr.ODR(fit_data, func, beta0=init_params, maxit=max_iter)
-        fit = my_odr.run()
-        self.full_output[dataset_number] = ''
-        self.full_output[dataset_number] += 'Beta:' + str(fit.beta) + '\n'
-        self.full_output[dataset_number] += 'Beta Std Error:' + str(fit.sd_beta) + '\n'
-        self.full_output[dataset_number] += 'Beta Covariance:' + str(fit.cov_beta) + '\n'
-        self.full_output[dataset_number] += 'Residual Variance:' + str(fit.res_var) + '\n'
-        self.full_output[dataset_number] += 'Inverse Condition #:' +str(fit.inv_condnum) + '\n'
-        self.full_output[dataset_number] += 'Reason(s) for Halting:' + '\n'
-        for r in fit.stopreason:
-            self.full_output[dataset_number] += str(r) + '\n'
-
-        # calcular o R^2
-        ss_tot = sum([(y - np.average(y_points))**2 for y in y_points])
-        ss_res =sum([(y_points[i] - self.fit_function(fit.beta,x_points[i]))**2 for i in range(len(y_points))])
-
-        return (fit.beta, fit.sd_beta, fit.res_var, 1 - ss_res/ss_tot)
-
-    def fit_function(self, B, _x):
-        return safe_eval(self.clean_functions[self.dataset_to_fit], {'np': np, 'B': B, '_x': _x})
+        beta, sd_beta, res_var, r2, output = run_odr_fit(
+            self.clean_functions[dataset_number],
+            x_points, y_points, x_err, y_err, init_params, max_iter,
+        )
+        self.full_output[dataset_number] = output
+        return (beta, sd_beta, res_var, r2)
 
     def open_file(self):
         self.erase_all_windows()
