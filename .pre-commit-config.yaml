@@ -1,0 +1,25 @@
+# Run `uv run pre-commit install` once to enable these hooks locally.
+# Update hook versions with `uv run pre-commit autoupdate`.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.21
+    hooks:
+      - id: ruff
+        name: ruff (lint)
+        args: [--fix]
+      - id: ruff-format
+        name: ruff (format check)
+        args: [--check]
+        # The legacy monolith is intentionally left unformatted for now;
+        # formatting is enforced on tests and any newly added modules.
+        exclude: ^main\.py$
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.2.0
+    hooks:
+      - id: mypy
+        # Mirror the dependencies mypy needs to resolve imports/stubs, since
+        # pre-commit runs the hook in its own isolated environment.
+        additional_dependencies:
+          - pandas-stubs
+          - types-requests

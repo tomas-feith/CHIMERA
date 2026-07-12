@@ -5,28 +5,31 @@ Created on Tue Feb 16 11:58:13 2021
 @author:
 """
 import tkinter as tk
-from PIL import Image, ImageTk
 from tkinter import ttk
-import numpy as np
+
 import matplotlib
+import numpy as np
+from PIL import Image, ImageTk
+
 matplotlib.use('TkAgg')
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-from tkinter.scrolledtext import ScrolledText
-import matplotlib.pyplot as plt
-import pandas as pd
-from io import StringIO
-from scipy import odr
-from tkinter import colorchooser
-import pyperclip
-import sys, os
-import webbrowser
-import requests
-import pymongo
-import re
-import secrets
 import hashlib
 import json
+import os
+import re
+import secrets
+import sys
+import webbrowser
+from io import StringIO
+from tkinter.scrolledtext import ScrolledText
+
+import pandas as pd
+import pymongo
+import pyperclip
+import requests
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from scipy import odr
+
 
 def check_version():
     current_version = '1.7.1'
@@ -235,10 +238,13 @@ def math_2_latex(expr, params, indep):
         if latex[i]=='^':
             if latex[i+1]!='(':
                 latex = latex[:i+1]+'{'+latex[i+1:]
-                for j in range(i+1,len(latex)):
-                    if latex[j] in operations or latex[j]==')':
-                        break
-                latex = latex[:j-1]+'}'+latex[j-1:]
+                # o expoente começa depois do '{' recém-inserido (índice i+2);
+                # avança-se até ao fim do expoente (operação ou ')') e fecha-se
+                # a chaveta imediatamente antes desse ponto
+                j = i+2
+                while j < len(latex) and latex[j] not in operations and latex[j] != ')':
+                    j += 1
+                latex = latex[:j]+'}'+latex[j:]
             else:
                 latex = latex[:i+1]+'{'+latex[i+2:]
                 deep = 1
@@ -473,10 +479,15 @@ def parser(expr, params, indep):
         if keyword == 'E':
             expr = '[2.72]'.join(expr)
 
-    # Substituir os nomes dos parâmetros
-    for pair in enumerate(clean_split):
-        expr = expr.split(pair[1])
-        expr = ('B['+str(pair[0])+']').join(expr)
+    # Substituir os nomes dos parâmetros por marcadores temporários únicos.
+    # Usa-se um marcador com '\x00' (impossível no input, que só permite letras
+    # e dígitos) para que um parâmetro chamado 'B' não colida com a notação
+    # 'B[i]' e para não voltar a substituir tokens já inseridos. Substituem-se
+    # primeiro os nomes mais compridos, evitando colisões entre nomes que são
+    # prefixo de outros (p.ex. 'a' e 'ab').
+    for pos in sorted(range(len(clean_split)), key=lambda k: len(clean_split[k]), reverse=True):
+        expr = expr.split(clean_split[pos])
+        expr = ('\x00'+str(pos)+'\x00').join(expr)
 
     # Substituir a variável independente
     expr = expr.split(indep)
@@ -493,9 +504,14 @@ def parser(expr, params, indep):
     expr = expr.split('[2.72]')
     expr = 'np.e'.join(expr)
 
+    # Converter os marcadores dos parâmetros na notação final 'B[i]'
+    for pos in range(len(clean_split)):
+        expr = expr.split('\x00'+str(pos)+'\x00')
+        expr = ('B['+str(pos)+']').join(expr)
+
     # Vamos finalmente testar se a função funciona
     # Valores de teste só porque sim
-    B = [np.pi/2]*len(clean_split)
+    B = [np.pi/2]*len(clean_split)  # noqa: F841  # referenced inside eval(expr)
     _x=-1
 
     try:
@@ -2100,14 +2116,14 @@ class MainWindow(tk.Frame):
         tk.messagebox.showinfo('File Saved','File {} has been saved'.format(self.file.split('/')[-1]))
 
     def open_project(self, event=None, data=None):
-        if data == None:
+        if data is None:
             self.file = tk.filedialog.askopenfilename(filetypes=(("*CHIMERA Project (.chi)", "*.chi"),),defaultextension='.chi')
             if not self.file:
                 del self.file
                 return
         self.create_scatter()
         try:
-            if data == None:
+            if data is None:
                 file = open(self.file, 'r')
                 data = json.load(file)
                 file.close()
@@ -2946,7 +2962,7 @@ class MainWindow(tk.Frame):
         x_min  = float(self.x_axis_min_entry.get().replace(' ',''))
         amp = x_max - x_min
 
-        B = self.fit_params[dataset]
+        B = self.fit_params[dataset]  # noqa: F841  # referenced inside eval(expr)
         expr = self.clean_functions[dataset]
         for j in range(10000):
             _x = x_min + j*amp/9999
@@ -3805,7 +3821,7 @@ class MainWindow(tk.Frame):
             return
 
         # first we check if the user exists
-        if temp_user == None:
+        if temp_user is None:
             tk.messagebox.showwarning('INVALID LOGIN','The username and/or the password are incorrect.')
             self.create_login()
             return
@@ -4204,7 +4220,7 @@ class MainWindow(tk.Frame):
             tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
             self.new_connect_window.destroy()
             return
-        if other_user == None:
+        if other_user is None:
             tk.messagebox.showwarning('INVALID CONNECTION', 'The username and/or the connection code provided are incorrect.')
             self.add_connection()
             return
@@ -4707,7 +4723,7 @@ class MainWindow(tk.Frame):
             tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
             self.new_account_window.destroy()
             return
-        if temp != None:
+        if temp is not None:
             tk.messagebox.showwarning('INVALID USERNAME', 'The username provided is already connected to an existing account. Please select a different, unique username.')
             self.setup_account()
             return
@@ -4818,6 +4834,11 @@ class MainWindow(tk.Frame):
             self.client.close()
         self.master.destroy()
 
-root = tk.Tk()
-app = MainWindow(master=root)
-app.mainloop()
+def main():
+    root = tk.Tk()
+    app = MainWindow(master=root)
+    app.mainloop()
+
+
+if __name__ == '__main__':
+    main()

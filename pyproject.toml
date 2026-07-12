@@ -1,0 +1,68 @@
+[project]
+name = "chimera"
+version = "1.7.1"
+description = "CHIMERA — a curve fitting and plotting desktop application."
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "openpyxl",
+    "pandas",
+    "pillow",
+    "pymongo",
+    "pyperclip",
+    "requests",
+    "scipy",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.11",
+    "pandas-stubs",
+    "pytest>=8",
+    "ruff>=0.6",
+    "types-requests",
+]
+
+# CHIMERA is a single-file application, not an installable package.
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# Start from a pragmatic baseline for this legacy single-file app.
+# pyflakes (F) catches real bugs (undefined names, unused imports); the rest
+# are safe hygiene rules. Stylistic rules that would require churning the whole
+# 4.8k-line file are deliberately left off for now and can be tightened later.
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501", # line-too-long: legacy file has many long lines
+    "E741", # ambiguous variable names (l, I, O): used throughout legacy code
+    "E722", # bare 'except': tracked as a known issue, too many to fix here
+    "E701", # multiple statements on one line: pervasive legacy one-liner style
+    "E721", # type comparison with '==': legacy read_file uses out == float/str
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests reach into main.py's globals; that's expected.
+"tests/*" = []
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+# The legacy GUI module is untyped; type-check it leniently for now and
+# enforce stricter typing on newly added code (e.g. tests, future modules).
+
+[[tool.mypy.overrides]]
+module = "main"
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
