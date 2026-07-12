@@ -24,7 +24,6 @@ import webbrowser
 from io import StringIO
 from tkinter.scrolledtext import ScrolledText
 
-import pymongo
 import pyperclip
 import requests
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -46,6 +45,7 @@ from chimera_core import (
     read_file,
     rederive_clean_functions,
 )
+from db import ChimeraDB
 from expr_eval import safe_eval
 
 
@@ -1476,9 +1476,8 @@ class MainWindow(tk.Frame):
         data['owner'] = self.user['username']
         data['name'] = 'TEMPORARY'
 
-        projects = self.db.projects
         try:
-            projects.insert_one(data)
+            self.database.insert_project(data)
         except Exception:
             tk.messagebox.showwarning('ERROR', 'Could not save project. Please try again or create local copy.')
             return
@@ -3216,18 +3215,16 @@ class MainWindow(tk.Frame):
             self.login_window.destroy()
             return
 
-        if not hasattr(self,'client'):
+        if not hasattr(self, 'database'):
             try:
-                self.client = pymongo.MongoClient("mongodb+srv://" + self.database_username + ":" + self.database_password + "@chimera-data.gbqbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",connectTimeoutMS=5000)
+                self.database = ChimeraDB.connect(self.database_username, self.database_password)
             except Exception:
                 tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out after 5 seconds. Make sure you have a stable internet connection.')
                 self.login_window.destroy()
                 return
-            self.db = self.client.CHIMERA
 
-        users = self.db.users
         try:
-            temp_user = users.find_one({"username": username},max_time_ms=5000)
+            temp_user = self.database.find_user(username)
         except Exception:
             tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out after 5 seconds. Make sure you have a stable internet connection.')
             self.login_window.destroy()
@@ -3279,8 +3276,8 @@ class MainWindow(tk.Frame):
 
     def view_projects(self):
         self.erase_all_windows()
-        projects = self.db.projects
-        groups = self.db.groups
+        projects = self.database.projects
+        groups = self.database.groups
         all_projects = [project for project in projects.find({})]
         me_projects = []
 
@@ -3362,7 +3359,7 @@ class MainWindow(tk.Frame):
         self.current_groups_var = [tk.StringVar() for project in me_projects]
         self.current_group_selector = [ttk.Combobox(scrollable_frame, textvariable = self.current_groups_var[i], values = self.current_groups_name[i],font=('Roboto',8)) for i in range(len(me_projects))]
 
-        # users = self.db.users
+        # users = self.database.users
         for i in range(len(me_projects)):
             label_name = tk.Label(scrollable_frame,
                                   text=me_projects[i]['name'],
@@ -3379,7 +3376,7 @@ class MainWindow(tk.Frame):
             label_owner.grid(row=2*i,column=1,rowspan=2,pady=10)
 
             # now we find the groups it is in
-            groups = self.db.groups
+            groups = self.database.groups
             groups_in = groups.find({ 'projects' : { '$in' : [me_projects[i]['_id']] } }, max_time_ms=5000)
             groups_in = [group for group in groups_in]
 
@@ -3428,10 +3425,10 @@ class MainWindow(tk.Frame):
 
     def delete_project(self, project_id, project_name):
         if tk.messagebox.askyesno('DELETE PROJECT {}'.format(project_name),'Are you sure you want to delete this project? This action is immediate and irreversible.'):
-            projects = self.db.projects
+            projects = self.database.projects
             projects.delete_one({'_id': project_id})
 
-            groups = self.db.groups
+            groups = self.database.groups
             match_groups = groups.find({ '$in': { 'projects': project_id } })
             for group in match_groups:
                 groups.update_one({'_id': group['_id']},
@@ -3441,7 +3438,7 @@ class MainWindow(tk.Frame):
 
 
     def open_from_database(self, project_id):
-        projects = self.db.projects
+        projects = self.database.projects
         data = projects.find_one({'_id': project_id})
         self.open_project(data = data)
         self.erase_all_windows()
@@ -3450,7 +3447,7 @@ class MainWindow(tk.Frame):
         if not group.get():
             tk.messagebox.showwarning('NO GROUP SELECTED', 'Select a group in which to insert this project.')
         else:
-            groups = self.db.groups
+            groups = self.database.groups
             groups.update_one({ 'name': group.get() },
                               { '$push': { 'projects': project_id } }
                               )
@@ -3461,7 +3458,7 @@ class MainWindow(tk.Frame):
         if not group.get():
             tk.messagebox.showwarning('NO GROUP SELECTED', 'Select the group from which to remove this project.')
         else:
-            groups = self.db.groups
+            groups = self.database.groups
             groups.update_one({ 'name': group.get() },
                               { '$pull': { 'projects': project_id } }
                               )
@@ -3515,7 +3512,7 @@ class MainWindow(tk.Frame):
 
         action_buttons = [tk.Button(scrollable_frame,text='REMOVE',fg='white',bg='#F21112',activebackground='white',activeforeground='#F21112') for i in range(len(self.user['connections']))]
 
-        users = self.db.users
+        users = self.database.users
         for i in range(len(self.user['connections'])):
             label_username = tk.Label(scrollable_frame,
                                       text=users.find_one({'_id': self.user['connections'][i]})['username'],
@@ -3525,7 +3522,7 @@ class MainWindow(tk.Frame):
             label_username.grid(row=i+1,column=0,pady=5)
 
             # now we find shared groups
-            groups = self.db.groups
+            groups = self.database.groups
             shared_groups = groups.find({ 'members' : { '$all' : [self.user['_id'], self.user['connections'][i]] } }, max_time_ms=5000)
             shared_groups = [group for group in shared_groups]
 
@@ -3559,13 +3556,13 @@ class MainWindow(tk.Frame):
         new_connection_button.grid(row=2,column=2)
 
     def disconnect_user(self,user):
-        users = self.db.users
+        users = self.database.users
         users.update_one({ 'username': self.user['username'] },
                          { '$pull': { 'connections': user } })
         users.update_one({ '_id': user },
                          { '$pull': { 'connections': self.user['_id'] } })
 
-        groups = self.db.groups
+        groups = self.database.groups
         groups.update_many({ 'owner': self.user['username'], 'members' : { '$in' : [user] } },
                            { '$pull' : { 'members': user } })
 
@@ -3626,7 +3623,7 @@ class MainWindow(tk.Frame):
         username = self.username_entry.get()
         connect_code = self.code_entry.get()
 
-        users = self.db.users
+        users = self.database.users
         # finally we just check for repeated usernames
         try:
             other_user = users.find_one({'username': username, 'connect_code': connect_code}, max_time_ms=5000)
@@ -3708,9 +3705,9 @@ class MainWindow(tk.Frame):
         scrollable_frame.columnconfigure(3, weight=1, minsize=150)
 
         # now we need to find the all the groups this user is in
-        groups = self.db.groups
-        users = self.db.users
-        projects = self.db.projects
+        groups = self.database.groups
+        users = self.database.users
+        projects = self.database.projects
 
         match_groups = groups.find({ 'members' : { '$in' : [self.user['_id']] } }, max_time_ms=5000)
 
@@ -3779,7 +3776,7 @@ class MainWindow(tk.Frame):
         new_connection_button.grid(row=2,column=2,columnspan=2)
 
     def leave_group(self, group_id):
-        groups = self.db.groups
+        groups = self.database.groups
         groups.update_one({'_id': group_id},
                           {'$pull': {'members': self.user['_id']}})
         self.view_groups()
@@ -3834,9 +3831,9 @@ class MainWindow(tk.Frame):
         scrollable_frame.columnconfigure(2, weight=1, minsize=150)
         scrollable_frame.columnconfigure(3, weight=1, minsize=150)
 
-        groups = self.db.groups
-        users = self.db.users
-        projects = self.db.projects
+        groups = self.database.groups
+        users = self.database.users
+        projects = self.database.projects
 
         group = groups.find_one({'_id': group_id})
 
@@ -3925,34 +3922,34 @@ class MainWindow(tk.Frame):
             self.group_settings(group_id, group_name)
             return
 
-        groups = self.db.groups
-        users = self.db.users
+        groups = self.database.groups
+        users = self.database.users
         groups.update_one({ '_id': group_id },
                           { '$push': { 'members': users.find_one({ 'username': self.new_members_var.get() })['_id'] } })
         self.group_settings(group_id, group_name)
 
     def remove_member(self, member_id, group_id, group_name):
-        groups = self.db.groups
+        groups = self.database.groups
         groups.update_one({ '_id': group_id },
                           { '$pull': { 'members': member_id } })
         self.group_settings(group_id, group_name)
 
     def remove_project(self, project_id, group_id, group_name):
-        groups = self.db.groups
+        groups = self.database.groups
         groups.update_one({ '_id': group_id},
                           { '$pull': {' projects': project_id } })
         self.group_settings(group_id, group_name)
 
     def delete_group(self, group_id, group_name):
         if tk.messagebox.askyesno('DELETE GROUP {}'.format(group_name),'Are you sure you want to delete this group? This action is immediate and irreversible.'):
-            groups = self.db.groups
+            groups = self.database.groups
             groups.delete_one({'_id': group_id})
             self.erase_all_windows()
 
     def logout(self):
         del self.user
-        self.client.close()
-        del self.client
+        self.database.close()
+        del self.database
 
         tk.messagebox.showinfo('LOGOUT SUCCESSFUL', 'You have been successfully logged out.')
         self.online.delete('Logout')
@@ -4116,19 +4113,17 @@ class MainWindow(tk.Frame):
                     'projects': []
                     }
 
-        if not hasattr(self,'client'):
+        if not hasattr(self, 'database'):
             try:
-                self.client = pymongo.MongoClient("mongodb+srv://" + self.database_username + ":" + self.database_password + "@chimera-data.gbqbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",connectTimeoutMS=5000)
+                self.database = ChimeraDB.connect(self.database_username, self.database_password)
             except Exception:
                 tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out after 5 seconds. Make sure you have a stable internet connection.')
                 self.new_account_window.destroy()
                 return
-            self.db = self.client.CHIMERA
 
-        users = self.db.users
         # finally we just check for repeated usernames
         try:
-            temp = users.find_one({'username': user['username']}, max_time_ms=5000)
+            temp = self.database.find_user(user['username'])
         except Exception:
             tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
             self.new_account_window.destroy()
@@ -4143,8 +4138,8 @@ class MainWindow(tk.Frame):
 
         if update:
             try:
-                users.update_one({'username': self.user['username']}, {'$set': user})
-                self.user = users.find_one({"username": self.user['username']},max_time_ms=5000)
+                self.database.replace_user_fields(self.user['username'], user)
+                self.user = self.database.find_user(self.user['username'])
             except Exception:
                 tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
                 self.edit_account_window.destroy()
@@ -4155,7 +4150,7 @@ class MainWindow(tk.Frame):
             self.logout()
         else:
             try:
-                users.insert_one(user)
+                self.database.insert_user(user)
             except Exception:
                 tk.messagebox.showwarning('CONNECTION ERROR', 'Connection timed out. Make sure you have a stable internet connection.')
                 self.new_account_window.destroy()
@@ -4244,8 +4239,8 @@ class MainWindow(tk.Frame):
         create_account_button.place(rely=0.85,relx=0.40)
 
     def close(self):
-        if hasattr(self,'client'):
-            self.client.close()
+        if hasattr(self, 'database'):
+            self.database.close()
         self.master.destroy()
 
 def main():

@@ -18,6 +18,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mongomock>=4.3.0",
     "mypy>=1.11",
     "pandas-stubs",
     "pre-commit>=3.7",
@@ -65,7 +66,7 @@ ignore_errors = true
 
 # The extracted pure modules are fully typed; require annotations there.
 [[tool.mypy.overrides]]
-module = ["chimera_core", "expr_eval"]
+module = ["chimera_core", "db", "expr_eval"]
 disallow_untyped_defs = true
 
 [tool.pytest.ini_options]
