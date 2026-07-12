@@ -44,6 +44,7 @@ from chimera_core import (
     parser,
     process_params,
     read_file,
+    rederive_clean_functions,
 )
 from expr_eval import safe_eval
 
@@ -1623,10 +1624,7 @@ class MainWindow(tk.Frame):
             # Never trust the pre-compiled expression stored in the file/record:
             # re-derive it from the (validated) raw function so a tampered
             # project cannot smuggle in an arbitrary expression to evaluate.
-            self.clean_functions = []
-            for raw_func, raw_params, raw_indep in zip(self.functions, self.params, self.indeps):
-                parsed = parser(raw_func, raw_params, raw_indep)
-                self.clean_functions.append(parsed[1] if parsed[0] else '')
+            self.clean_functions = rederive_clean_functions(self.functions, self.params, self.indeps)
             self.data_labels = data['data_labels']
             self.plot_labels = data['plot_labels']
             self.fit_labels = data['fit_labels']

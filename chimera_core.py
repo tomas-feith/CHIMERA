@@ -3,6 +3,7 @@ LaTeX generation and data-file reading. Kept separate from the Tkinter
 application (main.py) so they can be imported and unit-tested in isolation.
 """
 from io import StringIO
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -10,10 +11,10 @@ import pandas as pd
 from expr_eval import UnsafeExpressionError, safe_eval
 
 
-def take_first(elem):
+def take_first(elem: str) -> float:
     return float(elem.split('&')[0].split('$\\pm$')[0])
 
-def latexify_data(data,mode):
+def latexify_data(data: list[str], mode: int) -> str:
     """
     Função para, recebendo um batch de datasets, gerar o texto LaTeX para uma
     tabela.
@@ -103,12 +104,10 @@ def latexify_data(data,mode):
 
     return latex_table
 
-def math_2_latex(expr, params, indep):
+def math_2_latex(expr: str, params: str, indep: str) -> str:
 
-    params = process_params(params,indep)[1]
-
-    # agrupar todas as variáveis relevantes
-    variables = params
+    # agrupar todas as variáveis relevantes (assume-se input já validado)
+    variables = cast('list[str]', process_params(params, indep)[1])
     variables.append(indep)
 
     latex = expr.replace(' ','')
@@ -276,7 +275,7 @@ def math_2_latex(expr, params, indep):
 
     return latex
 
-def process_params(params, indep):
+def process_params(params: str, indep: str) -> tuple[bool, list[str] | str]:
     allowed = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
     functions = ['sin',
                  'cos',
@@ -373,7 +372,7 @@ def process_params(params, indep):
 
     return (True, clean_split)
 
-def parser(expr, params, indep):
+def parser(expr: str, params: str, indep: str) -> tuple[bool, str]:
     np.seterr(divide='warn', invalid='warn', under='warn', over='warn')
     # Funções do numpy a utilizar
     # Ainda falta acrescentar as funções de estatística
@@ -402,9 +401,9 @@ def parser(expr, params, indep):
     process = process_params(params, indep)
 
     if process[0]:
-        clean_split = process[1]
+        clean_split = cast('list[str]', process[1])
     else:
-        return (False, process[1])
+        return (False, cast('str', process[1]))
 
     # Ver se a função contém a variável independente
     if indep not in expr:
@@ -412,16 +411,14 @@ def parser(expr, params, indep):
 
     # Substituir as funções pelo equivalente numpy
     # Primeira substituição temporária para não haver erros de conversão
-    for function in enumerate(functions):
-        expr = expr.split(function[1])
-        expr = ('['+str(len(clean_split)+function[0])+']').join(expr)
+    for func_idx, func_name in enumerate(functions):
+        expr = ('['+str(len(clean_split)+func_idx)+']').join(expr.split(func_name))
     # Substituir as palavras reservadas
     for keyword in forbidden:
-        expr = expr.split(keyword)
         if keyword == 'PI':
-            expr = '[3.14]'.join(expr)
+            expr = '[3.14]'.join(expr.split(keyword))
         if keyword == 'E':
-            expr = '[2.72]'.join(expr)
+            expr = '[2.72]'.join(expr.split(keyword))
 
     # Substituir os nomes dos parâmetros por marcadores temporários únicos.
     # Usa-se um marcador com '\x00' (impossível no input, que só permite letras
@@ -430,28 +427,22 @@ def parser(expr, params, indep):
     # primeiro os nomes mais compridos, evitando colisões entre nomes que são
     # prefixo de outros (p.ex. 'a' e 'ab').
     for pos in sorted(range(len(clean_split)), key=lambda k: len(clean_split[k]), reverse=True):
-        expr = expr.split(clean_split[pos])
-        expr = ('\x00'+str(pos)+'\x00').join(expr)
+        expr = ('\x00'+str(pos)+'\x00').join(expr.split(clean_split[pos]))
 
     # Substituir a variável independente
-    expr = expr.split(indep)
-    expr = '_x'.join(expr)
+    expr = '_x'.join(expr.split(indep))
 
     # Voltar a substituir os elementos pelas funções
-    for function in enumerate(functions):
-        expr = expr.split('['+str(function[0]+len(clean_split))+']')
-        expr = ('np.'+str(function[1])).join(expr)
+    for func_idx, func_name in enumerate(functions):
+        expr = ('np.'+func_name).join(expr.split('['+str(func_idx+len(clean_split))+']'))
 
     # Pôr os números associados às palavras reservadas
-    expr = expr.split('[3.14]')
-    expr = 'np.pi'.join(expr)
-    expr = expr.split('[2.72]')
-    expr = 'np.e'.join(expr)
+    expr = 'np.pi'.join(expr.split('[3.14]'))
+    expr = 'np.e'.join(expr.split('[2.72]'))
 
     # Converter os marcadores dos parâmetros na notação final 'B[i]'
     for pos in range(len(clean_split)):
-        expr = expr.split('\x00'+str(pos)+'\x00')
-        expr = ('B['+str(pos)+']').join(expr)
+        expr = ('B['+str(pos)+']').join(expr.split('\x00'+str(pos)+'\x00'))
 
     # Vamos finalmente testar se a função funciona
     # Valores de teste só porque sim
@@ -473,7 +464,26 @@ def parser(expr, params, indep):
 
     return (True, expr)
 
-def read_file(src, out, mode, datatype):
+def rederive_clean_functions(
+    functions: list[str], params: list[str], indeps: list[str]
+) -> list[str]:
+    """Re-derive the evaluatable expression for each dataset from its raw fit
+    function.
+
+    Used when loading a project: the pre-compiled expression stored in the file
+    or database record is never trusted. Each raw function is re-validated
+    through :func:`parser`, and any that fails validation yields an empty string
+    (which the application treats as "no valid fit function"). This is what
+    prevents a tampered project from smuggling in an arbitrary expression to
+    evaluate.
+    """
+    clean = []
+    for raw_func, raw_params, raw_indep in zip(functions, params, indeps):
+        ok, result = parser(raw_func, raw_params, raw_indep)
+        clean.append(result if ok else '')
+    return clean
+
+def read_file(src: "str | StringIO", out: type, mode: bool, datatype: int) -> "list | int":
     """
     Função para ler os dados de ficheiros de texto ou excel
 
@@ -499,10 +509,10 @@ def read_file(src, out, mode, datatype):
     if isinstance(src, StringIO):
         form = 1
     else:
-        for i in enumerate(formats):
-            for ext in i[1]:
+        for form_idx, exts in enumerate(formats):
+            for ext in exts:
                 if src.split('.')[-1] == ext:
-                    form = i[0]
+                    form = form_idx
     # Se não for nenhum dos considerados, devolver -1 para marcar o erro
     if form == -1:
         return -1
@@ -516,7 +526,7 @@ def read_file(src, out, mode, datatype):
 
     # Fazer a divisão nos datasets fornecidos
     # Se não houver incerteza no x, então o número de colunas é ímpar
-    full_sets = []
+    full_sets: list = []
 
     #Datatype 0 funciona dentro do programa, os outros dois so sao chamados caso venha de excel
     if(datatype == 0):

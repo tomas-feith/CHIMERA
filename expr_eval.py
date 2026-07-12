@@ -16,6 +16,8 @@ expression repeatedly (as the ODR fit loop does) stays cheap.
 
 import ast
 from functools import lru_cache
+from types import CodeType
+from typing import Any
 
 import numpy as np
 
@@ -66,7 +68,7 @@ def _validate(tree: ast.AST) -> None:
 
 
 @lru_cache(maxsize=256)
-def _compile(expr: str):
+def _compile(expr: str) -> CodeType:
     """Validate ``expr`` and return a compiled code object (cached).
 
     Raises SyntaxError if it does not parse, or UnsafeExpressionError if it uses
@@ -77,7 +79,7 @@ def _compile(expr: str):
     return compile(tree, "<fit-expr>", "eval")
 
 
-def safe_eval(expr: str, namespace: dict):
+def safe_eval(expr: str, namespace: dict) -> Any:
     """Evaluate a validated fit expression with no access to builtins.
 
     ``namespace`` supplies the symbols the expression may reference (typically
