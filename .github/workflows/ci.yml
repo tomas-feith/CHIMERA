@@ -8,6 +8,11 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    # Use a managed (python-build-standalone) interpreter rather than the
+    # runner's system Python: importing main.py pulls in tkinter, which the
+    # standalone build bundles but the system Python on the runner does not.
+    env:
+      UV_PYTHON_PREFERENCE: only-managed
     steps:
       - uses: actions/checkout@v4
 
