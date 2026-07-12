@@ -139,7 +139,7 @@ requires-dist = [
     { name = "pymongo" },
     { name = "pyperclip" },
     { name = "requests" },
-    { name = "scipy" },
+    { name = "scipy", specifier = "<1.19" },
 ]
 
 [package.metadata.requires-dev]

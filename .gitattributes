@@ -1,0 +1,8 @@
+# Normalize line endings: store and check out text files with LF, regardless of
+# each contributor's core.autocrlf setting. Silences the "LF will be replaced by
+# CRLF" warnings on Windows.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.ico binary

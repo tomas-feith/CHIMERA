@@ -13,7 +13,7 @@ dependencies = [
     "pymongo",
     "pyperclip",
     "requests",
-    "scipy",
+    "scipy<1.19",  # scipy.odr is removed in 1.19; pin until migrated to odrpack
 ]
 
 [dependency-groups]
@@ -43,7 +43,6 @@ select = ["E", "F", "W", "I"]
 ignore = [
     "E501", # line-too-long: legacy file has many long lines
     "E741", # ambiguous variable names (l, I, O): used throughout legacy code
-    "E722", # bare 'except': tracked as a known issue, too many to fix here
     "E701", # multiple statements on one line: pervasive legacy one-liner style
     "E721", # type comparison with '==': legacy read_file uses out == float/str
 ]

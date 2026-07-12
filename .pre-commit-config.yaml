@@ -10,9 +10,10 @@ repos:
       - id: ruff-format
         name: ruff (format check)
         args: [--check]
-        # The legacy monolith is intentionally left unformatted for now;
-        # formatting is enforced on tests and any newly added modules.
-        exclude: ^main\.py$
+        # The legacy code (the monolith and the functions extracted from it) is
+        # intentionally left unformatted for now; formatting is enforced on
+        # tests and any newly added modules.
+        exclude: ^(main|chimera_core)\.py$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v2.2.0

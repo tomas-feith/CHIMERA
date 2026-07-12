@@ -28,7 +28,7 @@ jobs:
         run: uv run ruff check .
 
       - name: Ruff format check
-        run: uv run ruff format --check --exclude main.py .
+        run: uv run ruff format --check --exclude main.py --exclude chimera_core.py .
 
       - name: Mypy
         run: uv run mypy .
