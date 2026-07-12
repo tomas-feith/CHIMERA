@@ -20,6 +20,7 @@ dependencies = [
 dev = [
     "mypy>=1.11",
     "pandas-stubs",
+    "pre-commit>=3.7",
     "pytest>=8",
     "ruff>=0.6",
     "types-requests",
