@@ -3,19 +3,15 @@
 Separated from the Tkinter UI (``main.py``) so the fitting maths can be exercised
 without a display. Input validation and error reporting stay in the UI layer;
 this module assumes it is handed a validated expression and clean numeric data.
+
+Uses the maintained ``odrpack`` package (the successor to the removed
+``scipy.odr``).
 """
 
-import warnings
 from typing import Any
 
 import numpy as np
-
-# TODO: scipy.odr is deprecated (SciPy 1.17) and slated for removal in 1.19;
-# migrate to the odrpack package. scipy is pinned <1.19 meanwhile (see
-# pyproject.toml) and the deprecation notice is silenced on import.
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", DeprecationWarning)
-    from scipy import odr
+from odrpack import odr_fit
 
 from expr_eval import safe_eval
 
@@ -32,8 +28,8 @@ def _format_output(fit: Any) -> str:
         "Residual Variance:" + str(fit.res_var),
         "Inverse Condition #:" + str(fit.inv_condnum),
         "Reason(s) for Halting:",
+        str(fit.stopreason),
     ]
-    lines.extend(str(r) for r in fit.stopreason)
     return "\n".join(lines) + "\n"
 
 
@@ -46,25 +42,34 @@ def run_odr_fit(
     init_params: list,
     max_iter: int,
 ) -> tuple:
-    """Fit ``expr`` to the given data with orthogonal distance regression.
+    """Fit ``expr`` to the given data and return the results.
 
-    ``x_err`` may be empty when the data has no x uncertainty. Returns
+    CHIMERA has always held the x values fixed (they are never adjusted), i.e.
+    this is a weighted least-squares fit in y. ``x_err`` is accepted for API
+    compatibility but does not affect the result, matching the long-standing
+    behaviour (``task='OLS'`` reproduces the previous ``scipy.odr`` results with
+    ``fix=[0]*n`` exactly). Returns
     ``(beta, sd_beta, res_var, r2, full_output_text)``.
     """
-    model = odr.Model(lambda B, x: _evaluate(expr, B, x))
-    if x_err:
-        fit_data = odr.RealData(x_points, y_points, sx=x_err, sy=y_err, fix=[0] * len(x_points))
-    else:
-        fit_data = odr.RealData(x_points, y_points, sy=y_err, fix=[0] * len(x_points))
+    x = np.asarray(x_points, dtype=float)
+    y = np.asarray(y_points, dtype=float)
+    # scipy.odr took standard deviations (sy); odrpack takes weights = 1/sy**2.
+    weight_y = 1.0 / np.asarray(y_err, dtype=float) ** 2
 
-    fit = odr.ODR(fit_data, model, beta0=init_params, maxit=max_iter).run()
+    fit = odr_fit(
+        lambda xd, beta: _evaluate(expr, beta, xd),
+        x,
+        y,
+        init_params,
+        weight_y=weight_y,
+        task="OLS",
+        maxit=max_iter,
+    )
     full_output = _format_output(fit)
 
     # coeficiente de determinação R^2
-    ss_tot = sum((y - np.average(y_points)) ** 2 for y in y_points)
-    ss_res = sum(
-        (y_points[i] - _evaluate(expr, fit.beta, x_points[i])) ** 2 for i in range(len(y_points))
-    )
+    ss_tot = sum((yi - np.average(y)) ** 2 for yi in y)
+    ss_res = sum((y[i] - _evaluate(expr, fit.beta, x[i])) ** 2 for i in range(len(y)))
     r2 = 1 - ss_res / ss_tot
 
     return fit.beta, fit.sd_beta, fit.res_var, r2, full_output

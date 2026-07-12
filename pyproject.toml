@@ -7,13 +7,13 @@ requires-python = ">=3.11,<3.14"
 dependencies = [
     "matplotlib",
     "numpy",
+    "odrpack>=0.6.1",
     "openpyxl",
     "pandas",
     "pillow",
     "pymongo",
     "pyperclip",
     "requests",
-    "scipy<1.19",  # scipy.odr is removed in 1.19; pin until migrated to odrpack
 ]
 
 [dependency-groups]
