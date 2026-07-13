@@ -63,7 +63,7 @@ warn_redundant_casts = true
 # The legacy GUI modules reference each other's dynamically-set attributes and
 # are untyped; type-check them leniently for now.
 [[tool.mypy.overrides]]
-module = ["main", "online_ui", "project_io"]
+module = ["main", "online_ui", "plotting", "project_io"]
 ignore_errors = true
 
 # The extracted pure modules are fully typed; require annotations there.
