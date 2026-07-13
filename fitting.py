@@ -67,9 +67,10 @@ def run_odr_fit(
     )
     full_output = _format_output(fit)
 
-    # coefficient of determination R^2
+    # coefficient of determination R^2. Undefined when the data has no spread in
+    # y (all points equal): ss_tot == 0 would divide by zero, so report nan.
     ss_tot = sum((yi - np.average(y)) ** 2 for yi in y)
     ss_res = sum((y[i] - _evaluate(expr, fit.beta, x[i])) ** 2 for i in range(len(y)))
-    r2 = 1 - ss_res / ss_tot
+    r2 = float("nan") if ss_tot == 0 else 1 - ss_res / ss_tot
 
     return fit.beta, fit.sd_beta, fit.res_var, r2, full_output
