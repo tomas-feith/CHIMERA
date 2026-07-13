@@ -15,6 +15,7 @@ For the full user documentation see the project home page:
 | --- | --- |
 | `main.py` | The core Tkinter application (windows, widgets, fitting/plotting flow). |
 | `online_ui.py` | `OnlineUIMixin`: the CHIMERA Online windows (login, account, projects, connections, groups). |
+| `project_io.py` | `ProjectIOMixin`: save/open `.chi` projects and LaTeX export. |
 | `chimera_core.py` | Pure, GUI-independent helpers: expression parsing/validation, LaTeX generation, data-file reading. |
 | `expr_eval.py` | AST-allow-list evaluator used to run fit expressions safely (no `eval` of untrusted input). |
 | `fitting.py` | Orthogonal-distance-regression curve fitting, decoupled from the UI. |
