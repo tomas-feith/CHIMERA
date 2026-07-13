@@ -17,6 +17,7 @@ import tkinter.filedialog  # noqa: F401  (enables ``tk.filedialog`` access)
 import tkinter.messagebox  # noqa: F401  (enables ``tk.messagebox`` access)
 
 import numpy as np
+import pymongo
 import pyperclip
 
 from chimera_core import latexify_data, math_2_latex, rederive_clean_functions
@@ -80,7 +81,7 @@ class ProjectIOMixin:
 
         try:
             self.database.insert_project(data)
-        except Exception:
+        except pymongo.errors.PyMongoError:
             tk.messagebox.showwarning(
                 "ERROR", "Could not save project. Please try again or create local copy."
             )
@@ -271,8 +272,9 @@ class ProjectIOMixin:
             self.update_databox("")
             self.update_parameter()
         except Exception:
-            # import traceback
-            # traceback.print_exc()
+            # Broad on purpose: any malformed field in an untrusted .chi file
+            # (KeyError, ValueError, TclError from a bad widget value, ...) should
+            # surface as a single "file corrupted" message rather than a traceback.
             self.create_scatter()
             tk.messagebox.showwarning("ERROR", "Unable to open. File corrupted.")
             del self.file
@@ -353,7 +355,7 @@ class ProjectIOMixin:
         # If the function has already been compiled
         try:
             self.functions[self.selected_dataset]
-        except Exception:
+        except (AttributeError, IndexError):
             tk.messagebox.showwarning(
                 "ERROR", "The function has not been compiled yet! Compile before exporting."
             )

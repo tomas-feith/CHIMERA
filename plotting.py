@@ -375,7 +375,7 @@ class PlottingMixin:
             self.canvas.get_tk_widget().pack_forget()
             del self.canvas
             del self.fig
-        except Exception:
+        except AttributeError:
             pass
 
         parsed_input = parser(
@@ -1068,7 +1068,7 @@ class PlottingMixin:
                         self.param_boxes[x].insert(
                             0, f"{self.init_values[self.selected_dataset][x]:e}"
                         )
-                    except Exception:
+                    except (ValueError, TypeError, IndexError):
                         pass
                     self.param_boxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.param_label.append(
@@ -1158,7 +1158,7 @@ class PlottingMixin:
                 self.chisq_entry.delete(0, tk.END)
                 try:
                     self.chisq_entry.insert(0, f"{self.fit_chi[self.selected_dataset]:.3e}")
-                except Exception:
+                except (ValueError, TypeError, IndexError):
                     pass
                 self.chisq_entry.config(state="readonly")
 
@@ -1166,7 +1166,7 @@ class PlottingMixin:
                 self.r2_entry.delete(0, tk.END)
                 try:
                     self.r2_entry.insert(0, f"{self.fit_r2[self.selected_dataset]:.6f}")
-                except Exception:
+                except (ValueError, TypeError, IndexError):
                     pass
                 self.r2_entry.config(state="readonly")
                 for x in range(self.box_number):
@@ -1181,7 +1181,7 @@ class PlottingMixin:
                         self.param_err_boxes[x].insert(
                             0, f"{self.fit_uncert[self.selected_dataset][x]:.7e}"
                         )
-                    except Exception:
+                    except (ValueError, TypeError, IndexError):
                         pass
                     self.param_err_boxes[x].grid(
                         column=7, row=x, pady=10, padx=(0, 10), sticky=tk.W + tk.E
@@ -1198,7 +1198,7 @@ class PlottingMixin:
                         self.param_res_boxes[x].insert(
                             0, f"{self.fit_params[self.selected_dataset][x]:.7e}"
                         )
-                    except Exception:
+                    except (ValueError, TypeError, IndexError):
                         pass
                     self.param_res_boxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.param_res_boxes[x].config(state="readonly")
@@ -1207,7 +1207,7 @@ class PlottingMixin:
                         self.param_boxes[x].insert(
                             0, f"{self.init_values[self.selected_dataset][x]:e}"
                         )
-                    except Exception:
+                    except (ValueError, TypeError, IndexError):
                         pass
                     self.param_boxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.param_label.append(

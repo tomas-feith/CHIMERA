@@ -16,6 +16,8 @@ import tkinter as tk
 import tkinter.messagebox  # noqa: F401  (enables ``tk.messagebox`` access)
 from tkinter import ttk
 
+import pymongo
+
 from db import ChimeraDB
 
 
@@ -145,7 +147,7 @@ class OnlineUIMixin:
         if not hasattr(self, "database"):
             try:
                 self.database = ChimeraDB.connect(self.database_username, self.database_password)
-            except Exception:
+            except pymongo.errors.PyMongoError:
                 tk.messagebox.showwarning(
                     "CONNECTION ERROR",
                     "Connection timed out after 5 seconds. Make sure you have a stable internet connection.",
@@ -155,7 +157,7 @@ class OnlineUIMixin:
 
         try:
             temp_user = self.database.find_user(username)
-        except Exception:
+        except pymongo.errors.PyMongoError:
             tk.messagebox.showwarning(
                 "CONNECTION ERROR",
                 "Connection timed out after 5 seconds. Make sure you have a stable internet connection.",
@@ -653,7 +655,7 @@ class OnlineUIMixin:
             other_user = users.find_one(
                 {"username": username, "connect_code": connect_code}, max_time_ms=5000
             )
-        except Exception:
+        except pymongo.errors.PyMongoError:
             tk.messagebox.showwarning(
                 "CONNECTION ERROR",
                 "Connection timed out. Make sure you have a stable internet connection.",
@@ -683,7 +685,7 @@ class OnlineUIMixin:
             # update the other person's account
             users.update_one({"username": username}, {"$push": {"connections": self.user["_id"]}})
             self.user = users.find_one({"username": self.user["username"]}, max_time_ms=5000)
-        except Exception:
+        except pymongo.errors.PyMongoError:
             tk.messagebox.showwarning(
                 "CONNECTION ERROR",
                 "Connection timed out. Make sure you have a stable internet connection.",
@@ -1237,7 +1239,7 @@ class OnlineUIMixin:
         if not hasattr(self, "database"):
             try:
                 self.database = ChimeraDB.connect(self.database_username, self.database_password)
-            except Exception:
+            except pymongo.errors.PyMongoError:
                 tk.messagebox.showwarning(
                     "CONNECTION ERROR",
                     "Connection timed out after 5 seconds. Make sure you have a stable internet connection.",
@@ -1248,7 +1250,7 @@ class OnlineUIMixin:
         # finally we just check for repeated usernames
         try:
             temp = self.database.find_user(user["username"])
-        except Exception:
+        except pymongo.errors.PyMongoError:
             tk.messagebox.showwarning(
                 "CONNECTION ERROR",
                 "Connection timed out. Make sure you have a stable internet connection.",
@@ -1270,7 +1272,7 @@ class OnlineUIMixin:
             try:
                 self.database.replace_user_fields(self.user["username"], user)
                 self.user = self.database.find_user(self.user["username"])
-            except Exception:
+            except pymongo.errors.PyMongoError:
                 tk.messagebox.showwarning(
                     "CONNECTION ERROR",
                     "Connection timed out. Make sure you have a stable internet connection.",
@@ -1284,7 +1286,7 @@ class OnlineUIMixin:
         else:
             try:
                 self.database.insert_user(user)
-            except Exception:
+            except pymongo.errors.PyMongoError:
                 tk.messagebox.showwarning(
                     "CONNECTION ERROR",
                     "Connection timed out. Make sure you have a stable internet connection.",

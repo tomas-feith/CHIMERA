@@ -758,9 +758,9 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
         self.r2_label.place(rely=0.46, relx=0.2)
         self.r2_entry = tk.Entry(self.frame_right, justify='center')
         try: self.chisq_entry.insert(0, f"{self.fit_chi[self.selected_dataset]:.3e}")
-        except Exception: pass
+        except (ValueError, TypeError, IndexError): pass
         try: self.r2_entry.insert(0, f"{self.fit_chi[self.selected_dataset]:.6e}")
-        except Exception: pass
+        except (ValueError, TypeError, IndexError): pass
         self.chisq_entry.place(rely = 0.46, relx=0.75, relwidth=0.08)
         self.chisq_entry.config(state = 'readonly')
         self.r2_entry.place(rely=0.46, relx=0.24, relwidth=0.08)
@@ -906,33 +906,33 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
 
     def erase_all_windows(self):
         try: self.ratio_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.ticks_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.text_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.labels_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.export_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.import_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.login_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.new_account_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.edit_account_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.connections_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.new_connect_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.groups_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.group_settings_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
         try: self.projects_window.destroy()
-        except Exception: pass
+        except AttributeError: pass
 
     def set_ratio(self):
         self.erase_all_windows()
@@ -991,13 +991,13 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
 
         try:
             float(temp_width)
-        except Exception:
+        except ValueError:
             tk.messagebox.showwarning('ERROR',f'Non-numerical input found ({temp_width}) in width entry. Please correct it.')
             return
 
         try:
             float(temp_height)
-        except Exception:
+        except ValueError:
             tk.messagebox.showwarning('ERROR',f'Non-numerical input found ({temp_height}) in height entry. Please correct it.')
             return
 
@@ -1084,13 +1084,13 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
         for val in x_temp:
             try:
                 float(val)
-            except Exception:
+            except ValueError:
                 tk.messagebox.showwarning('ERROR','Non-numerical input found in x-axis ticks. Please correct it.')
                 return
         for val in y_temp:
             try:
                 float(val)
-            except Exception:
+            except ValueError:
                 tk.messagebox.showwarning('ERROR','Non-numerical input found in y-axis ticks. Please correct it.')
                 return
 
@@ -1120,13 +1120,16 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
             residues = [safe_eval(expr, {'np': np, '_x': _x}) for _x in self.abcissas[self.selected_dataset]]
             residues = [y[i] - residues[i] for i in range(len(residues))]
         except Exception:
+            # Broad on purpose: before a fit the parameters are unset, so the
+            # residue calc can fail in several ways (NameError from unreplaced
+            # B[i], IndexError, ...); all mean "fit first".
             tk.messagebox.showwarning('ERROR', 'Can only generate residue data after fit.')
         # erase the plot
         try:
             self.canvas.get_tk_widget().pack_forget()
             del self.canvas
             del self.fig
-        except Exception: pass
+        except AttributeError: pass
         data_string = ''
         if self.err_abcissas[self.selected_dataset][0] == 0:
             for i in range(len(self.abcissas[self.selected_dataset])):
@@ -1284,17 +1287,17 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
             if (self.text_entries[i].get().replace(' ','') != ''):
                 try:
                     float(self.x_entries[i].get())
-                except Exception:
+                except ValueError:
                     tk.messagebox.showwarning('ERROR', f'Non-numerical input found in X position for text {i+1}.')
                     continue
                 try:
                     float(self.y_entries[i].get())
-                except Exception:
+                except ValueError:
                     tk.messagebox.showwarning('ERROR', f'Non-numerical input found in Y position for text {i+1}.')
                     continue
                 try:
                     float(self.fontsize_entries[i].get())
-                except Exception:
+                except ValueError:
                     tk.messagebox.showwarning('ERROR', f'Non-numerical input found in fontsize for text {i+1}.')
                     continue
                 self.plot_text[i] = self.text_entries[i].get()
