@@ -185,9 +185,7 @@ class OnlineUIMixin:
         # password in memory.
         self.user = temp_user
         self.login_window.destroy()
-        tk.messagebox.showinfo(
-            "LOGIN SUCCESSFUL", "Welcome to CHIMERA, {}!".format(self.user["username"])
-        )
+        tk.messagebox.showinfo("LOGIN SUCCESSFUL", f"Welcome to CHIMERA, {self.user['username']}!")
         self.online.delete("Login")
         self.master.unbind("<Control-L>")
         self.master.unbind("<Control-l>")
@@ -435,7 +433,7 @@ class OnlineUIMixin:
 
     def delete_project(self, project_id, project_name):
         if tk.messagebox.askyesno(
-            "DELETE PROJECT {}".format(project_name),
+            f"DELETE PROJECT {project_name}",
             "Are you sure you want to delete this project? This action is immediate and irreversible.",
         ):
             projects = self.database.projects
@@ -672,7 +670,7 @@ class OnlineUIMixin:
         if other_user["_id"] in self.user["connections"]:
             tk.messagebox.showwarning(
                 "REPEATED CONNECTION",
-                "A connection between you and {} already exists.".format(username),
+                f"A connection between you and {username} already exists.",
             )
             self.new_connect_window.destroy()
             return
@@ -695,7 +693,7 @@ class OnlineUIMixin:
 
         tk.messagebox.showinfo(
             "CONNECTION ESTABLISHED",
-            "Your connection with {} has been stablished successfully.".format(username),
+            f"Your connection with {username} has been stablished successfully.",
         )
         self.new_connect_window.destroy()
 
@@ -857,7 +855,7 @@ class OnlineUIMixin:
         self.erase_all_windows()
 
         self.group_settings_window = tk.Toplevel(self.master)
-        self.group_settings_window.title('Manage Group "{}"'.format(group_name))
+        self.group_settings_window.title(f'Manage Group "{group_name}"')
         self.group_settings_window.geometry("800x600")
         self.group_settings_window.configure(background="#E4E4E4")
         self.group_settings_window.resizable(False, False)
@@ -1049,7 +1047,7 @@ class OnlineUIMixin:
 
     def delete_group(self, group_id, group_name):
         if tk.messagebox.askyesno(
-            "DELETE GROUP {}".format(group_name),
+            f"DELETE GROUP {group_name}",
             "Are you sure you want to delete this group? This action is immediate and irreversible.",
         ):
             groups = self.database.groups

@@ -761,9 +761,9 @@ class MainWindow(OnlineUIMixin, tk.Frame):
         self.r2_label = tk.Label(self.frame_right, text=u'R\u00B2', bg='#E4E4E4')
         self.r2_label.place(rely=0.46, relx=0.2)
         self.r2_entry = tk.Entry(self.frame_right, justify='center')
-        try: self.chisq_entry.insert(0, "{0:.3e}".format(self.fit_chi[self.selected_dataset]))
+        try: self.chisq_entry.insert(0, f"{self.fit_chi[self.selected_dataset]:.3e}")
         except Exception: pass
-        try: self.r2_entry.insert(0, "{0:.6e}".format(self.fit_chi[self.selected_dataset]))
+        try: self.r2_entry.insert(0, f"{self.fit_chi[self.selected_dataset]:.6e}")
         except Exception: pass
         self.chisq_entry.place(rely = 0.46, relx=0.75, relwidth=0.08)
         self.chisq_entry.config(state = 'readonly')
@@ -898,7 +898,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
 
     def update_combobox_values(self):
         if (self.dataset_selector.get() in self.data_list) and (self.dataset_selector.get() != self.data_list[self.selected_dataset]):
-            tk.messagebox.showwarning('REPEATED NAMES','There is already a dataset with the name %s. Use a different one.' % self.dataset_selector.get())
+            tk.messagebox.showwarning('REPEATED NAMES',f'There is already a dataset with the name {self.dataset_selector.get()}. Use a different one.')
             self.dataset_selector.set(self.data_list[self.selected_dataset])
         else:
             self.data_list[self.selected_dataset] = self.dataset_selector.get()
@@ -996,13 +996,13 @@ class MainWindow(OnlineUIMixin, tk.Frame):
         try:
             float(temp_width)
         except Exception:
-            tk.messagebox.showwarning('ERROR','Non-numerical input found ({}) in width entry. Please correct it.'.format(temp_width))
+            tk.messagebox.showwarning('ERROR',f'Non-numerical input found ({temp_width}) in width entry. Please correct it.')
             return
 
         try:
             float(temp_height)
         except Exception:
-            tk.messagebox.showwarning('ERROR','Non-numerical input found ({}) in height entry. Please correct it.'.format(temp_height))
+            tk.messagebox.showwarning('ERROR',f'Non-numerical input found ({temp_height}) in height entry. Please correct it.')
             return
 
         self.width_ratio = float(temp_width)
@@ -1048,7 +1048,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
         self.x_ticks = tk.Entry(frame_x,width=50)
         x_content = ''
         for val in self.x_ticks_ref:
-            x_content += '{0:.2f} '.format(val)
+            x_content += f'{val:.2f} '
         self.x_ticks.insert(0, x_content)
         self.x_ticks.pack(side='right',padx=20)
 
@@ -1063,7 +1063,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
         self.y_ticks = tk.Entry(frame_y,width=50)
         y_content = ''
         for val in self.y_ticks_ref:
-            y_content += '{0:.2f} '.format(val)
+            y_content += f'{val:.2f} '
         self.y_ticks.insert(0, y_content)
         self.y_ticks.pack(side='right',padx=20)
 
@@ -1119,7 +1119,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
             expr = self.clean_functions[self.selected_dataset]
             y = self.ordenadas[self.selected_dataset]
             for i in range(len(B)):
-                expr = expr.replace('B[%d]' % i, str(B[i]))
+                expr = expr.replace(f'B[{i}]', str(B[i]))
 
             residues = [safe_eval(expr, {'np': np, '_x': _x}) for _x in self.abcissas[self.selected_dataset]]
             residues = [y[i] - residues[i] for i in range(len(residues))]
@@ -1146,7 +1146,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
 
         self.add_dataset(data_string[:-1])
         self.datasets_to_plot_var[self.selected_dataset].set(0)
-        self.data_list[-1] = 'Residues - %s' % self.data_list[self.selected_dataset]
+        self.data_list[-1] = f'Residues - {self.data_list[self.selected_dataset]}'
         self.want_error[-1].set(0)
         self.dataset_selector.set(self.data_list[-1])
         self.update_databox('')
@@ -1192,7 +1192,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
             self.text_entries.append(tk.Entry(frame,width=60))
             self.text_entries[i].insert(0,self.plot_text[i])
 
-            label = tk.Label(frame, text='Text %d' % (i+1),bg='#E4E4E4')
+            label = tk.Label(frame, text=f'Text {i+1}',bg='#E4E4E4')
             label["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
 
             x_label = tk.Label(frame, text='x', bg='#E4E4E4')
@@ -1289,17 +1289,17 @@ class MainWindow(OnlineUIMixin, tk.Frame):
                 try:
                     float(self.x_entries[i].get())
                 except Exception:
-                    tk.messagebox.showwarning('ERROR', 'Non-numerical input found in X position for text %d.' % (i+1))
+                    tk.messagebox.showwarning('ERROR', f'Non-numerical input found in X position for text {i+1}.')
                     continue
                 try:
                     float(self.y_entries[i].get())
                 except Exception:
-                    tk.messagebox.showwarning('ERROR', 'Non-numerical input found in Y position for text %d.' % (i+1))
+                    tk.messagebox.showwarning('ERROR', f'Non-numerical input found in Y position for text {i+1}.')
                     continue
                 try:
                     float(self.fontsize_entries[i].get())
                 except Exception:
-                    tk.messagebox.showwarning('ERROR', 'Non-numerical input found in fontsize for text %d.' % (i+1))
+                    tk.messagebox.showwarning('ERROR', f'Non-numerical input found in fontsize for text {i+1}.')
                     continue
                 self.plot_text[i] = self.text_entries[i].get()
                 self.text_pos[i] = [float(self.x_entries[i].get()), float(self.y_entries[i].get())]
@@ -1340,21 +1340,21 @@ class MainWindow(OnlineUIMixin, tk.Frame):
                                        tk.Entry(frame2,width=35),
                                        tk.Entry(frame3,width=35)])
 
-            label1 = tk.Label(frame1, text='Label for Dataset %d' % (i+1),bg='#E4E4E4')
+            label1 = tk.Label(frame1, text=f'Label for Dataset {i+1}',bg='#E4E4E4')
             label1["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
             self.label_entries[i][0].insert(0,self.data_labels[i])
             label1.pack(side='left')
             self.label_entries[i][0].pack(side='right')
             frame1.pack(side='top',pady=10)
 
-            label2 = tk.Label(frame2, text='Label for Plotted Function %d' % (i+1),bg='#E4E4E4')
+            label2 = tk.Label(frame2, text=f'Label for Plotted Function {i+1}',bg='#E4E4E4')
             label2["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
             self.label_entries[i][1].insert(0,self.plot_labels[i])
             label2.pack(side='left')
             self.label_entries[i][1].pack(side='right')
             frame2.pack(side='top',pady=10)
 
-            label3 = tk.Label(frame3, text='Label for Fitted Function %d' % (i+1),bg='#E4E4E4')
+            label3 = tk.Label(frame3, text=f'Label for Fitted Function {i+1}',bg='#E4E4E4')
             label3["font"] = ("Roboto",int(20*self.master.winfo_width()/2350))
             self.label_entries[i][2].insert(0,self.fit_labels[i])
             label3.pack(side='left')
@@ -1475,7 +1475,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
 
         json.dump(data,file)
         file.close()
-        tk.messagebox.showinfo('File Saved','File {} has been saved'.format(self.file.split('/')[-1]))
+        tk.messagebox.showinfo('File Saved',f"File {self.file.split('/')[-1]} has been saved")
 
     def open_project(self, event=None, data=None):
         if data is None:
@@ -2047,7 +2047,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
     def check_databox(self):
         for x in range(len(self.dataset_text)):
             if (self.dataset_text[x].replace(' ','') == '' and self.datasets_to_plot_var[x].get()):
-                tk.messagebox.showwarning('ERROR', 'Dataset {} is empty. Insert your data or remove it.'.format(x+1))
+                tk.messagebox.showwarning('ERROR', f'Dataset {x+1} is empty. Insert your data or remove it.')
                 return False
 
         for x in range(len(self.dataset_text)):
@@ -2056,7 +2056,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
                 ponto = split[i].split(' ')
                 ponto = [p for p in ponto if p]
                 if(len(ponto)!= 3 and len(ponto)!= 4 and self.datasets_to_plot_var[x].get()):
-                     tk.messagebox.showwarning('ERROR', 'Dataset {} has at least one point with an incorrect number of columns. Correct it.'.format(x+1))
+                     tk.messagebox.showwarning('ERROR', f'Dataset {x+1} has at least one point with an incorrect number of columns. Correct it.')
                      self.want_fit[self.selected_dataset].set(0)
                      return False
 
@@ -2070,7 +2070,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
                     try:
                         float(k)
                     except ValueError:
-                        tk.messagebox.showwarning('ERROR', 'Dataset {} contains non-numerical input. Only numerical input is allowed.'.format(x+1))
+                        tk.messagebox.showwarning('ERROR', f'Dataset {x+1} contains non-numerical input. Only numerical input is allowed.')
                         self.want_fit[self.selected_dataset].set(0)
                         return False
         return True
@@ -2380,7 +2380,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
             amp = x_max - x_min
             n_ticks = int(amp/float(self.x_axis_tick_space_entry.get().replace(',','.').replace(' ','')))
             if n_ticks > 100:
-                tk.messagebox.showwarning('ERROR','Having {} ticks will make your plot unreabable. Adjust X tick spacing.'.format(n_ticks))
+                tk.messagebox.showwarning('ERROR',f'Having {n_ticks} ticks will make your plot unreabable. Adjust X tick spacing.')
                 return False
 
         if not self.autoscale_y.get():
@@ -2406,7 +2406,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
             amp = y_max - y_min
             n_ticks = int(amp/float(self.y_axis_tick_space_entry.get().replace(',','.').replace(' ','')))
             if n_ticks > 100:
-                tk.messagebox.showwarning('ERROR','Having {} ticks will make your plot unreabable. Adjust Y tick spacing.'.format(n_ticks))
+                tk.messagebox.showwarning('ERROR',f'Having {n_ticks} ticks will make your plot unreabable. Adjust Y tick spacing.')
                 return False
 
         # Test whether the data is fine. If not, we can skip all of this
@@ -2438,7 +2438,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
                 data = StringIO(self.datastring)
                 data_sets = read_file(data, float, False, 0)
                 if data_sets == -2:
-                    tk.messagebox.showwarning('ERROR', 'Dataset {} has at least one point defined incorrectly. Make sure all points have the same number of columns.'.format(select))
+                    tk.messagebox.showwarning('ERROR', f'Dataset {select} has at least one point defined incorrectly. Make sure all points have the same number of columns.')
                     self.dataset_text[select] = ""
                     self.datasetring = ""
                     return False
@@ -2513,12 +2513,12 @@ class MainWindow(OnlineUIMixin, tk.Frame):
             self.x_axis_max_entry.delete(0, 'end')
             self.x_axis_min_entry.delete(0, 'end')
 
-            self.x_axis_max_entry.insert(0, "{0:.3e}".format(max_abc))
-            self.x_axis_min_entry.insert(0, "{0:.3e}".format(min_abc))
+            self.x_axis_max_entry.insert(0, f"{max_abc:.3e}")
+            self.x_axis_min_entry.insert(0, f"{min_abc:.3e}")
 
             amp_x = amp_x/8
             self.x_axis_tick_space_entry.delete(0,'end')
-            self.x_axis_tick_space_entry.insert(0, "{0:.3e}".format(amp_x))
+            self.x_axis_tick_space_entry.insert(0, f"{amp_x:.3e}")
 
         if not self.autoscale_y.get():
             max_ord = float(self.y_axis_max_entry.get().replace(',','.').replace(' ',''))
@@ -2552,12 +2552,12 @@ class MainWindow(OnlineUIMixin, tk.Frame):
             self.y_axis_max_entry.delete(0, 'end')
             self.y_axis_min_entry.delete(0, 'end')
 
-            self.y_axis_max_entry.insert(0, "{0:.3e}".format(max_ord))
-            self.y_axis_min_entry.insert(0, "{0:.3e}".format(min_ord))
+            self.y_axis_max_entry.insert(0, f"{max_ord:.3e}")
+            self.y_axis_min_entry.insert(0, f"{min_ord:.3e}")
 
             amp_y = amp_y/8
             self.y_axis_tick_space_entry.delete(0,'end')
-            self.y_axis_tick_space_entry.insert(0, "{0:.3e}".format(amp_y))
+            self.y_axis_tick_space_entry.insert(0, f"{amp_y:.3e}")
 
         x_ticks = []
         y_ticks = []
@@ -2662,20 +2662,20 @@ class MainWindow(OnlineUIMixin, tk.Frame):
                             for x in range (len(self.param_res_boxes)):
                                 self.param_res_boxes[x].config(state = 'normal')
                                 self.param_res_boxes[x].delete(0, tk.END)
-                                self.param_res_boxes[x].insert(0, '{0:.7e}'.format(self.fit_params[self.selected_dataset][x]))
+                                self.param_res_boxes[x].insert(0, f'{self.fit_params[self.selected_dataset][x]:.7e}')
                                 self.param_res_boxes[x].config(state = 'readonly')
                                 self.param_err_boxes[x].config(state = 'normal')
                                 self.param_err_boxes[x].delete(0, tk.END)
-                                self.param_err_boxes[x].insert(0, '{0:.7e}'.format(self.fit_uncert[self.selected_dataset][x]))
+                                self.param_err_boxes[x].insert(0, f'{self.fit_uncert[self.selected_dataset][x]:.7e}')
                                 self.param_err_boxes[x].config(state = 'readonly')
 
                             self.chisq_entry.config(state = 'normal')
                             self.chisq_entry.delete(0, tk.END)
-                            self.chisq_entry.insert(0, "{0:.3e}".format(self.fit_chi[self.selected_dataset]))
+                            self.chisq_entry.insert(0, f"{self.fit_chi[self.selected_dataset]:.3e}")
                             self.chisq_entry.config(state = 'readonly')
                             self.r2_entry.config(state='normal')
                             self.r2_entry.delete(0, tk.END)
-                            self.r2_entry.insert(0, "{0:.6f}".format(self.fit_r2[self.selected_dataset]))
+                            self.r2_entry.insert(0, f"{self.fit_r2[self.selected_dataset]:.6f}")
                             self.r2_entry.config(state = 'readonly')
         # Maybe also add a condition to check whether the user wants a grid
         self.a.grid(True)
@@ -2802,7 +2802,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
                     self.param_res_boxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.param_res_boxes[x].config(state = 'readonly')
                     self.param_boxes.append(tk.Entry(self.another_frame))
-                    try: self.param_boxes[x].insert(0,"{0:e}".format(self.init_values[self.selected_dataset][x]))
+                    try: self.param_boxes[x].insert(0,f"{self.init_values[self.selected_dataset][x]:e}")
                     except Exception: pass
                     self.param_boxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.param_label.append(tk.Label(self.another_frame, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
@@ -2870,32 +2870,32 @@ class MainWindow(OnlineUIMixin, tk.Frame):
 
                 self.chisq_entry.config(state = 'normal')
                 self.chisq_entry.delete(0, tk.END)
-                try: self.chisq_entry.insert(0, "{0:.3e}".format(self.fit_chi[self.selected_dataset]))
+                try: self.chisq_entry.insert(0, f"{self.fit_chi[self.selected_dataset]:.3e}")
                 except Exception: pass
                 self.chisq_entry.config(state = 'readonly')
 
                 self.r2_entry.config(state = 'normal')
                 self.r2_entry.delete(0, tk.END)
-                try: self.r2_entry.insert(0, "{0:.6f}".format(self.fit_r2[self.selected_dataset]))
+                try: self.r2_entry.insert(0, f"{self.fit_r2[self.selected_dataset]:.6f}")
                 except Exception: pass
                 self.r2_entry.config(state = 'readonly')
                 for x in range(self.box_number):
                     self.param_err_label.append(tk.Label(self.another_frame, text = u'\u03b4' + clean_split[x], bg='#E4E4E4'))
                     self.param_err_label[x].grid(column = 6, row = x, pady=10, sticky= tk.E)
                     self.param_err_boxes.append(tk.Entry(self.another_frame, cursor="arrow", takefocus=0))
-                    try: self.param_err_boxes[x].insert(0,"{0:.7e}".format(self.fit_uncert[self.selected_dataset][x]))
+                    try: self.param_err_boxes[x].insert(0,f"{self.fit_uncert[self.selected_dataset][x]:.7e}")
                     except Exception: pass
                     self.param_err_boxes[x].grid(column=7, row=x, pady=10, padx=(0,10), sticky=tk.W + tk.E)
                     self.param_err_boxes[x].config(state = 'readonly')
                     self.param_res_label.append(tk.Label(self.another_frame, text = clean_split[x], bg='#E4E4E4'))
                     self.param_res_label[x].grid(column = 4, row = x, pady=10, sticky= tk.E)
                     self.param_res_boxes.append(tk.Entry(self.another_frame, cursor="arrow", takefocus=0))
-                    try: self.param_res_boxes[x].insert(0,"{0:.7e}".format(self.fit_params[self.selected_dataset][x]))
+                    try: self.param_res_boxes[x].insert(0,f"{self.fit_params[self.selected_dataset][x]:.7e}")
                     except Exception: pass
                     self.param_res_boxes[x].grid(column=5, row=x, pady=10, sticky=tk.W + tk.E)
                     self.param_res_boxes[x].config(state = 'readonly')
                     self.param_boxes.append(tk.Entry(self.another_frame))
-                    try: self.param_boxes[x].insert(0,"{0:e}".format(self.init_values[self.selected_dataset][x]))
+                    try: self.param_boxes[x].insert(0,f"{self.init_values[self.selected_dataset][x]:e}")
                     except Exception: pass
                     self.param_boxes[x].grid(column=3, row=x, pady=10, sticky=tk.W + tk.E)
                     self.param_label.append(tk.Label(self.another_frame, text = clean_split[x]+'\N{SUBSCRIPT ZERO}', bg='#E4E4E4'))
@@ -2965,7 +2965,7 @@ class MainWindow(OnlineUIMixin, tk.Frame):
         """
         for i in range(len(self.clean_functions)):
             if self.clean_functions[i] == '':
-                tk.messagebox.showwarning('ERROR','Fitting function for dataset {} is not defined. Make sure it is compiled without errors.'.format(i+1))
+                tk.messagebox.showwarning('ERROR',f'Fitting function for dataset {i+1} is not defined. Make sure it is compiled without errors.')
                 return 0
 
         x_points = []
@@ -2989,10 +2989,10 @@ class MainWindow(OnlineUIMixin, tk.Frame):
                 x_err.append(point[1])
 
         if x_err and np.any(np.array(x_err)==0):
-            tk.messagebox.showwarning('ERROR','At least one point in dataset {} has a null x uncertainty. It is not possible to fit data with null uncertainty.'.format(self.current_selection))
+            tk.messagebox.showwarning('ERROR',f'At least one point in dataset {self.current_selection} has a null x uncertainty. It is not possible to fit data with null uncertainty.')
             return 0
         if y_err and np.any(np.array(y_err)==0):
-            tk.messagebox.showwarning('ERROR','At least one point in dataset {} has a null y uncertainty. It is not possible to fit data with null uncertainty.'.format(self.current_selection))
+            tk.messagebox.showwarning('ERROR',f'At least one point in dataset {self.current_selection} has a null y uncertainty. It is not possible to fit data with null uncertainty.')
             return 0
 
         beta, sd_beta, res_var, r2, output = run_odr_fit(
