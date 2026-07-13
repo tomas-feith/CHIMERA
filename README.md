@@ -13,9 +13,12 @@ For the full user documentation see the project home page:
 
 | Path | Purpose |
 | --- | --- |
-| `main.py` | The Tkinter application (windows, widgets, fitting/plotting flow, online mode). |
+| `main.py` | The core Tkinter application (windows, widgets, fitting/plotting flow). |
+| `online_ui.py` | `OnlineUIMixin`: the CHIMERA Online windows (login, account, projects, connections, groups). |
 | `chimera_core.py` | Pure, GUI-independent helpers: expression parsing/validation, LaTeX generation, data-file reading. |
 | `expr_eval.py` | AST-allow-list evaluator used to run fit expressions safely (no `eval` of untrusted input). |
+| `fitting.py` | Orthogonal-distance-regression curve fitting, decoupled from the UI. |
+| `db.py` | `ChimeraDB`: the MongoDB data-access layer for CHIMERA Online. |
 | `tests/` | Pytest suite covering the pure logic in `chimera_core` and `expr_eval`. |
 
 ## Development setup
@@ -65,9 +68,3 @@ menu items are unavailable.
 Executables are produced with [PyInstaller](https://pyinstaller.org/). See
 `Executable_Checklist.txt` for the current step-by-step build commands on
 Windows and Ubuntu.
-
-## Notes
-
-- The code comments are a mix of Portuguese and English for historical reasons;
-  standardising them is a low-priority cleanup and not required to build or run
-  the project.

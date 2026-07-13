@@ -60,8 +60,10 @@ warn_redundant_casts = true
 # The legacy GUI module is untyped; type-check it leniently for now and
 # enforce stricter typing on newly added code (e.g. tests, future modules).
 
+# The legacy GUI modules reference each other's dynamically-set attributes and
+# are untyped; type-check them leniently for now.
 [[tool.mypy.overrides]]
-module = "main"
+module = ["main", "online_ui"]
 ignore_errors = true
 
 # The extracted pure modules are fully typed; require annotations there.
