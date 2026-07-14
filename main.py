@@ -558,7 +558,7 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
                 self.autoscale_y.set(0)
 
         x_min = tk.StringVar()
-        x_min.trace("w", lambda name, index, mode, x_min=x_min: remove_auto_x(x_min))
+        x_min.trace_add("write", lambda name, index, mode, x_min=x_min: remove_auto_x(x_min))
         self.x_axis_min_entry = tk.Entry(self.subframe_right_3, justify='center', textvariable=x_min)
         self.x_axis_min_entry.place(in_ = self.subframe_right_3, relwidth = 0.1, relheight=0.1, relx=0.2, rely=0.1)
         self.x_axis_min_entry.insert(0, "0")
@@ -567,7 +567,7 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
         self.x_axis_to_label.place(in_ = self.subframe_right_3, relwidth=0.05, relheight=0.1, relx=0.3, rely=0.1)
 
         x_max = tk.StringVar()
-        x_max.trace('w', lambda name, index, mode, x_min=x_min: remove_auto_x(x_max))
+        x_max.trace_add("write", lambda name, index, mode, x_min=x_min: remove_auto_x(x_max))
         self.x_axis_max_entry = tk.Entry(self.subframe_right_3, justify='center', textvariable=x_max)
         self.x_axis_max_entry.place(in_ = self.subframe_right_3, relwidth = 0.1, relheight=0.1, relx=0.35, rely=0.1)
         self.x_axis_max_entry.insert(0, "10")
@@ -583,7 +583,7 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
         self.x_axis_tick_space_label.place(in_=self.subframe_right_3, relwidth = 0.22, relheight = 0.1, relx=0.175, rely= 0.4)
 
         x_space = tk.StringVar()
-        x_space.trace('w', lambda name, index, mode, x_space=x_space: remove_auto_x(x_space))
+        x_space.trace_add("write", lambda name, index, mode, x_space=x_space: remove_auto_x(x_space))
         self.x_axis_tick_space_entry = tk.Entry(self.subframe_right_3, textvariable=x_space)
         self.x_axis_tick_space_entry.place(in_ = self.subframe_right_3, relwidth = 0.1, relheight = 0.1, relx = 0.35, rely=0.45, anchor="w")
         self.x_axis_tick_space_entry.insert(0, "1")
@@ -602,7 +602,7 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
         self.y_axis_range_label.place(in_ = self.subframe_right_3, relwidth=0.2, relheight=0.1, relx = 0.50, rely = 0.1)
 
         y_min = tk.StringVar()
-        y_min.trace('w', lambda name, index, mode, y_min=y_min: remove_auto_y(y_min))
+        y_min.trace_add("write", lambda name, index, mode, y_min=y_min: remove_auto_y(y_min))
         self.y_axis_min_entry = tk.Entry(self.subframe_right_3, justify='center', textvariable=y_min)
         self.y_axis_min_entry.place(in_ = self.subframe_right_3, relwidth = 0.1, relheight=0.1, relx=0.70, rely=0.1)
         self.y_axis_min_entry.insert(0, "0")
@@ -611,7 +611,7 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
         self.y_axis_to_label.place(in_ = self.subframe_right_3, relwidth=0.05, relheight=0.1, relx=0.80, rely=0.1)
 
         y_max = tk.StringVar()
-        y_max.trace('w', lambda name, index, mode, y_max=y_max: remove_auto_y(y_max))
+        y_max.trace_add("write", lambda name, index, mode, y_max=y_max: remove_auto_y(y_max))
         self.y_axis_max_entry = tk.Entry(self.subframe_right_3, justify='center', textvariable=y_max)
         self.y_axis_max_entry.place(in_ = self.subframe_right_3, relwidth = 0.1, relheight=0.1, relx=0.85, rely=0.1)
         self.y_axis_max_entry.insert(0, "10")
@@ -627,7 +627,7 @@ class MainWindow(OnlineUIMixin, ProjectIOMixin, PlottingMixin, tk.Frame):
         self.y_axis_tick_space_label.place(in_=self.subframe_right_3, relwidth = 0.22, relheight = 0.1, relx = 0.675, rely= 0.4)
 
         y_space = tk.StringVar()
-        y_space.trace('w', lambda name, index, mode, y_space=y_space: remove_auto_y(y_space))
+        y_space.trace_add("write", lambda name, index, mode, y_space=y_space: remove_auto_y(y_space))
         self.y_axis_tick_space_entry = tk.Entry(self.subframe_right_3, textvariable=y_space)
         self.y_axis_tick_space_entry.place(in_ = self.subframe_right_3, relwidth = 0.1, relheight = 0.1, relx=0.85, rely=0.45, anchor = "w")
         self.y_axis_tick_space_entry.insert(0, "1")
