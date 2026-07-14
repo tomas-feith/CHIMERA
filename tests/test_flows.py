@@ -1,14 +1,22 @@
 """Headless end-to-end tests that drive the real Tkinter ``MainWindow``.
 
 Unlike the other test modules (which exercise pure logic), these construct the
-actual application on a withdrawn Tk root -- without entering ``mainloop`` -- and
-call the real widget methods, so they cover the extracted mixins
-(``PlottingMixin``, ``OnlineUIMixin``) as wired into ``MainWindow``.
+actual application on a real (but off-screen) Tk root -- without entering
+``mainloop`` -- and call the real widget methods, so they cover the extracted
+mixins (``PlottingMixin``, ``OnlineUIMixin``) as wired into ``MainWindow``.
 
 They require a working Tk display; on a headless machine with no ``$DISPLAY``
 (e.g. bare CI) the whole module skips rather than failing. Run CI under a virtual
 framebuffer (``xvfb-run``) to execute them there.
+
+A single Tk root is shared across the module on purpose: creating multiple
+``Tk()`` instances in one process makes tkinter reuse image names across
+interpreters and fail with "can't use pyimageN as iconphoto". The window is left
+mapped (not withdrawn) so its geometry is realised before ``__init__`` resizes
+the logo images -- a withdrawn window reports a width of 1 under Xvfb.
 """
+
+import tkinter.messagebox as mb
 
 import pytest
 
@@ -20,40 +28,45 @@ import main  # noqa: E402
 import online_ui  # noqa: E402
 
 
-@pytest.fixture
-def app(monkeypatch):
-    """A constructed, off-screen MainWindow with dialogs and networking stubbed."""
-    import tkinter.messagebox as mb
-
+@pytest.fixture(scope="module")
+def app():
+    """One constructed, off-screen MainWindow shared by the module's tests."""
     calls = []
-    monkeypatch.setattr(
-        mb, "showwarning", lambda *a, **k: calls.append(("warn", a[0] if a else ""))
-    )
-    monkeypatch.setattr(mb, "showinfo", lambda *a, **k: calls.append(("info", a[0] if a else "")))
-    monkeypatch.setattr(mb, "showerror", lambda *a, **k: calls.append(("err", a[0] if a else "")))
-    monkeypatch.setattr(mb, "askyesno", lambda *a, **k: True)
+    originals = {
+        (main, "check_version"): main.check_version,
+        (mb, "showwarning"): mb.showwarning,
+        (mb, "showinfo"): mb.showinfo,
+        (mb, "showerror"): mb.showerror,
+        (mb, "askyesno"): mb.askyesno,
+    }
     # __init__ calls check_version(), which hits the network -- stub it out.
-    monkeypatch.setattr(main, "check_version", lambda: None)
+    main.check_version = lambda: None
+    mb.showwarning = lambda *a, **k: calls.append(a[0] if a else "")
+    mb.showinfo = lambda *a, **k: calls.append(a[0] if a else "")
+    mb.showerror = lambda *a, **k: calls.append(a[0] if a else "")
+    mb.askyesno = lambda *a, **k: True
 
     try:
         root = tk.Tk()
-    except tk.TclError as exc:  # no display available (headless CI)
+    except tk.TclError as exc:  # no display available (headless CI without Xvfb)
+        for (obj, name), value in originals.items():
+            setattr(obj, name, value)
         pytest.skip(f"no Tk display available: {exc}")
 
-    root.withdraw()
+    root.geometry("1024x768")
+    root.update_idletasks()
     instance = main.MainWindow(master=root)
     instance.dialog_calls = calls
     try:
         yield instance
     finally:
         root.destroy()
-
-
-def _dialog_titles(app):
-    return [c[1] for c in app.dialog_calls]
+        for (obj, name), value in originals.items():
+            setattr(obj, name, value)
 
 
 def test_compile_and_fit_recovers_linear_parameters(app):
+    app.dialog_calls.clear()
     app.create_scatter()
     app.autoscale_x.set(1)
     app.autoscale_y.set(1)
@@ -92,12 +105,13 @@ def test_login_without_credentials_is_graceful(app, monkeypatch):
     monkeypatch.delenv("CHIMERA_USERNAME", raising=False)
     monkeypatch.delenv("CHIMERA_PASSWORD", raising=False)
 
+    app.dialog_calls.clear()
     app.create_login()
     app.username_entry.insert(0, "someone")
     app.password_entry.insert(0, "pw")
     app.login()  # must not raise
 
-    assert any("UNAVAILABLE" in title for title in _dialog_titles(app))
+    assert any("UNAVAILABLE" in title for title in app.dialog_calls)
     assert not hasattr(app, "database")
 
 
@@ -110,10 +124,11 @@ def test_login_with_unreachable_db_is_caught(app, monkeypatch):
 
     monkeypatch.setattr(online_ui.ChimeraDB, "connect", boom)
 
+    app.dialog_calls.clear()
     app.create_login()
     app.username_entry.insert(0, "someone")
     app.password_entry.insert(0, "pw")
     app.login()  # the narrowed `except pymongo.errors.PyMongoError` must catch this
 
-    assert any("CONNECTION ERROR" in title for title in _dialog_titles(app))
+    assert any("CONNECTION ERROR" in title for title in app.dialog_calls)
     assert not hasattr(app, "database")
