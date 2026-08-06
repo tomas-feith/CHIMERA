@@ -3,6 +3,7 @@ name = "chimera"
 version = "1.7.1"
 description = "CHIMERA — a curve fitting and plotting desktop application."
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "matplotlib",
@@ -19,11 +20,12 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mongomock>=4.3.0",
-    "mypy>=1.11",
+    "mypy>=2.3",
     "pandas-stubs",
     "pre-commit>=3.7",
     "pytest>=8",
-    "ruff>=0.6",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16",
     "types-requests",
 ]
 
@@ -73,4 +75,21 @@ disallow_untyped_defs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = "-ra --cov --cov-report=term-missing"
+# For a targeted run that would trip the floor: uv run pytest -k foo --no-cov
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*", "conftest.py"]
+
+[tool.coverage.report]
+# A ratchet, not an aspiration: currently ~41.5% (source only -- counting the
+# test files themselves inflated this to 47%). Only catches regressions; raise
+# it as tests land. The GUI-heavy modules (online_ui, project_io) are thinnest.
+fail_under = 40
+show_missing = true
+exclude_also = [
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

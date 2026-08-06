@@ -2,7 +2,7 @@
 # Update hook versions with `uv run pre-commit autoupdate`.
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.21
+    rev: v0.16.1
     hooks:
       - id: ruff
         name: ruff (lint)
@@ -16,7 +16,7 @@ repos:
         exclude: ^(main|chimera_core)\.py$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.2.0
+    rev: v2.3.0
     hooks:
       - id: mypy
         # Mirror the dependencies mypy needs to resolve imports/stubs, since
