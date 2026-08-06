@@ -19,11 +19,11 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mongomock>=4.3.0",
-    "mypy>=1.11",
+    "mypy>=2.3.0",
     "pandas-stubs",
-    "pre-commit>=3.7",
+    "pre-commit>=4.6.1",
     "pytest>=8",
-    "ruff>=0.6",
+    "ruff>=0.16.1",
     "types-requests",
 ]
 
