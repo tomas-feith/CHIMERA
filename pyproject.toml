@@ -22,7 +22,7 @@ dev = [
     "mongomock>=4.3.0",
     "mypy>=2.3",
     "pandas-stubs",
-    "pre-commit>=3.7",
+    "pre-commit>=4.6.1",
     "pytest>=8",
     "pytest-cov>=7.1.0",
     "ruff>=0.16",
