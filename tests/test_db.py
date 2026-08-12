@@ -5,7 +5,7 @@ mock (mongomock) so no live cluster is required.
 import mongomock
 import pytest
 
-from db import ChimeraDB
+from db import ChimeraDB, _build_uri
 
 
 @pytest.fixture
@@ -61,3 +61,32 @@ def test_collection_accessors_present(database):
     assert database.users is not None
     assert database.projects is not None
     assert database.groups is not None
+
+
+# --- connection URI ------------------------------------------------------
+
+
+def test_uri_contains_plain_credentials_unchanged():
+    uri = _build_uri("alice", "hunter2")
+    assert "://alice:hunter2@" in uri
+
+
+@pytest.mark.parametrize(
+    ("password", "encoded"),
+    [
+        ("p@ssword", "p%40ssword"),
+        ("colon:sep", "colon%3Asep"),
+        ("slash/es", "slash%2Fes"),
+        ("100%sure", "100%25sure"),
+    ],
+)
+def test_uri_percent_encodes_credentials(password, encoded):
+    """@ : / and % are URI delimiters -- unencoded they break the connection string."""
+    uri = _build_uri("user", password)
+    assert f"://user:{encoded}@chimera-data" in uri
+    # The raw character must not survive into the credential section.
+    assert uri.count("@") == 1
+
+
+def test_uri_encodes_the_username_too():
+    assert "://a%40b:pw@" in _build_uri("a@b", "pw")

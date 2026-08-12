@@ -408,5 +408,7 @@ class ProjectIOMixin:
         self._add_hover(self.data_same_x_button)
         self.data_diff_x_button.bind("<Enter>", func=lambda e: "")
         self.data_diff_x_button.bind("<Leave>", func=lambda e: "")
-        text = latexify_data(self.dataset_text, 0)
+        # mode 1 = one X column per dataset. This passed 0 (the shared-X layout),
+        # so both export buttons produced the same table.
+        text = latexify_data(self.dataset_text, 1)
         pyperclip.copy(text)

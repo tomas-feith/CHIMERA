@@ -1,6 +1,7 @@
 """Tests for the ODR fitting layer, exercised without any GUI."""
 
 import numpy as np
+import pytest
 
 from fitting import run_odr_fit
 
@@ -87,3 +88,27 @@ def test_r2_is_nan_when_y_has_no_spread():
     _, _, _, r2, _ = run_odr_fit("B[0]+0*_x", x, y, [], [0.1] * 4, [5.0], 2000)
 
     assert np.isnan(r2)
+
+
+def test_zero_y_uncertainty_is_rejected():
+    """1/0**2 is an infinite weight; it used to poison the fit with nans."""
+    x = [0.0, 1.0, 2.0, 3.0]
+    y = [1.0, 3.0, 5.0, 7.0]
+    y_err = [0.1, 0.0, 0.1, 0.1]
+
+    with pytest.raises(ValueError, match="non-zero"):
+        run_odr_fit("B[0]*_x+B[1]", x, y, [], y_err, [1.0, 0.0], 2000)
+
+
+def test_r2_matches_a_hand_computed_value():
+    """Pins R^2 now that the residual sum is vectorised rather than per-point."""
+    x = [0.0, 1.0, 2.0, 3.0, 4.0]
+    y = [1.0, 3.2, 4.8, 7.1, 8.9]
+    y_err = [0.1] * len(x)
+
+    beta, _, _, r2, _ = run_odr_fit("B[0]*_x+B[1]", x, y, [], y_err, [1.0, 0.0], 2000)
+
+    y_arr = np.asarray(y)
+    predicted = beta[0] * np.asarray(x) + beta[1]
+    expected = 1 - np.sum((y_arr - predicted) ** 2) / np.sum((y_arr - y_arr.mean()) ** 2)
+    assert r2 == pytest.approx(float(expected), rel=1e-9)

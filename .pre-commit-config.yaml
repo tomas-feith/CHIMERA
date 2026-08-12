@@ -1,26 +1,63 @@
-# Run `uv run pre-commit install` once to enable these hooks locally.
-# Update hook versions with `uv run pre-commit autoupdate`.
-repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.1
-    hooks:
-      - id: ruff
-        name: ruff (lint)
-        args: [--fix]
-      - id: ruff-format
-        name: ruff (format check)
-        args: [--check]
-        # The legacy code (the monolith and the functions extracted from it) is
-        # intentionally left unformatted for now; formatting is enforced on
-        # tests and any newly added modules.
-        exclude: ^(main|chimera_core)\.py$
+# Pre-commit hooks. Install once (wires both pre-commit and pre-push):
+#   uv run pre-commit install
+# Run against everything on demand:
+#   uv run pre-commit run --all-files
+#
+# ruff / mypy / pytest run through `uv run --no-sync` so they use the exact
+# versions pinned in uv.lock -- the same ones CI uses. A separately-pinned
+# ruff-pre-commit / mirrors-mypy rev drifts from the project and starts
+# disagreeing with CI.
+#
+# The legacy-file format exclusions live in [tool.ruff.format] in pyproject, not
+# in an `exclude:` here, so there is one list rather than three.
+default_install_hook_types: [pre-commit, pre-push]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.3.0
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
     hooks:
+      # CHIMERA Online credentials come from the environment; make sure they
+      # never end up in a commit instead.
+      - id: gitleaks
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: detect-private-key
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff (lint)
+        entry: uv run --no-sync ruff check --fix --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+
+      - id: ruff-format
+        name: ruff (format)
+        entry: uv run --no-sync ruff format --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+
       - id: mypy
-        # Mirror the dependencies mypy needs to resolve imports/stubs, since
-        # pre-commit runs the hook in its own isolated environment.
-        additional_dependencies:
-          - pandas-stubs
-          - types-requests
+        name: mypy
+        entry: uv run --no-sync mypy .
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: pytest
+        name: pytest
+        entry: uv run --no-sync python -m pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push] # the Tk tests are slow; keep commits fast

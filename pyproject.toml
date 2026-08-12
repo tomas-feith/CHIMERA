@@ -3,7 +3,9 @@ name = "chimera"
 version = "1.7.1"
 description = "CHIMERA — a curve fitting and plotting desktop application."
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Tomás Feith" }]
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "matplotlib",
@@ -36,6 +38,13 @@ package = false
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.format]
+# The legacy single-file core is deliberately not reformatted -- doing so would
+# produce an unreviewable diff across ~2.3k lines. `ruff check` still covers it.
+# Declared here rather than as --exclude flags so CI, the pre-commit hook and a
+# bare `ruff format` all agree without repeating the list.
+exclude = ["main.py", "chimera_core.py"]
 
 [tool.ruff.lint]
 # Start from a pragmatic baseline for this legacy single-file app.
@@ -83,10 +92,11 @@ source = ["."]
 omit = ["tests/*", "conftest.py"]
 
 [tool.coverage.report]
-# A ratchet, not an aspiration: currently ~41.5% (source only -- counting the
+# A ratchet, not an aspiration: currently ~43% (source only -- counting the
 # test files themselves inflated this to 47%). Only catches regressions; raise
-# it as tests land. The GUI-heavy modules (online_ui, project_io) are thinnest.
-fail_under = 40
+# it as tests land. The GUI-heavy modules (online_ui 12%, project_io 6%) are
+# the thin ones; the pure modules are at 83-100%.
+fail_under = 42
 show_missing = true
 exclude_also = [
     "if __name__ == .__main__.:",

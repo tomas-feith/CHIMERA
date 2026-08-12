@@ -53,8 +53,17 @@ def run_odr_fit(
     """
     x = np.asarray(x_points, dtype=float)
     y = np.asarray(y_points, dtype=float)
+    sigma_y = np.asarray(y_err, dtype=float)
+    # A zero uncertainty means "this point is exact", which as a weight is 1/0.
+    # Left alone that silently became inf and poisoned the whole fit with nan
+    # betas; say so instead, since only the caller can fix the data.
+    if np.any(sigma_y == 0):
+        raise ValueError(
+            "y uncertainties must be non-zero: a zero uncertainty gives the point "
+            "infinite weight. Use a small positive value instead."
+        )
     # scipy.odr took standard deviations (sy); odrpack takes weights = 1/sy**2.
-    weight_y = 1.0 / np.asarray(y_err, dtype=float) ** 2
+    weight_y = 1.0 / sigma_y**2
 
     fit = odr_fit(
         lambda xd, beta: _evaluate(expr, beta, xd),
@@ -67,10 +76,13 @@ def run_odr_fit(
     )
     full_output = _format_output(fit)
 
-    # coefficient of determination R^2. Undefined when the data has no spread in
+    # Coefficient of determination R^2. Undefined when the data has no spread in
     # y (all points equal): ss_tot == 0 would divide by zero, so report nan.
-    ss_tot = sum((yi - np.average(y)) ** 2 for yi in y)
-    ss_res = sum((y[i] - _evaluate(expr, fit.beta, x[i])) ** 2 for i in range(len(y)))
+    # Both sums are vectorised: ss_tot recomputed np.average(y) once per point,
+    # and ss_res called the expression evaluator once per point, when the
+    # expression is already array-valued (that is how odr_fit calls it).
+    ss_tot = float(np.sum((y - np.average(y)) ** 2))
+    ss_res = float(np.sum((y - _evaluate(expr, fit.beta, x)) ** 2))
     r2 = float("nan") if ss_tot == 0 else 1 - ss_res / ss_tot
 
     return fit.beta, fit.sd_beta, fit.res_var, r2, full_output

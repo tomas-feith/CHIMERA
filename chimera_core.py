@@ -14,6 +14,63 @@ from expr_eval import UnsafeExpressionError, safe_eval
 def take_first(elem: str) -> float:
     return float(elem.split('&')[0].split('$\\pm$')[0])
 
+MISSING_CELL = '$-$'
+
+def _split_point(point: list[str]) -> tuple[str, str]:
+    """Return the (x, y) LaTeX cells for one data point.
+
+    A point is either ``x y yerr`` (3 fields) or ``x xerr y yerr`` (4), which is
+    what the data entry box produces.
+    """
+    if len(point) >= 4:
+        return f'{point[0]}$\\pm${point[1]}', f'{point[2]}$\\pm${point[3]}'
+    if len(point) == 3:
+        return point[0], f'{point[1]}$\\pm${point[2]}'
+    if len(point) == 2:
+        return point[0], point[1]
+    raise ValueError(f'malformed data point: {" ".join(point)!r}')
+
+def _shared_x_rows(datasets: list[list[list[str]]]) -> list[str]:
+    """Rows for mode 0: one X column, one Y column per dataset.
+
+    Each dataset always writes into its own Y column. The previous version built
+    a row starting from whichever dataset first introduced that x value and then
+    appended the *other* datasets in order -- so an x contributed only by, say,
+    the second dataset put its y under Y1 and left Y2 empty. Silently wrong
+    numbers in an exported table, which is about the worst place for them.
+    """
+    by_x: list[float] = []
+    x_cells: dict[float, str] = {}
+    for dataset in datasets:
+        for point in dataset:
+            x = float(point[0])
+            if x not in x_cells:
+                x_cells[x] = _split_point(point)[0]
+                by_x.append(x)
+
+    rows = []
+    for x in by_x:
+        cells = [x_cells[x]]
+        for dataset in datasets:
+            match = next((p for p in dataset if float(p[0]) == x), None)
+            cells.append(_split_point(match)[1] if match is not None else MISSING_CELL)
+        rows.append(' & '.join(cells) + ' \\\\')
+    rows.sort(key=take_first)
+    return rows
+
+def _per_dataset_x_rows(datasets: list[list[list[str]]]) -> list[str]:
+    """Rows for mode 1: an X and a Y column for every dataset, aligned by index."""
+    rows = []
+    for i in range(max(len(dataset) for dataset in datasets)):
+        cells: list[str] = []
+        for dataset in datasets:
+            if i >= len(dataset):
+                cells += [MISSING_CELL, MISSING_CELL]
+            else:
+                cells += list(_split_point(dataset[i]))
+        rows.append(' & '.join(cells) + ' \\\\')
+    return rows
+
 def latexify_data(data: list[str], mode: int) -> str:
     """
     Given a batch of datasets, generate the LaTeX text for a table.
@@ -31,6 +88,9 @@ def latexify_data(data: list[str], mode: int) -> str:
     str
         The LaTeX source for the table.
     """
+    if mode not in (0, 1):
+        raise ValueError(f'unknown table mode {mode!r}; expected 0 (shared x) or 1 (x per set)')
+
     datasets = [[point.split(' ') for point in dataset.split('\n')] for dataset in data]
 
     latex_table = r"""% Add the following required packages to your document preamble:
@@ -43,56 +103,17 @@ def latexify_data(data: list[str], mode: int) -> str:
 {\renewcommand{\arraystretch}{1.1}
 \begin{tabular}{"""
     if mode == 0:
-        latex_table +=r'c|'
-        latex_table += 'c' * len(datasets)
-        latex_table+='}\n\\hline\n X & '
-        for i in range(len(datasets)):
-            latex_table += 'Y%d & ' % (i+1)
-        latex_table = latex_table[:-2] + '\\\\ \\hline \n'
-        used_x = []
-        data_text = []
-        for dataset in datasets:
-            for point in dataset:
-                x = float(point[0])
-                if x not in used_x:
-                    if len(point) == 3:
-                        data_text.append('%s & %s$\\pm$%s ' % (point[0], point[1], point[2]))
-                    if len(point) == 4:
-                        data_text.append('%s$\\pm$%s & %s$\\pm$%s' % (point[0], point[1], point[2], point[3]))
-                    used_x.append(x)
-                    for inner_dataset in datasets:
-                        if inner_dataset != dataset:
-                            found = 0
-                            for inner_point in inner_dataset:
-                                if float(inner_point[0]) == x:
-                                    found = 1
-                                    data_text[-1] += '& %s$\\pm$%s ' % (inner_point[-2], inner_point[-1])
-                                    break
-                            if found == 0:
-                                data_text[-1] += '& $-$ '
-                    data_text[-1] += ' \\\\'
-        data_text.sort(key=take_first)
-
-    if mode == 1:
-        latex_table += 'cc|' * len(datasets)
-        latex_table = latex_table[:-1] + '}\n\\hline\n'
-        for i in range(len(datasets)):
-            latex_table += 'X%d & Y%d & ' % (i+1,i+1)
-        latex_table = latex_table[:-2] + '\\\\ \\hline \n'
-        max_size = max(len(dataset) for dataset in datasets)
-        data_text = ['' for i in range(max_size)]
-        for i in range(max_size):
-            for dataset in datasets:
-                if i >= len(dataset):
-                    data_text[i] += ('$-$ & $-$ & ')
-                else:
-                    point = dataset[i]
-                    if len(point) == 3:
-                        data_text[i] += '%s & %s$\\pm$%s & ' % (point[0], point[1], point[2])
-                    if len(point) == 4:
-                        data_text[i] += '%s$\\pm$%s & %s$\\pm$%s & ' % (point[0], point[1], point[2], point[3])
-        for i in range(len(data_text)):
-            data_text[i] = data_text[i][:-2] + '\\\\'
+        latex_table += 'c|' + 'c' * len(datasets)
+        latex_table += '}\n\\hline\n X & '
+        latex_table += ' & '.join('Y%d' % (i + 1) for i in range(len(datasets)))
+        latex_table += '\\\\ \\hline \n'
+        data_text = _shared_x_rows(datasets)
+    else:
+        latex_table += ('cc|' * len(datasets))[:-1]
+        latex_table += '}\n\\hline\n'
+        latex_table += ' & '.join('X%d & Y%d' % (i + 1, i + 1) for i in range(len(datasets)))
+        latex_table += '\\\\ \\hline \n'
+        data_text = _per_dataset_x_rows(datasets)
 
     for line in data_text:
         latex_table += line + '\n'

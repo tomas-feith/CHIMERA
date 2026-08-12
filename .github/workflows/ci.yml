@@ -6,7 +6,7 @@ on:
   pull_request:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 # Least privilege: nothing here writes to the repo.
@@ -42,8 +42,10 @@ jobs:
       - name: Ruff lint
         run: uv run ruff check .
 
+      # The legacy-file exclusions live in [tool.ruff.format] in pyproject, so
+      # this command, the pre-commit hook and a bare `ruff format` all agree.
       - name: Ruff format check
-        run: uv run ruff format --check --exclude main.py --exclude chimera_core.py .
+        run: uv run ruff format --check .
 
       - name: Mypy
         run: uv run mypy .

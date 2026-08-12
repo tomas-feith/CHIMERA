@@ -10,6 +10,7 @@ and shared credentials -- that architectural limitation is tracked separately
 """
 
 from typing import Any
+from urllib.parse import quote_plus
 
 import pymongo
 
@@ -18,6 +19,17 @@ _URI_TEMPLATE = (
     "@chimera-data.gbqbn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 )
 _MAX_TIME_MS = 5000
+
+
+def _build_uri(username: str, password: str) -> str:
+    """The connection URI, with credentials percent-encoded.
+
+    MongoDB requires this: ``@``, ``:``, ``/`` and ``%`` are all URI delimiters,
+    so a password containing any of them silently produced a malformed URI and
+    an opaque connection failure. Percent-encoding is what MongoDB's own docs
+    prescribe for credentials embedded in a connection string.
+    """
+    return _URI_TEMPLATE.format(user=quote_plus(username), password=quote_plus(password))
 
 
 class ChimeraDB:
@@ -36,7 +48,7 @@ class ChimeraDB:
     @classmethod
     def connect(cls, username: str, password: str, connect_timeout_ms: int = 5000) -> "ChimeraDB":
         client: Any = pymongo.MongoClient(
-            _URI_TEMPLATE.format(user=username, password=password),
+            _build_uri(username, password),
             connectTimeoutMS=connect_timeout_ms,
         )
         return cls(client.CHIMERA, client=client)
