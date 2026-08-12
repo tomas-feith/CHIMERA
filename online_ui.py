@@ -7,17 +7,14 @@ methods (``self.master``, ``self.online``, ``self.focus_window``,
 ``self._add_hover``, ``self.erase_all_windows`` ...) defined there.
 """
 
-import hashlib
-import hmac
 import os
-import re
-import secrets
 import tkinter as tk
 import tkinter.messagebox  # noqa: F401  (enables ``tk.messagebox`` access)
 from tkinter import ttk
 
 import pymongo
 
+import chimera_accounts
 from db import ChimeraDB
 
 
@@ -174,14 +171,24 @@ class OnlineUIMixin:
             return
 
         # now we check if the password matches, using a constant-time comparison
-        salt = temp_user["password"][:32]
-        key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100000)
-        if not hmac.compare_digest(key, temp_user["password"][32:]):
+        if not chimera_accounts.verify_password(password, temp_user.get("password")):
             tk.messagebox.showwarning(
                 "INVALID LOGIN", "The username and/or the password are incorrect."
             )
             self.create_login()
             return
+
+        # Correct password, but stored at an out-of-date work factor: this is
+        # the only moment the plaintext is available, so upgrade it here. Best
+        # effort -- a failed write must not block a valid login.
+        if chimera_accounts.needs_rehash(temp_user.get("password")):
+            try:
+                self.database.replace_user_fields(
+                    username, {"password": chimera_accounts.hash_password(password)}
+                )
+                temp_user = self.database.find_user(username) or temp_user
+            except pymongo.errors.PyMongoError:
+                pass
 
         # Keep the stored account document, but never retain the plaintext
         # password in memory.
@@ -662,19 +669,14 @@ class OnlineUIMixin:
             )
             self.new_connect_window.destroy()
             return
-        if other_user is None:
-            tk.messagebox.showwarning(
-                "INVALID CONNECTION",
-                "The username and/or the connection code provided are incorrect.",
-            )
-            self.add_connection()
-            return
-        if other_user["_id"] in self.user["connections"]:
-            tk.messagebox.showwarning(
-                "REPEATED CONNECTION",
-                f"A connection between you and {username} already exists.",
-            )
-            self.new_connect_window.destroy()
+        try:
+            chimera_accounts.check_new_connection(self.user, other_user, username)
+        except chimera_accounts.ValidationError as invalid:
+            tk.messagebox.showwarning(invalid.title, invalid.message)
+            if invalid.retry:
+                self.add_connection()
+            else:
+                self.new_connect_window.destroy()
             return
 
         try:
@@ -1145,6 +1147,13 @@ class OnlineUIMixin:
         self._add_hover(create_account_button)
         create_account_button.place(rely=0.7, relx=0.36)
 
+    def _reopen_account_dialog(self, update):
+        """Put the user back in the dialog they came from after a rejection."""
+        if update:
+            self.edit_account()
+        else:
+            self.setup_account()
+
     def save_account(self, event=None):
         if not self.load_db_credentials():
             return
@@ -1154,87 +1163,25 @@ class OnlineUIMixin:
         password = self.password_entry.get()
         email = self.email_entry.get()
 
-        # regular expression to validate email
-        regex = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
-
-        # tests on the username
-        if " " in username or "\t" in username:
-            tk.messagebox.showwarning(
-                "INVALID USERNAME", "Username cannot contain whitespace (spaces, tabs,...)."
-            )
-            if not hasattr(self, "user"):
-                self.setup_account()
-            else:
-                self.edit_account()
-            return
-        elif len(username) == 0:
-            tk.messagebox.showwarning(
-                "INVALID USERNAME", "Username needs to have at least one character."
-            )
-            if not hasattr(self, "user"):
-                self.setup_account()
-            else:
-                self.edit_account()
-            return
-
-        # tests on the password
-        elif " " in password or "\t" in password:
-            tk.messagebox.showwarning(
-                "INVALID PASSWORD", "Password cannot contain whitespace (spaces, tabs,...)."
-            )
-            if not hasattr(self, "user"):
-                self.setup_account()
-            else:
-                self.edit_account()
-            return
-        elif len(password) < 8:
-            tk.messagebox.showwarning(
-                "INVALID PASSWORD", "Password needs to have at least 8 characters."
-            )
-            if not hasattr(self, "user"):
-                self.setup_account()
-            else:
-                self.edit_account()
-            return
-
-        # tests on the email
-        elif not re.fullmatch(regex, email):
-            tk.messagebox.showwarning("INVALID EMAIL", "Please provide a valid email address.")
-            if not hasattr(self, "user"):
-                self.setup_account()
-            else:
-                self.edit_account()
-            return
-
         update = hasattr(self, "user")
 
-        # Hash the (new) password for storage: 32-byte salt followed by the key.
-        salt = os.urandom(32)
-        key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100000)
-        hashed_pass = salt + key
+        try:
+            chimera_accounts.validate_account(username, password, email)
+        except chimera_accounts.ValidationError as invalid:
+            # Every one of these checks used to repeat the same six lines of
+            # "warn, then reopen whichever dialog we came from"; five copies of
+            # it, differing only in the message.
+            tk.messagebox.showwarning(invalid.title, invalid.message)
+            if invalid.retry:
+                self._reopen_account_dialog(update)
+            return
 
-        if update:
-            # Preserve the existing connection code, connections and projects.
-            user = {
-                "username": username,
-                "password": hashed_pass,  # first 32 bytes are the salt, rest is the key
-                "email": email,
-                "connect_code": self.user["connect_code"],
-                "connections": self.user.get("connections", []),
-                "projects": self.user.get("projects", []),
-            }
-        else:
-            # New account: generate a unique connection code.
-            characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-            connect_code = "".join(secrets.choice(characters) for _ in range(10))
-            user = {
-                "username": username,
-                "password": hashed_pass,  # first 32 bytes are the salt, rest is the key
-                "email": email,
-                "connect_code": connect_code,
-                "connections": [],
-                "projects": [],
-            }
+        user = chimera_accounts.build_user_document(
+            username,
+            chimera_accounts.hash_password(password),
+            email,
+            existing=self.user if update else None,
+        )
 
         if not hasattr(self, "database"):
             try:
@@ -1262,10 +1209,7 @@ class OnlineUIMixin:
                 "INVALID USERNAME",
                 "The username provided is already connected to an existing account. Please select a different, unique username.",
             )
-            if update:
-                self.edit_account()
-            else:
-                self.setup_account()
+            self._reopen_account_dialog(update)
             return
 
         if update:
