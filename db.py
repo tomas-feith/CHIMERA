@@ -9,7 +9,7 @@ and shared credentials -- that architectural limitation is tracked separately
 (code-review item #1). Everything else is plain data access.
 """
 
-from typing import Any
+from typing import Any, NamedTuple
 from urllib.parse import quote_plus
 
 import pymongo
@@ -30,6 +30,30 @@ def _build_uri(username: str, password: str) -> str:
     prescribe for credentials embedded in a connection string.
     """
     return _URI_TEMPLATE.format(user=quote_plus(username), password=quote_plus(password))
+
+
+class _Snapshot(NamedTuple):
+    """One array field as it was before a write, so it can be put back exactly."""
+
+    collection: Any
+    doc_id: Any
+    field: str
+    value: list
+
+
+def _restore(snapshots: list[_Snapshot]) -> None:
+    """Put snapshotted array fields back, most recent change first.
+
+    Every undo is attempted even if an earlier one fails: one unreachable
+    document should not strand the rest. Failures here are swallowed
+    deliberately -- the caller re-raises the original error, which is the one
+    worth reporting, and a raise from inside the rollback would mask it.
+    """
+    for snap in reversed(snapshots):
+        try:
+            snap.collection.update_one({"_id": snap.doc_id}, {"$set": {snap.field: snap.value}})
+        except pymongo.errors.PyMongoError:
+            continue
 
 
 class ChimeraDB:
@@ -90,29 +114,81 @@ class ChimeraDB:
     # better and exercised by the tests.
 
     def connect_users(self, a_username: str, a_id: Any, b_username: str, b_id: Any) -> None:
-        """Record a connection on both accounts, or on neither."""
+        """Record a connection on both accounts, or on neither.
+
+        Undo restores the original array rather than pulling the id back out,
+        for the same reason as :meth:`disconnect_users`: ``$pull`` would also
+        remove a pre-existing duplicate that was never ours to touch.
+        """
+        a_before = self.users.find_one({"username": a_username}, {"connections": 1})
+
         self.users.update_one({"username": a_username}, {"$push": {"connections": b_id}})
         try:
             self.users.update_one({"username": b_username}, {"$push": {"connections": a_id}})
         except pymongo.errors.PyMongoError:
-            self.users.update_one({"username": a_username}, {"$pull": {"connections": b_id}})
+            if a_before is not None:
+                _restore(
+                    [
+                        _Snapshot(
+                            self.users,
+                            a_before["_id"],
+                            "connections",
+                            a_before.get("connections", []),
+                        )
+                    ]
+                )
             raise
 
     def disconnect_users(self, a_username: str, a_id: Any, b_id: Any) -> None:
-        """Remove a connection from both accounts, or from neither."""
-        self.users.update_one({"username": a_username}, {"$pull": {"connections": b_id}})
-        try:
-            self.users.update_one({"_id": b_id}, {"$pull": {"connections": a_id}})
-        except pymongo.errors.PyMongoError:
-            self.users.update_one({"username": a_username}, {"$push": {"connections": b_id}})
-            raise
+        """Undo a connection completely: both accounts and ``a``'s groups.
 
-    def drop_member_from_owned_groups(self, owner_username: str, member_id: Any) -> Any:
-        """Remove a user from every group the given owner runs."""
-        return self.groups.update_many(
-            {"owner": owner_username, "members": {"$in": [member_id]}},
-            {"$pull": {"members": member_id}},
+        Dropping ``b`` from the groups ``a`` owns is part of the same change --
+        leaving someone in a group they can no longer be reached through is the
+        same inconsistency, just one level along -- so all three writes succeed
+        together or none of them do.
+
+        Undo restores the *original arrays* rather than pushing the id back.
+        ``$pull`` removes every occurrence of a value, so a push would not
+        reconstruct a list that happened to hold duplicates -- and duplicates
+        were exactly what the self-connection bug used to produce.
+        """
+        # Snapshot first: the undo has to know what these looked like, and a
+        # failure here means nothing has been written yet.
+        a_before = self.users.find_one({"username": a_username}, {"connections": 1})
+        b_before = self.users.find_one({"_id": b_id}, {"connections": 1})
+        groups_before = list(
+            self.groups.find({"owner": a_username, "members": {"$in": [b_id]}}, {"members": 1})
         )
+
+        undo: list[_Snapshot] = []
+        try:
+            if a_before is not None:
+                self.users.update_one({"_id": a_before["_id"]}, {"$pull": {"connections": b_id}})
+                undo.append(
+                    _Snapshot(
+                        self.users, a_before["_id"], "connections", a_before.get("connections", [])
+                    )
+                )
+            if b_before is not None:
+                self.users.update_one({"_id": b_id}, {"$pull": {"connections": a_id}})
+                undo.append(
+                    _Snapshot(self.users, b_id, "connections", b_before.get("connections", []))
+                )
+            if groups_before:
+                # update_many is not atomic across documents either, so it can
+                # fail partway. Restoring every snapshot is correct however far
+                # it got.
+                undo.extend(
+                    _Snapshot(self.groups, g["_id"], "members", g.get("members", []))
+                    for g in groups_before
+                )
+                self.groups.update_many(
+                    {"_id": {"$in": [g["_id"] for g in groups_before]}},
+                    {"$pull": {"members": b_id}},
+                )
+        except pymongo.errors.PyMongoError:
+            _restore(undo)
+            raise
 
     # --- projects --------------------------------------------------------
 

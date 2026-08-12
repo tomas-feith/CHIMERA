@@ -594,11 +594,9 @@ class OnlineUIMixin:
 
     def disconnect_user(self, user):
         try:
-            # Both sides, or neither -- see ChimeraDB.disconnect_users. The group
-            # cleanup follows: a user left in a group they are no longer
-            # connected to is untidy, a one-way connection is corrupt.
+            # Both accounts and the groups I own, all together or not at all --
+            # see ChimeraDB.disconnect_users.
             self.database.disconnect_users(self.user["username"], self.user["_id"], user)
-            self.database.drop_member_from_owned_groups(self.user["username"], user)
             self.user = self.database.find_user(self.user["username"])
         except pymongo.errors.PyMongoError:
             # This had no handler at all, so a dropped connection surfaced as a

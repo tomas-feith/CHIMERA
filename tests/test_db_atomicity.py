@@ -139,6 +139,67 @@ def test_disconnect_is_idempotent(database: ChimeraDB, pair) -> None:
     assert connections_of(database, "alice") == []
 
 
+def test_disconnecting_also_drops_them_from_the_groups_you_own(database: ChimeraDB, pair) -> None:
+    """The group cleanup is part of the same change, not a follow-up step."""
+    alice, bob = pair
+    database.connect_users("alice", alice["_id"], "bob", bob["_id"])
+    database.groups.insert_one({"name": "g1", "owner": "alice", "members": [bob["_id"]]})
+    database.groups.insert_one({"name": "g2", "owner": "alice", "members": [bob["_id"], "carol"]})
+
+    database.disconnect_users("alice", alice["_id"], bob["_id"])
+
+    assert connections_of(database, "alice") == []
+    assert connections_of(database, "bob") == []
+    assert database.groups.find_one({"name": "g1"})["members"] == []
+    assert database.groups.find_one({"name": "g2"})["members"] == ["carol"]
+
+
+def test_a_failure_during_the_group_step_rolls_back_the_connection_too(
+    database: ChimeraDB, pair
+) -> None:
+    """The whole point of folding the groups in: a failure at the last write
+    must not leave the users disconnected but still grouped together."""
+    alice, bob = pair
+    database.connect_users("alice", alice["_id"], "bob", bob["_id"])
+    database.groups.insert_one({"name": "g1", "owner": "alice", "members": [bob["_id"]]})
+
+    class FailingGroupUpdate:
+        def __init__(self, collection):
+            self._collection = collection
+
+        def update_many(self, *args, **kwargs):
+            raise pymongo.errors.AutoReconnect("connection lost")
+
+        def __getattr__(self, name):
+            return getattr(self._collection, name)
+
+    database.groups = FailingGroupUpdate(database.groups)
+    with pytest.raises(pymongo.errors.PyMongoError):
+        database.disconnect_users("alice", alice["_id"], bob["_id"])
+
+    # Both connection sides restored...
+    assert connections_of(database, "alice") == [bob["_id"]]
+    assert connections_of(database, "bob") == [alice["_id"]]
+    # ...and the group membership never changed.
+    assert database.groups.find_one({"name": "g1"})["members"] == [bob["_id"]]
+
+
+def test_rollback_restores_duplicates_exactly(database: ChimeraDB, pair) -> None:
+    """$pull removes every occurrence, so a push-back would not reconstruct a
+    list holding duplicates -- which the old self-connection bug produced."""
+    alice, bob = pair
+    database.users.update_one(
+        {"username": "alice"},
+        {"$set": {"connections": [bob["_id"], bob["_id"], "someone-else"]}},
+    )
+    database.users = FailingSecondWrite(database.users)
+
+    with pytest.raises(pymongo.errors.PyMongoError):
+        database.disconnect_users("alice", alice["_id"], bob["_id"])
+
+    assert connections_of(database, "alice") == [bob["_id"], bob["_id"], "someone-else"]
+
+
 # --- projects and groups ---------------------------------------------------
 
 
@@ -201,11 +262,14 @@ def test_removing_a_project_from_a_group_actually_removes_it(database: ChimeraDB
     assert database.groups.find_one({"_id": group.inserted_id})["projects"] == ["p2"]
 
 
-def test_dropping_a_member_only_touches_groups_you_own(database: ChimeraDB) -> None:
-    database.groups.insert_one({"name": "mine", "owner": "alice", "members": ["bob", "carol"]})
-    database.groups.insert_one({"name": "theirs", "owner": "dave", "members": ["bob"]})
+def test_disconnecting_only_touches_groups_you_own(database: ChimeraDB, pair) -> None:
+    alice, bob = pair
+    database.connect_users("alice", alice["_id"], "bob", bob["_id"])
+    database.groups.insert_one({"name": "mine", "owner": "alice", "members": [bob["_id"], "carol"]})
+    database.groups.insert_one({"name": "theirs", "owner": "dave", "members": [bob["_id"]]})
 
-    database.drop_member_from_owned_groups("alice", "bob")
+    database.disconnect_users("alice", alice["_id"], bob["_id"])
 
     assert database.groups.find_one({"name": "mine"})["members"] == ["carol"]
-    assert database.groups.find_one({"name": "theirs"})["members"] == ["bob"]
+    # Someone else's group is not ours to edit.
+    assert database.groups.find_one({"name": "theirs"})["members"] == [bob["_id"]]
