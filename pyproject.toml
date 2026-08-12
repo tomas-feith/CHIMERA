@@ -65,7 +65,10 @@ ignore = [
 
 [tool.mypy]
 python_version = "3.12"
-ignore_missing_imports = true
+# No blanket ignore_missing_imports: every dependency here either ships type
+# information or has stubs in the dev group (pandas-stubs, types-requests).
+# Removing it was a no-op for the error count and means an import that stops
+# resolving -- a typo, or a module that moved -- now fails instead of passing.
 warn_unused_ignores = true
 warn_redundant_casts = true
 # The legacy GUI module is untyped; type-check it leniently for now and
