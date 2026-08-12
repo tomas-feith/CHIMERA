@@ -96,11 +96,12 @@ source = ["."]
 omit = ["tests/*", "conftest.py"]
 
 [tool.coverage.report]
-# A ratchet, not an aspiration: currently ~43% (source only -- counting the
-# test files themselves inflated this to 47%). Only catches regressions; raise
-# it as tests land. The GUI-heavy modules (online_ui 12%, project_io 6%) are
-# the thin ones; the pure modules are at 83-100%.
-fail_under = 42
+# A ratchet, not an aspiration: currently ~51% (source only -- counting the
+# test files themselves inflated this to 47% back when the floor was 40). Only
+# catches regressions; raise it as tests land. online_ui (12%) is now the thin
+# one; project_io went 6% -> 56% when the .chi format moved into
+# chimera_project, and the pure modules are at 83-100%.
+fail_under = 49
 show_missing = true
 exclude_also = [
     "if __name__ == .__main__.:",

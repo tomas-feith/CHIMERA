@@ -20,6 +20,7 @@ import numpy as np
 import pymongo
 import pyperclip
 
+import chimera_project
 from chimera_core import latexify_data, math_2_latex, rederive_clean_functions
 
 
@@ -30,48 +31,18 @@ class ProjectIOMixin:
         """Collect the current project state into a plain dict for saving.
 
         Shared by :meth:`save_online` (database) and :meth:`save_everything`
-        (local ``.chi`` file).
+        (local ``.chi`` file). Driven by the field lists in ``chimera_project``
+        so this and :meth:`_restore_project` cannot disagree about a field --
+        which is how ``func_fit_width`` came to be written from one attribute
+        and read back from another.
         """
         data = {}
-        data["plot_text"] = self.plot_text
-        data["text_pos"] = self.text_pos
-        data["text_size"] = self.text_size
-        data["width_ratio"] = self.width_ratio
-        data["height_ratio"] = self.height_ratio
-        data["x_ticks_ref"] = self.x_ticks_ref
-        data["y_ticks_ref"] = self.y_ticks_ref
-        data["x_axis_max"] = self.x_axis_max_entry.get()
-        data["x_axis_min"] = self.x_axis_min_entry.get()
-        data["x_axis_tick_space"] = self.x_axis_tick_space_entry.get()
-        data["x_axis_title"] = self.x_axis_title_entry.get()
-        data["y_axis_max"] = self.y_axis_max_entry.get()
-        data["y_axis_min"] = self.y_axis_min_entry.get()
-        data["y_axis_tick_space"] = self.y_axis_tick_space_entry.get()
-        data["y_axis_title"] = self.y_axis_title_entry.get()
-        data["data_list"] = self.data_list
-        data["dataset_text"] = self.dataset_text
-        data["indeps"] = self.indeps
-        data["params"] = self.params
-        data["functions"] = self.functions
-        data["clean_functions"] = self.clean_functions
-        data["data_labels"] = self.data_labels
-        data["plot_labels"] = self.plot_labels
-        data["fit_labels"] = self.fit_labels
-        data["init_values"] = self.init_values
-        data["marker_color_var"] = self.marker_color_var
-        data["line_color_var"] = self.line_color_var
-        data["error_color_var"] = self.error_color_var
-        data["func_fit_color_var"] = self.func_fit_color_var
-        data["func_plot_color_var"] = self.func_plot_color_var
-        data["marker_option_translater"] = self.marker_option_translater
-        data["line_option_translater"] = self.line_option_translater
-        data["func_fit_option_translater"] = self.func_fit_option_translater
-        data["func_plot_option_translater"] = self.func_plot_option_translater
-        data["marker_size"] = [var.get() for var in self.marker_size]
-        data["line_width"] = [var.get() for var in self.line_width]
-        data["error_width"] = [var.get() for var in self.error_width]
-        data["func_fit_width"] = [var.get() for var in self.func_fit_width]
-        data["func_plot_width"] = [var.get() for var in self.func_plot_width]
+        for field in chimera_project.PLAIN_FIELDS + chimera_project.REDERIVED_FIELDS:
+            data[field] = getattr(self, field)
+        for field in chimera_project.ENTRY_FIELDS:
+            data[field] = getattr(self, chimera_project.entry_widget_name(field)).get()
+        for field in chimera_project.WIDTH_FIELDS:
+            data[field] = [var.get() for var in getattr(self, field)]
         return data
 
     def save_online(self):
@@ -128,31 +99,25 @@ class ProjectIOMixin:
                 file = open(self.file, "r")
                 data = json.load(file)
                 file.close()
-            self.plot_text = data["plot_text"]
-            self.text_pos = data["text_pos"]
-            self.text_size = data["text_size"]
-            self.width_ratio = data["width_ratio"]
-            self.height_ratio = data["height_ratio"]
-            self.x_ticks_ref = data["x_ticks_ref"]
-            self.y_ticks_ref = data["y_ticks_ref"]
+            # Shape-check before touching a single widget, so a malformed file
+            # cannot leave the window half-loaded.
+            chimera_project.validate(data)
 
-            self.x_axis_max_entry.delete(0, tk.END)
-            self.x_axis_max_entry.insert(0, data["x_axis_max"])
-            self.x_axis_min_entry.delete(0, tk.END)
-            self.x_axis_min_entry.insert(0, data["x_axis_min"])
-            self.x_axis_tick_space_entry.delete(0, tk.END)
-            self.x_axis_tick_space_entry.insert(0, data["x_axis_tick_space"])
-            self.x_axis_title_entry.delete(0, tk.END)
-            self.x_axis_title_entry.insert(0, data["x_axis_title"])
+            for field in (
+                "plot_text",
+                "text_pos",
+                "text_size",
+                "width_ratio",
+                "height_ratio",
+                "x_ticks_ref",
+                "y_ticks_ref",
+            ):
+                setattr(self, field, data[field])
 
-            self.y_axis_max_entry.delete(0, tk.END)
-            self.y_axis_max_entry.insert(0, data["y_axis_max"])
-            self.y_axis_min_entry.delete(0, tk.END)
-            self.y_axis_min_entry.insert(0, data["y_axis_min"])
-            self.y_axis_tick_space_entry.delete(0, tk.END)
-            self.y_axis_tick_space_entry.insert(0, data["y_axis_tick_space"])
-            self.y_axis_title_entry.delete(0, tk.END)
-            self.y_axis_title_entry.insert(0, data["y_axis_title"])
+            for field in chimera_project.ENTRY_FIELDS:
+                entry = getattr(self, chimera_project.entry_widget_name(field))
+                entry.delete(0, tk.END)
+                entry.insert(0, data[field])
 
             self.fit_params = []
             self.fit_uncert = []
@@ -232,35 +197,21 @@ class ProjectIOMixin:
                     variable=self.datasets_to_plot_var[-1],
                 )
 
-            self.dataset_text = data["dataset_text"]
-            self.indeps = data["indeps"]
-            self.params = data["params"]
-            self.functions = data["functions"]
+            for field in chimera_project.PLAIN_FIELDS:
+                if field != "data_list":  # already set above, drives the loop
+                    setattr(self, field, data[field])
             # Never trust the pre-compiled expression stored in the file/record:
             # re-derive it from the (validated) raw function so a tampered
             # project cannot smuggle in an arbitrary expression to evaluate.
             self.clean_functions = rederive_clean_functions(
                 self.functions, self.params, self.indeps
             )
-            self.data_labels = data["data_labels"]
-            self.plot_labels = data["plot_labels"]
-            self.fit_labels = data["fit_labels"]
-            self.init_values = data["init_values"]
-            self.marker_color_var = data["marker_color_var"]
-            self.line_color_var = data["line_color_var"]
-            self.error_color_var = data["error_color_var"]
-            self.func_fit_color_var = data["func_fit_color_var"]
-            self.func_plot_color_var = data["func_plot_color_var"]
-            self.marker_option_translater = data["marker_option_translater"]
-            self.line_option_translater = data["line_option_translater"]
-            self.func_fit_option_translater = data["func_fit_option_translater"]
-            self.func_plot_option_translater = data["func_plot_option_translater"]
-            for i in range(self.number_datasets):
-                self.marker_size[i].set(data["marker_size"][i])
-                self.line_width[i].set(data["line_width"][i])
-                self.error_width[i].set(data["error_width"][i])
-                self.func_fit_width[i].set(data["error_width"][i])
-                self.func_plot_width[i].set(data["func_plot_width"][i])
+            # Each width restores from its OWN key. Spelled out by hand, this is
+            # where func_fit_width was being filled from data["error_width"].
+            for field in chimera_project.WIDTH_FIELDS:
+                variables = getattr(self, field)
+                for i in range(self.number_datasets):
+                    variables[i].set(data[field][i])
 
             del self.param_boxes
             self.data_entry.delete("1.0", tk.END)
@@ -277,7 +228,12 @@ class ProjectIOMixin:
             # surface as a single "file corrupted" message rather than a traceback.
             self.create_scatter()
             tk.messagebox.showwarning("ERROR", "Unable to open. File corrupted.")
-            del self.file
+            # Only the file-picker path sets self.file; opening from the database
+            # passes `data=` and never does. An unconditional del raised
+            # AttributeError from inside the handler, so a bad database record
+            # crashed instead of reporting itself.
+            if hasattr(self, "file"):
+                del self.file
             return
 
     def latexify(self):

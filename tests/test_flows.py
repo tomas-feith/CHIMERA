@@ -9,14 +9,13 @@ They require a working Tk display; on a headless machine with no ``$DISPLAY``
 (e.g. bare CI) the whole module skips rather than failing. Run CI under a virtual
 framebuffer (``xvfb-run``) to execute them there.
 
-A single Tk root is shared across the module on purpose: creating multiple
-``Tk()`` instances in one process makes tkinter reuse image names across
-interpreters and fail with "can't use pyimageN as iconphoto". The window is left
-mapped (not withdrawn) so its geometry is realised before ``__init__`` resizes
-the logo images -- a withdrawn window reports a width of 1 under Xvfb.
+The ``app`` fixture lives in the root ``conftest.py`` and is session-scoped, so
+a single Tk root is shared with every other GUI test module. That is not just
+tidiness: creating a second ``Tk()`` in one process makes tkinter reuse image
+names across interpreters and fail with "can't use pyimageN as iconphoto", and
+because the fixture turns a TclError into a skip, a module with its own root
+would quietly stop running rather than fail.
 """
-
-import tkinter.messagebox as mb
 
 import pytest
 
@@ -24,45 +23,7 @@ tk = pytest.importorskip("tkinter")
 
 import pymongo  # noqa: E402
 
-import main  # noqa: E402
 import online_ui  # noqa: E402
-
-
-@pytest.fixture(scope="module")
-def app():
-    """One constructed, off-screen MainWindow shared by the module's tests."""
-    calls = []
-    originals = {
-        (main, "check_version"): main.check_version,
-        (mb, "showwarning"): mb.showwarning,
-        (mb, "showinfo"): mb.showinfo,
-        (mb, "showerror"): mb.showerror,
-        (mb, "askyesno"): mb.askyesno,
-    }
-    # __init__ calls check_version(), which hits the network -- stub it out.
-    main.check_version = lambda: None
-    mb.showwarning = lambda *a, **k: calls.append(a[0] if a else "")
-    mb.showinfo = lambda *a, **k: calls.append(a[0] if a else "")
-    mb.showerror = lambda *a, **k: calls.append(a[0] if a else "")
-    mb.askyesno = lambda *a, **k: True
-
-    try:
-        root = tk.Tk()
-    except tk.TclError as exc:  # no display available (headless CI without Xvfb)
-        for (obj, name), value in originals.items():
-            setattr(obj, name, value)
-        pytest.skip(f"no Tk display available: {exc}")
-
-    root.geometry("1024x768")
-    root.update_idletasks()
-    instance = main.MainWindow(master=root)
-    instance.dialog_calls = calls
-    try:
-        yield instance
-    finally:
-        root.destroy()
-        for (obj, name), value in originals.items():
-            setattr(obj, name, value)
 
 
 def test_compile_and_fit_recovers_linear_parameters(app):
