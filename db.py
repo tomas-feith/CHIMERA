@@ -74,6 +74,46 @@ class ChimeraDB:
     def replace_user_fields(self, username: str, changes: dict) -> Any:
         return self.users.update_one({"username": username}, {"$set": changes})
 
+    # --- connections -----------------------------------------------------
+    #
+    # A connection is stored on both users, so creating or removing one is two
+    # writes that must not half-happen. These were previously two bare
+    # update_one calls in the UI: if the second failed, the first stood, and the
+    # two accounts disagreed about whether they were connected -- permanently,
+    # since nothing ever reconciles them.
+    #
+    # They compensate rather than use a transaction. Atlas would support one,
+    # but mongomock has no session support at all ("Mongomock does not support
+    # sessions yet"), so a transactional path could not be tested here, and an
+    # untested branch in a write path is its own hazard. Undoing the first write
+    # narrows the failure window to "the undo also failed", which is strictly
+    # better and exercised by the tests.
+
+    def connect_users(self, a_username: str, a_id: Any, b_username: str, b_id: Any) -> None:
+        """Record a connection on both accounts, or on neither."""
+        self.users.update_one({"username": a_username}, {"$push": {"connections": b_id}})
+        try:
+            self.users.update_one({"username": b_username}, {"$push": {"connections": a_id}})
+        except pymongo.errors.PyMongoError:
+            self.users.update_one({"username": a_username}, {"$pull": {"connections": b_id}})
+            raise
+
+    def disconnect_users(self, a_username: str, a_id: Any, b_id: Any) -> None:
+        """Remove a connection from both accounts, or from neither."""
+        self.users.update_one({"username": a_username}, {"$pull": {"connections": b_id}})
+        try:
+            self.users.update_one({"_id": b_id}, {"$pull": {"connections": a_id}})
+        except pymongo.errors.PyMongoError:
+            self.users.update_one({"username": a_username}, {"$push": {"connections": b_id}})
+            raise
+
+    def drop_member_from_owned_groups(self, owner_username: str, member_id: Any) -> Any:
+        """Remove a user from every group the given owner runs."""
+        return self.groups.update_many(
+            {"owner": owner_username, "members": {"$in": [member_id]}},
+            {"$pull": {"members": member_id}},
+        )
+
     # --- projects --------------------------------------------------------
 
     def all_projects(self) -> list:
@@ -87,3 +127,21 @@ class ChimeraDB:
 
     def delete_project(self, project_id: Any) -> Any:
         return self.projects.delete_one({"_id": project_id})
+
+    def purge_project(self, project_id: Any) -> None:
+        """Delete a project and drop it from every group that referenced it.
+
+        Group references are cleared *first*, deliberately. The reverse order
+        (what the UI did) leaves dangling references in every group if the
+        cleanup fails after the delete has landed, and a group listing a project
+        that no longer exists is the harder state to recover from. This way a
+        failure leaves the project intact and merely un-grouped.
+        """
+        self.groups.update_many(
+            {"projects": {"$in": [project_id]}}, {"$pull": {"projects": project_id}}
+        )
+        self.projects.delete_one({"_id": project_id})
+
+    def remove_project_from_group(self, group_id: Any, project_id: Any) -> Any:
+        """Drop one project from one group."""
+        return self.groups.update_one({"_id": group_id}, {"$pull": {"projects": project_id}})

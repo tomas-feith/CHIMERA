@@ -101,7 +101,7 @@ omit = ["tests/*", "conftest.py"]
 # catches regressions; raise it as tests land. What remains uncovered is almost
 # entirely Tkinter window construction: online_ui is 26% and the rest of it is
 # dialog layout, plotting.py 57%. The pure modules are at 83-100%.
-fail_under = 53
+fail_under = 55
 show_missing = true
 exclude_also = [
     "if __name__ == .__main__.:",

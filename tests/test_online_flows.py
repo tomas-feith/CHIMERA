@@ -240,3 +240,97 @@ def test_a_current_hash_is_not_rewritten_on_login(online) -> None:
     _login_as(online, "tomas", "goodpassword")
 
     assert online.database.find_user("tomas")["password"] == before
+
+
+# --- connections, through the dialog ----------------------------------------
+
+
+def _signed_in(app, username: str = "tomas") -> dict:
+    """Create an account and log into it, returning the stored record."""
+    _fill_account(app, username, "goodpassword", f"{username}@example.com")
+    app.save_account()
+    _login_as(app, username, "goodpassword")
+    return app.database.find_user(username)
+
+
+def _try_connect(app, username: str, code: str) -> None:
+    app.add_connection()
+    app.username_entry.delete(0, tk.END)
+    app.username_entry.insert(0, username)
+    app.code_entry.delete(0, tk.END)
+    app.code_entry.insert(0, code)
+    app.dialog_calls.clear()
+    app.finish_connection()
+
+
+def test_connecting_to_another_user_records_both_sides(online) -> None:
+    me = _signed_in(online)
+    online.database.insert_user(
+        {
+            "username": "friend",
+            "password": b"x",
+            "email": "f@example.com",
+            "connect_code": "FRIENDCODE",
+            "connections": [],
+            "projects": [],
+        }
+    )
+    friend = online.database.find_user("friend")
+
+    _try_connect(online, "friend", "FRIENDCODE")
+
+    assert "CONNECTION ESTABLISHED" in online.dialog_calls
+    assert online.database.find_user("tomas")["connections"] == [friend["_id"]]
+    assert online.database.find_user("friend")["connections"] == [me["_id"]]
+
+
+def test_connecting_to_yourself_is_refused_and_stores_nothing(online) -> None:
+    """Your own username plus your own code used to push your id into your own
+    connections twice, because both halves of the update hit the same document."""
+    me = _signed_in(online)
+
+    _try_connect(online, "tomas", me["connect_code"])
+
+    assert "INVALID CONNECTION" in online.dialog_calls
+    assert online.database.find_user("tomas")["connections"] == []
+
+
+def test_a_wrong_connect_code_is_refused(online) -> None:
+    _signed_in(online)
+    online.database.insert_user(
+        {
+            "username": "friend",
+            "password": b"x",
+            "email": "f@example.com",
+            "connect_code": "FRIENDCODE",
+            "connections": [],
+            "projects": [],
+        }
+    )
+
+    _try_connect(online, "friend", "WRONGCODE1")
+
+    assert "INVALID CONNECTION" in online.dialog_calls
+    assert online.database.find_user("tomas")["connections"] == []
+    assert online.database.find_user("friend")["connections"] == []
+
+
+def test_connecting_twice_is_refused(online) -> None:
+    _signed_in(online)
+    online.database.insert_user(
+        {
+            "username": "friend",
+            "password": b"x",
+            "email": "f@example.com",
+            "connect_code": "FRIENDCODE",
+            "connections": [],
+            "projects": [],
+        }
+    )
+    _try_connect(online, "friend", "FRIENDCODE")
+    _try_connect(online, "friend", "FRIENDCODE")
+
+    assert "REPEATED CONNECTION" in online.dialog_calls
+    # Still exactly one entry on each side, not two.
+    assert len(online.database.find_user("tomas")["connections"]) == 1
+    assert len(online.database.find_user("friend")["connections"]) == 1

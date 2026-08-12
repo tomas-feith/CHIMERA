@@ -445,13 +445,18 @@ class OnlineUIMixin:
             f"DELETE PROJECT {project_name}",
             "Are you sure you want to delete this project? This action is immediate and irreversible.",
         ):
-            projects = self.database.projects
-            projects.delete_one({"_id": project_id})
-
-            groups = self.database.groups
-            match_groups = groups.find({"$in": {"projects": project_id}})
-            for group in match_groups:
-                groups.update_one({"_id": group["_id"]}, {"$pull": {"projects": project_id}})
+            # The group cleanup here used to query {"$in": {"projects": id}},
+            # which MongoDB rejects outright ("unknown top level operator: $in").
+            # So the project was deleted, the loop raised, and every group kept
+            # a reference to something that no longer existed. purge_project
+            # clears the references first and uses a well-formed query.
+            try:
+                self.database.purge_project(project_id)
+            except pymongo.errors.PyMongoError:
+                tk.messagebox.showwarning(
+                    "CONNECTION ERROR",
+                    "Connection timed out. Make sure you have a stable internet connection.",
+                )
 
             self.view_projects()
 
@@ -588,17 +593,20 @@ class OnlineUIMixin:
         new_connection_button.grid(row=2, column=2)
 
     def disconnect_user(self, user):
-        users = self.database.users
-        users.update_one({"username": self.user["username"]}, {"$pull": {"connections": user}})
-        users.update_one({"_id": user}, {"$pull": {"connections": self.user["_id"]}})
-
-        groups = self.database.groups
-        groups.update_many(
-            {"owner": self.user["username"], "members": {"$in": [user]}},
-            {"$pull": {"members": user}},
-        )
-
-        self.user = users.find_one({"username": self.user["username"]}, max_time_ms=5000)
+        try:
+            # Both sides, or neither -- see ChimeraDB.disconnect_users. The group
+            # cleanup follows: a user left in a group they are no longer
+            # connected to is untidy, a one-way connection is corrupt.
+            self.database.disconnect_users(self.user["username"], self.user["_id"], user)
+            self.database.drop_member_from_owned_groups(self.user["username"], user)
+            self.user = self.database.find_user(self.user["username"])
+        except pymongo.errors.PyMongoError:
+            # This had no handler at all, so a dropped connection surfaced as a
+            # traceback rather than a message.
+            tk.messagebox.showwarning(
+                "CONNECTION ERROR",
+                "Connection timed out. Make sure you have a stable internet connection.",
+            )
         self.view_connections()
 
     def add_connection(self):
@@ -680,12 +688,10 @@ class OnlineUIMixin:
             return
 
         try:
-            # update my account
-            users.update_one(
-                {"username": self.user["username"]}, {"$push": {"connections": other_user["_id"]}}
+            # Both sides, or neither -- see ChimeraDB.connect_users.
+            self.database.connect_users(
+                self.user["username"], self.user["_id"], username, other_user["_id"]
             )
-            # update the other person's account
-            users.update_one({"username": username}, {"$push": {"connections": self.user["_id"]}})
             self.user = users.find_one({"username": self.user["username"]}, max_time_ms=5000)
         except pymongo.errors.PyMongoError:
             tk.messagebox.showwarning(
@@ -1045,8 +1051,10 @@ class OnlineUIMixin:
         self.group_settings(group_id, group_name)
 
     def remove_project(self, project_id, group_id, group_name):
-        groups = self.database.groups
-        groups.update_one({"_id": group_id}, {"$pull": {" projects": project_id}})
+        # The field name here was " projects" -- with a leading space. Mongo
+        # happily pulled from a field of that name, which no document has, so
+        # this button appeared to work and removed nothing.
+        self.database.remove_project_from_group(group_id, project_id)
         self.group_settings(group_id, group_name)
 
     def delete_group(self, group_id, group_name):
